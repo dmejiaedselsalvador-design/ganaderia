@@ -35,13 +35,13 @@
                 </a>
 
                 <!-- Enlace de Inventario (Ejemplo de ruta personalizada) -->
-                <a href="#" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
-                    <i class="fa-solid fa-list-check"></i> Inventario (Aretes)
+                <a href="{{ route('compras.ganado.index') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
+                    <i class="fa-solid fa-list-check"></i> Compras de Ganado
                 </a>
 
                 <!-- Enlace de Pesajes -->
-                <a href="#" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
-                    <i class="fa-solid fa-weight-scale"></i> Pesajes & Engorda
+                <a href="{{ route('compras.ganado.perfil') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
+                    <i class="fa-solid fa-weight-scale"></i> Perfil
                 </a>
 
                 <!-- Enlace de Exportación -->

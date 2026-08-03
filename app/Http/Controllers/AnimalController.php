@@ -15,6 +15,11 @@ class AnimalController extends Controller
         return view('animals.index');
     }
 
+    public function perfil()
+    {
+        return view('animals.perfil');
+    }
+
     /**
      * Show the form for creating a new resource.
      */
