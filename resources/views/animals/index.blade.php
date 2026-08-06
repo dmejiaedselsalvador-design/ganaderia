@@ -11,7 +11,7 @@
                         <h3 class="text-lg font-bold text-slate-800">Catálogo de Cabezas de Ganado</h3>
                         <p class="text-sm text-slate-500">Control de aretes SINIIGA, pesos en báscula y estatus actual.</p>
                     </div>
-                    <a href="#" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-sm">
+                    <a href="{{ route('compras.nuevo.ganado') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-plus"></i> Registrar Animal
                     </a>
                 </div>

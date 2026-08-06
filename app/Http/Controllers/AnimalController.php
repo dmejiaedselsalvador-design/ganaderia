@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ganado\proveedorGanado;
 use Illuminate\Http\Request;
 
 class AnimalController extends Controller
@@ -18,6 +19,13 @@ class AnimalController extends Controller
     public function perfil()
     {
         return view('animals.perfil');
+    }
+
+    public function nuevoGanado()
+    {
+       $proveedores = proveedorGanado::all();
+
+        return view('compras.nuevoGanado',compact('proveedores'));
     }
 
     /**
