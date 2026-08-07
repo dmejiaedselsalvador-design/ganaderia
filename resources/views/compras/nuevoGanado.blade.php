@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+
             <!-- Mensajes de Error o Alerta general -->
             @if ($errors->any())
                 <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
@@ -21,7 +21,7 @@
                         </svg>
                         Registro de Compra de Ganado por Lote (Escalas de Precio)
                     </h2>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <!-- Proveedor -->
                         <div>
@@ -81,13 +81,13 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg items-end border border-gray-200 dark:border-gray-700">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">N° de Arete *</label>
-                            <input type="text" id="input_tag_number" placeholder="Escanee o digite" 
+                            <input type="text" id="input_tag_number" placeholder="Escanee o digite"
                                 class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Raza</label>
-                            <input type="text" id="input_breed" placeholder="Ej. Brahman" 
+                            <input type="text" id="input_breed" placeholder="Ej. Brahman"
                                 class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
 
@@ -101,18 +101,18 @@
 
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Peso actual (kg) *</label>
-                            <input type="number" step="0.01" id="input_weight" placeholder="0.00" 
+                            <input type="number" step="0.01" id="input_weight" placeholder="0.00"
                                 class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Observación</label>
-                            <input type="text" id="input_observation" placeholder="Ej. Flaco, pie quebrado" 
+                            <input type="text" id="input_observation" placeholder="Ej. Flaco, pie quebrado"
                                 class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
 
                         <div>
-                            <button id="btn-agregar-ganado" type="button" 
+                            <button id="btn-agregar-ganado" type="button"
                                 class="w-full py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md shadow transition">
                                 + Agregar
                             </button>
@@ -191,7 +191,7 @@
                     <a href="#" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition">
                         Cancelar
                     </a>
-                    <button type="submit" id="btn-submit-lote" disabled 
+                    <button type="submit" id="btn-submit-lote" disabled
                         class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow transition">
                         Registrar Lote de Compra
                     </button>
@@ -212,7 +212,7 @@
             const inputGender = document.getElementById("input_gender");
             const inputWeight = document.getElementById("input_weight");
             const inputObservation = document.getElementById("input_observation");
-            
+
             const precioMachoBaseInput = document.getElementById("precio_macho_base");
             const pesoLimiteMachoInput = document.getElementById("peso_limite_macho");
             const precioHembraBaseInput = document.getElementById("precio_hembra_base");
@@ -221,12 +221,12 @@
             const btnAgregar = document.getElementById("btn-agregar-ganado");
             const tablaMachosBody = document.getElementById("tabla-machos-body");
             const tablaHembrasBody = document.getElementById("tabla-hembras-body");
-            
+
             const promedioPesoMachos = document.getElementById("promedio-peso-machos");
             const totalMontoMachos = document.getElementById("total-monto-machos");
             const promedioPesoHembras = document.getElementById("promedio-peso-hembras");
             const totalMontoHembras = document.getElementById("total-monto-hembras");
-            
+
             const contadorAnimales = document.getElementById("contador-animales");
             const granTotalLote = document.getElementById("gran-total-lote");
             const btnSubmit = document.getElementById("btn-submit-lote");
@@ -239,7 +239,7 @@
                 if (gender === 'Macho') {
                     let base = parseFloat(precioMachoBaseInput.value) || 80;
                     let limite = parseFloat(pesoLimiteMachoInput.value) || 150;
-                    
+
                     if (w <= limite) {
                         return base;
                     } else {
@@ -250,12 +250,12 @@
                 } else {
                     let base = parseFloat(precioHembraBaseInput.value) || 66;
                     let limite = parseFloat(pesoLimiteHembraInput.value) || 150;
-                    
+
                     if (w <= limite) {
                         return base;
                     } else {
                         let kilosExcedidos = w - limite;
-                        let rebaja = Math.round(kilosExcedidos / 7);
+                        let rebaja = Math.round(kilosExcedidos * 0.2);
                         return Math.max(0, base - rebaja);
                     }
                 }
