@@ -244,7 +244,7 @@
                         return base;
                     } else {
                         let kilosExcedidos = w - limite;
-                        let rebaja = Math.round(kilosExcedidos / 7);
+                        let rebaja = Math.round(kilosExcedidos * 0.2);
                         return Math.max(0, base - rebaja);
                     }
                 } else {
