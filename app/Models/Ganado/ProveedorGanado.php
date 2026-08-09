@@ -11,9 +11,20 @@ class ProveedorGanado extends Model
     use HasFactory;
     protected $table = 'proveedorGanado';
  protected $fillable = [
-        'nombre',
+        'nombreProoveedor',
+        'nombreContacto',
+        'telefono',
+        'lugar',
+        'razon_social',
+        'ubicacion',
 
 
     ];
+
+public function adelantos()
+{
+    // Asegúrate de que el segundo parámetro sea el nombre de la llave foránea en tu tabla adelantos
+    return $this->hasMany(Adelanto::class, 'proveedor_id');
+}
 
 }
