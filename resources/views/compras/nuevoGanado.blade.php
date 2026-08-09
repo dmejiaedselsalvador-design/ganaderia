@@ -54,7 +54,7 @@
                         <div>
                             <label class="block-xs font-medium text-gray-700 dark:text-gray-300 text-sm font-semibold">Precio Macho Base:</label>
                             <div class="flex items-center space-x-2 mt-1">
-                                <input type="number" step="0.01" id="precio_macho_base" value="80" class="w-24 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
+                                <input type="number" step="0.01" id="precio_macho_base" value="100" class="w-24 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
                                 <span class="text-xs text-gray-500">Hasta los</span>
                                 <input type="number" id="peso_limite_macho" value="150" class="w-20 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
                                 <span class="text-xs text-gray-500">kg</span>
@@ -63,10 +63,19 @@
                         <div>
                             <label class="block-xs font-medium text-gray-700 dark:text-gray-300 text-sm font-semibold">Precio Hembra Base:</label>
                             <div class="flex items-center space-x-2 mt-1">
-                                <input type="number" step="0.01" id="precio_hembra_base" value="66" class="w-24 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
+                                <input type="number" step="0.01" id="precio_hembra_base" value="100" class="w-24 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
                                 <span class="text-xs text-gray-500">Hasta los</span>
                                 <input type="number" id="peso_limite_hembra" value="150" class="w-20 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
                                 <span class="text-xs text-gray-500">kg</span>
+                            </div>
+                        </div>
+
+                          <div>
+                            <label class="block-xs font-medium text-gray-700 dark:text-gray-300 text-sm font-semibold">Factor Castigo:</label>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <input type="number" step="0.01" id="factor-castigo" value="0.02" class="w-24 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
+                                <span class="text-xs text-gray-500">%</span>
+                               
                             </div>
                         </div>
                     </div>
@@ -232,10 +241,14 @@
             const btnSubmit = document.getElementById("btn-submit-lote");
             const inputsContainer = document.getElementById("inputs-ocultos-container");
             const formTitleAccion = document.getElementById("form-title-accion");
+const factorCastigoInput = document.getElementById("factor-castigo");
 
             // Fórmula exacta del Excel para el precio unitario
+ // Fórmula exacta del Excel para el precio unitario
             function calcularPrecioUnitario(gender, weight) {
                 let w = parseFloat(weight);
+                let factorCastigo = parseFloat(factorCastigoInput.value) || 0.02;
+
                 if (gender === 'Macho') {
                     let base = parseFloat(precioMachoBaseInput.value) || 80;
                     let limite = parseFloat(pesoLimiteMachoInput.value) || 150;
@@ -244,7 +257,8 @@
                         return base;
                     } else {
                         let kilosExcedidos = w - limite;
-                        let rebaja = Math.round(kilosExcedidos * 0.2);
+                        // Corrección: Aplicar la proporción de tu regla (cada 10 kg baja proporcional al factor)
+                        let rebaja = kilosExcedidos * (base * (factorCastigo / 10));
                         return Math.max(0, base - rebaja);
                     }
                 } else {
@@ -255,12 +269,11 @@
                         return base;
                     } else {
                         let kilosExcedidos = w - limite;
-                        let rebaja = Math.round(kilosExcedidos * 0.2);
+                        let rebaja = kilosExcedidos * (base * (factorCastigo / 10));
                         return Math.max(0, base - rebaja);
                     }
                 }
             }
-
             function guardarOActualizarAnimal() {
                 const tag = inputTag.value.trim();
                 const breed = inputBreed.value.trim() || 'Sin especificar';
@@ -382,7 +395,7 @@
                                 <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-300">${m.breed}</td>
                                 <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-300">${m.weight} kg</td>
                                 <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-300">$${m.unitPrice.toFixed(2)}</td>
-                                <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">$${m.total.toFixed(2)}</td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">$${m.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                 <td class="px-4 py-3 text-sm text-gray-500 italic">${m.observation || 'Ninguna'}</td>
                                 <td class="px-4 py-3 text-sm text-right space-x-2">
                                     <button type="button" onclick="editarAnimalPorId(${realIndex})" class="text-amber-600 hover:text-amber-900 font-medium">Editar</button>
@@ -422,7 +435,7 @@
                                 <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-300">${h.breed}</td>
                                 <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-300">${h.weight} kg</td>
                                 <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-300">$${h.unitPrice.toFixed(2)}</td>
-                                <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">$${h.total.toFixed(2)}</td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">$${h.total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
                                 <td class="px-4 py-3 text-sm text-gray-500 italic">${h.observation || 'Ninguna'}</td>
                                 <td class="px-4 py-3 text-sm text-right space-x-2">
                                     <button type="button" onclick="editarAnimalPorId(${realIndex})" class="text-amber-600 hover:text-amber-900 font-medium">Editar</button>
@@ -470,7 +483,7 @@
                 });
             });
 
-            [precioMachoBaseInput, pesoLimiteMachoInput, precioHembraBaseInput, pesoLimiteHembraInput].forEach(input => {
+            [precioMachoBaseInput, pesoLimiteMachoInput, precioHembraBaseInput, pesoLimiteHembraInput,factorCastigoInput].forEach(input => {
                 input.addEventListener("input", () => {
                     renderizarTablas();
                 });

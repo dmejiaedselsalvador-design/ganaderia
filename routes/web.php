@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdelantoController;
 use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+
 
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/compras/registro-ganado', [AnimalController::class, 'index'])->name('compras.ganado.index');
     Route::get('/compras/nuevo-ganado',[AnimalController::class,'nuevoGanado'])->name('compras.nuevo.ganado');
     Route::get('/ganado/perfil', [AnimalController::class, 'perfil'])->name('compras.ganado.perfil');
+    Route::get('/adelantos/proveedores',[AdelantoController::class,'index'])->name('adelantos.proveedores.index');
 
 });
 

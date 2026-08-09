@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role; // Asegúrate de importar el modelo Role
 
 class AdminUserSeeder extends Seeder
 {
@@ -13,15 +14,21 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Verifica si el usuario ya existe para evitar duplicados si corres el seeder varias veces
-        User::firstOrCreate(
+        // 1. Crear los roles si no existen
+        $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'operador']);
+        Role::firstOrCreate(['name' => 'ventas']);
+
+        // 2. Crear el usuario administrador
+        $user = User::firstOrCreate(
             ['email' => 'luis@test.com'],
             [
-                'name' => 'Luis David', // O puedes ponerle 'Admin'
+                'name' => 'Luis David',
                 'password' => Hash::make('123456789'),
-                // Si tienes una columna para roles o tipo de usuario (ej. 'role' => 'admin'), puedes descomentar la siguiente línea:
-                // 'role' => 'admin',
             ]
         );
+
+        // 3. Asignarle el rol al usuario
+        $user->assignRole($roleAdmin);
     }
 }
