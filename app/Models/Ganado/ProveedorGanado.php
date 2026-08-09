@@ -9,11 +9,11 @@ class ProveedorGanado extends Model
 {
     //
     use HasFactory;
-    protected $table = 'proveedorganado';
+    protected $table = 'proveedorGanado';
  protected $fillable = [
         'nombre',
-        
-        
+
+
     ];
 
 }

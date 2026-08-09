@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class SupplierController extends Controller
+class ProveedorController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -12,6 +12,7 @@ class SupplierController extends Controller
     public function index()
     {
         //
+        return view('proveedores.index');
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
 
+use App\Http\Controllers\ProveedorController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/compras/nuevo-ganado',[AnimalController::class,'nuevoGanado'])->name('compras.nuevo.ganado');
     Route::get('/ganado/perfil', [AnimalController::class, 'perfil'])->name('compras.ganado.perfil');
     Route::get('/adelantos/proveedores',[AdelantoController::class,'index'])->name('adelantos.proveedores.index');
+    Route::get('proveedores',[ProveedorController::class,'index'])->name('proveedores.index');
 
 });
 

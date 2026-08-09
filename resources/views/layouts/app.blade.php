@@ -34,6 +34,11 @@
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </a>
 
+                   <!-- aca estan los vendedores de los ganados-->
+                <a href="{{ route('proveedores.index') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
+                    <i class="fa-solid fa-list-check"></i> Vendedores
+                </a>
+
                 <!-- Enlace de Inventario (Ejemplo de ruta personalizada) -->
                 <a href="{{ route('compras.ganado.index') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
                     <i class="fa-solid fa-list-check"></i> Compras de Ganado

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('adelantos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedorganado')->onDelete('cascade'); // Proveedor
+            $table->foreignId('proveedor_id')->constrained('proveedorGanado')->onDelete('cascade'); // Proveedor
             $table->text('concepto'); // Tipo de adelanto
             $table->decimal('dinero', 12, 2); // Si es dinero, el monto; si es concentrado, el valor equivalente en dinero o la cantidad
             $table->date('date'); // Fecha del adelanto
