@@ -10,7 +10,7 @@
                 </div>
             @endif
 
-            <form action="#" method="POST" id="form-lote-compra">
+            <form action="{{ route('compras.ganado.store') }}" method="POST" id="form-lote-compra">
                 @csrf
 
                 <!-- SECCIÓN 1: Datos Generales y Configuración de Precios -->
@@ -75,7 +75,7 @@
                             <div class="flex items-center space-x-2 mt-1">
                                 <input type="number" step="0.01" id="factor-castigo" value="0.02" class="w-24 rounded-md border-gray-300 text-sm dark:bg-gray-700 dark:text-white">
                                 <span class="text-xs text-gray-500">%</span>
-                               
+
                             </div>
                         </div>
                     </div>

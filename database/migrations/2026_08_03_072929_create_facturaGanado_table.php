@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('facturaGanado', function (Blueprint $table) {
          $table->id();
-    $table->foreignId('proveedorID')->constrained('proveedorGanado')->cascadeOnDelete();
-    $table->date('fechaFactura');
-    $table->string('numeroFactura')->nullable(); // Número de factura o recibo
-    $table->text('notas')->nullable();
-    $table->enum('estado',['pendiente','pagada','proceso','parcial','anulada'])->default('pendiente');
-    $table->timestamps();
-        });
+         $table->foreignId('proveedorID')->constrained('proveedorGanado')->cascadeOnDelete();
+         $table->date('fechaFactura');
+         $table->decimal('montoTotal', 12, 2);
+         $table->string('numeroFactura')->nullable(); // Número de factura o recibo
+         $table->text('notas')->nullable();
+         $table->enum('estado',['pendiente','pagada','proceso','parcial','anulada'])->default('pendiente');
+          $table->timestamps();
+           });
     }
 
     /**

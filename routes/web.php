@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/compras/registro-ganado', [AnimalController::class, 'index'])->name('compras.ganado.index');
     Route::get('/compras/nuevo-ganado',[AnimalController::class,'nuevoGanado'])->name('compras.nuevo.ganado');
     Route::get('/ganado/perfil', [AnimalController::class, 'perfil'])->name('compras.ganado.perfil');
+    Route::post('compras/registro-ganado',[AnimalController::class, 'store'])->name('compras.ganado.store');
     Route::get('/adelantos/proveedores',[AdelantoController::class,'index'])->name('adelantos.proveedores.index');
     Route::get('proveedores',[ProveedorController::class,'index'])->name('proveedores.index');
     Route::get('proveedores/create',[ProveedorController::class, 'create'])->name('proveedor.create');

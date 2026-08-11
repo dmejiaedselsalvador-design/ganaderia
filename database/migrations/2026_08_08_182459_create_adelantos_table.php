@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('proveedor_id')->constrained('proveedorGanado')->onDelete('cascade'); // Proveedor
             $table->text('concepto'); // Tipo de adelanto
-            $table->decimal('dinero', 12, 2); // Si es dinero, el monto; si es concentrado, el valor equivalente en dinero o la cantidad
+            $table->decimal('dinero', 12, 2); // Si es dinero, el monto; si es concentrado, el valor equivalente en dinero o la cantida
+            $table->decimal('montoDisponible', 12, 2);
             $table->date('date'); // Fecha del adelanto
-            $table->boolean('is_used')->default(false); // Para saber si ya se cruzó con un lote
+            $table->enum('status', ['disponible', 'parcial', 'agotado'])->default('disponible');
             $table->timestamps();
         });
     }

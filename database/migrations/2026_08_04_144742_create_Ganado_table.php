@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ganado', function (Blueprint $table) {
-            $table->id();
+            $table->id('GanadoID');
            // Relación opcional con proveedores (si se compró a alguien)
-            $table->foreignId('proveedor_id')->nullable()->constrained('proveedorGanado')->nullOnDelete();
+          //  $table->foreignId('proveedor_id')->nullable()->constrained('proveedorGanado')->nullOnDelete();
 
             // Identificación del animal
             $table->string('areteID')->unique(); // Número de arete oficial (ej. SINIIGA o local)
