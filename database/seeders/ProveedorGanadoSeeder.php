@@ -14,7 +14,7 @@ class ProveedorGanadoSeeder extends Seeder
     {
         DB::table('proveedorGanado')->insert([
             [
-                'nombreProoveedor' => 'Ganadería San José',
+                'nombreProveedor' => 'Ganadería San José',
                 'nombreContacto' => 'Don Mario Meléndez',
                 'telefono' => '7890-1234',
                 'lugar' => 'San Vicente',

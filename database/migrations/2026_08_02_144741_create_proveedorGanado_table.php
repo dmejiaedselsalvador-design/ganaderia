@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('proveedorGanado', function (Blueprint $table) {
             $table->id();
-            $table->string('nombreProoveedor'); // Nombre del proveedor o rancho proveedor
+            $table->string('nombreProveedor'); // Nombre del proveedor o rancho proveedor
             $table->string('estado')->default('activo');
             $table->string('nombreContacto')->nullable(); // Persona de contacto
             $table->string('telefono')->nullable(); // Teléfono

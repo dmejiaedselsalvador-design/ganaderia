@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Ganado\ProveedorGanado; // Importante
 use App\Models\Ganado\AdelantoFactura;
+use App\Models\Ganado\FacturaGanado;
 
 class Adelanto extends Model
 {
@@ -37,4 +38,6 @@ class Adelanto extends Model
     {
         return $this->hasMany(AdelantoFactura::class, 'adelanto_id');
     }
+
+
 }

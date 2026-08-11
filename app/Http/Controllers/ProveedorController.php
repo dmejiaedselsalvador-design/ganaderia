@@ -10,36 +10,30 @@ class ProveedorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-       $proveedores = ProveedorGanado::query()
-            ->where('estado', 'activo')
-            // 1. Suma el dinero total histórico de adelantos
-            ->withSum('adelantos as total_adelanto', 'dinero')
+public function index()
+{
+    $proveedores = ProveedorGanado::query()
+        ->where('estado', 'activo')
+        // Suma total de adelantos (Equivalente al LEFT JOIN de adelantos)
+        ->withSum('adelantos as total_adelantos', 'dinero')
+        // Suma total de facturas de ganado (Equivalente al LEFT JOIN de facturaGanado)
+        ->withSum('facturasGanado as total_facturas', 'montoTotal')
+        ->get();
 
-            // 2. Suma el saldo vivo (lo que aún no se ha gastado de los adelantos)
-            ->withSum(['adelantos as adelantos_disponibles' => function($query) {
-                $query->where('montoDisponible', '>', 0);
-            }], 'montoDisponible')
+    // Calcular el saldo neto de liquidación por proveedor
+    $proveedores->each(function($proveedor) {
+        $totalAdelantos = $proveedor->total_adelantos ?? 0;
+        $totalFacturas = $proveedor->total_facturas ?? 0;
 
-            // 3. Suma el valor total de las facturas/lotes de ganado de este proveedor
-            ->withSum('facturasGanado as total_ganado_recibido', 'montoTotal')
-            ->get();
+        // Adelantos dados menos facturas de ganado (saldo neto)
+        $proveedor->saldo_liquidacion = $totalAdelantos - $totalFacturas;
+    });
 
-        // 4. Calcular el balance neto (Saldo = Dinero disponible de adelantos - Deuda de ganado recibido)
-        $proveedores->each(function($proveedor) {
-            $dineroDisponible = $proveedor->adelantos_disponibles ?? 0;
-            $ganadoRecibido = $proveedor->total_ganado_recibido ?? 0;
+    // Opcional: ordenar por mayor saldo
+    $proveedores = $proveedores->sortByDesc('saldo_liquidacion');
 
-            // Si le diste 0 de adelanto y te trajo 500 de ganado, el resultado será -500.00 (Le debes)
-            $proveedor->saldo_neto = $dineroDisponible - $ganadoRecibido;
-        });
-
-        // Opcional: Ordenar para ver primero los que tienen mayores saldos o deudas
-        $proveedores = $proveedores->sortByDesc('saldo_neto');
-
-       return view('proveedores.index',compact('proveedores'));
-    }
+    return view('proveedores.index', compact('proveedores'));
+}
 
     /**
      * Show the form for creating a new resource.

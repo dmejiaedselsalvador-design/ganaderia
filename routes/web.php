@@ -44,18 +44,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/compras/nuevo-ganado',[AnimalController::class,'nuevoGanado'])->name('compras.nuevo.ganado');
     Route::get('/ganado/perfil', [AnimalController::class, 'perfil'])->name('compras.ganado.perfil');
     Route::post('compras/registro-ganado',[AnimalController::class, 'store'])->name('compras.ganado.store');
-    Route::get('/adelantos/proveedores',[AdelantoController::class,'index'])->name('adelantos.proveedores.index');
+
     Route::get('proveedores',[ProveedorController::class,'index'])->name('proveedores.index');
     Route::get('proveedores/create',[ProveedorController::class, 'create'])->name('proveedor.create');
     Route::post('proveedores',[ProveedorController::class, 'store'])->name('proveedor.nuevo');
 
+
+  Route::get('/adelantos/proveedores/{proveedor}',[AdelantoController::class,'create'])->name('adelantos.proveedores.index');
+  Route::post('/adelantos/proveedores/{proveedor}',[AdelantoController::class,'store'])->name('adelantos.proveedores.store');
 });
 
-Route::get('/test-moneda', function () {
-    // Probamos con una cantidad de ejemplo (ej. Venta de ganado)
-    $montoEjemplo = 500;
 
-    return formatoPesos($montoEjemplo);
-});
 
 require __DIR__.'/auth.php';
