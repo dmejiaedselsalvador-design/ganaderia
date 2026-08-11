@@ -42,7 +42,7 @@
                                     </td>
                                       <td class="p-3.5 text-slate-600">{{ $proveedor->nombreContacto }}</td>
                                       <td>
-                                   {{ formatoPesos($proveedor->total_adelanto ?? 0, 2) }}
+                                   {{ formatoPesos($proveedor->saldo_neto ?? 0, 2) }}
 
                                       </td>
 

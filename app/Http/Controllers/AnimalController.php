@@ -6,6 +6,8 @@ use App\Models\Ganado\ProveedorGanado;
 use App\Models\Ganado\FacturaGanado;
 use App\Models\Ganado\Ganado;
 use App\Models\Ganado\Adelanto;
+use App\Models\Ganado\AdelantoFactura;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -115,11 +117,11 @@ class AnimalController extends Controller
                 $adelanto->save();
 
                 // Registramos el cruce en la tabla pivote (si la implementaste)
-                // AdelantoFactura::create([
-                //     'adelanto_id' => $adelanto->id,
-                //     'factura_id' => $factura->id,
-                //     'montoAplicado' => $montoAUsar
-                // ]);
+                 AdelantoFactura::create([
+                     'adelanto_id' => $adelanto->id,
+                     'factura_id' => $factura->id,
+                     'montoAplicado' => $montoAUsar
+                 ]);
 
                 $saldoPendienteFactura -= $montoAUsar;
             }
