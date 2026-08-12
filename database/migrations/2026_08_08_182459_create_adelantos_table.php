@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('dinero', 12, 2); // Si es dinero, el monto; si es concentrado, el valor equivalente en dinero o la cantida
           //  $table->decimal('montoDisponible', 12, 2);
             $table->date('date'); // Fecha del adelanto
-            $table->enum('status', ['disponible', 'parcial', 'pagado'])->default('disponible');
+            $table->enum('status', ['entregado', 'parcial-pagado', 'pagado-completo'])->default('entregado');
             $table->timestamps();
         });
     }
