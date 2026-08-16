@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
 
+use App\Http\Controllers\Proveedor\FacturasProveedorController;
 use App\Http\Controllers\ProveedorController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +49,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('proveedores',[ProveedorController::class,'index'])->name('proveedores.index');
     Route::get('proveedores/create',[ProveedorController::class, 'create'])->name('proveedor.create');
     Route::post('proveedores',[ProveedorController::class, 'store'])->name('proveedor.nuevo');
+    Route::get('proveedor/edit/{id}',[ProveedorController::class, 'edit'])->name('proveedor.editar');
+    Route::put('proveedor/update/{id}', [ProveedorController::class, 'update'])->name('proveedor.update');
+    Route::get('proveedores/facturas',[FacturasProveedorController::class, 'index'])->name('proveedores.facturas.index');
+
+    Route::get('proveedores/facturas/crear',[FacturasProveedorController::class, 'crearFactura'])->name('proveedores.facturas.crear');
+    Route::post('proveedores/facturas/store',[FacturasProveedorController::class, 'storeFactura'])->name('proveedores.facturas.ganado.store');
+   // Route::get('proveedores/facturas/editar/{id}',[FacturasProveedor
 
 
   Route::get('/adelantos/proveedores/{proveedor}',[AdelantoController::class,'create'])->name('adelantos.proveedores.index');

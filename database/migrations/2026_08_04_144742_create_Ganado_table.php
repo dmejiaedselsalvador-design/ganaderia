@@ -25,7 +25,7 @@ return new class extends Migration
             $table->decimal('pesoActual', 8, 2)->nullable(); // Peso al nacer o ingreso en kg
             $table->decimal('ultimoPeso', 8, 2); // Último peso registrado en báscula (kg)
             $table->decimal('precioCompra', 10, 2)->nullable(); // Costo de compra en pesos (MXN)
-
+            $table->decimal('precioGanadoTotal', 12, 2)->storedAs('ultimoPeso * precioCompra')->nullable();
             // Fechas y Estado
             $table->date('fechaCompra')->nullable(); // Fecha de adquisición
             $table->enum('status', ['Activo', 'Vendido', 'Muerto', 'Exportado'])->default('Activo'); // Estado actual

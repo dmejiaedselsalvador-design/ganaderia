@@ -12,7 +12,7 @@
                         <p class="text-sm text-slate-500">Control de aretes SINIIGA, pesos en báscula y estatus actual.
                         </p>
                     </div>
-                    <a href="{{ route('compras.nuevo.ganado') }}"
+                    <a href="{{ route('proveedores.facturas.crear') }}"
                         class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-plus"></i> Registrar Animal
                     </a>

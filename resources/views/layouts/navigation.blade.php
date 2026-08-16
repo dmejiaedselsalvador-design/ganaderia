@@ -17,7 +17,7 @@
 
     <!-- Menú de Usuario y Ajustes (Dropdown original de Laravel adaptado) -->
     <div class="flex items-center gap-3">
-        <span class="text-sm font-medium text-slate-600 hidden sm:inline">Rancho San José</span>
+        <span class="text-sm font-medium text-slate-600 hidden sm:inline">Rancho Tauriono</span>
 
         <div class="relative" x-data="{ dropdownOpen: false }">
             <button @click="dropdownOpen = !dropdownOpen" class="flex items-center gap-2 focus:outline-none">

@@ -15,8 +15,7 @@ return new class extends Migration
          $table->id();
          $table->foreignId('proveedorID')->constrained('proveedorGanado')->cascadeOnDelete();
          $table->date('fechaFactura');
-         $table->decimal('montoTotal', 12, 2);
-         $table->string('numeroFactura')->nullable(); // Número de factura o recibo
+         $table->string('numeroFactura')->unique(); // Número de factura o recibo
          $table->text('notas')->nullable();
          $table->enum('estado',['pendiente','pagada','proceso','parcial','anulada'])->default('pendiente');
           $table->timestamps();

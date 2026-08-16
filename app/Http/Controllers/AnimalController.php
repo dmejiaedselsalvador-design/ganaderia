@@ -28,11 +28,25 @@ class AnimalController extends Controller
         return view('animals.perfil');
     }
 
-    public function nuevoGanado()
-    {
-       $proveedores = ProveedorGanado::all();
 
-        return view('compras.nuevoGanado',compact('proveedores'));
+
+    public function nuevoGanado(Request $request)
+    {
+      $factura = null;
+    $proveedorSeleccionado = null;
+
+    // Si viene desde la creación de factura
+    if ($request->filled('factura_id')) {
+        $factura = FacturaGanado::with('proveedor')->find($request->factura_id);
+        if ($factura) {
+            $proveedorSeleccionado = $factura->proveedor;
+        }
+    }
+    // Si viene desde el botón de la tabla con ?proveedor_id=X
+    elseif ($request->filled('proveedor_id')) {
+        $proveedorSeleccionado = ProveedorGanado::find($request->proveedor_id);
+    }
+        return view('compras.nuevoGanado',compact('factura','proveedorSeleccionado'));
     }
 
     /**

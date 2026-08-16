@@ -6,12 +6,12 @@
 
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-800">Catálogo de Vendedores de Ganado</h3>
-                        <p class="text-sm text-slate-500">Lista de Vendedores y Balance de Cuentas</p>
+                        <h3 class="text-lg font-bold text-slate-800">Facturas de Proveedores</h3>
+                        <p class="text-sm text-slate-500">Lista de Facturas y Balance de Cuentas</p>
                     </div>
-                    <a href="{{ route('proveedor.create') }}"
+                    <a href="{{ route('proveedores.facturas.crear') }}"
                         class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 shadow transition">
-                        <i class="fa-solid fa-plus"></i> Crear Nuevo Proveedor
+                        <i class="fa-solid fa-plus"></i> Crear Nueva Factura
                     </a>
                 </div>
 
@@ -20,9 +20,9 @@
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200">
                                 <th class="p-3.5">Proveedor / Contacto</th>
-                                <th class="p-3.5">Adelantos Otorgados</th>
-                                <th class="p-3.5">Ganado Recibido (Deuda)</th>
-                                <th class="p-3.5">Liquidación / Saldo Neto</th>
+                                <th class="p-3.5"># Factura</th>
+                                <th class="p-3.5">Cantidad Ganado</th>
+                                <th class="p-3.5">Monto a pagar</th>
                                 <th class="p-3.5">Estatus</th>
                                 <th class="p-3.5 text-center">Acciones</th>
                             </tr>
@@ -33,23 +33,27 @@
 
                                     <!-- 1. Proveedor y botón de acción rápido -->
                                     <td class="p-3.5">
-                                        <div class="font-bold text-slate-800">{{ $proveedor->nombreProveedor }}</div>
-                                        <div class="text-xs text-slate-500 mb-2">{{ $proveedor->nombreContacto ?? 'Sin contacto' }}</div>
+                                        <div class="font-bold text-slate-800">{{ $proveedor->proveedorData->nombreContacto }}</div>
+                                        <div class="text-xs text-slate-500 mb-2">{{ $proveedor->proveedorData->telefono ?? 'Sin contacto' }}</div>
 
-                                        <a href="{{ route('adelantos.proveedores.index', $proveedor->id) }}"
-                                            class="inline-flex items-center px-3 py-1 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                            Crear Adelanto
-                                        </a>
+                                       <a href="{{ route('compras.nuevo.ganado', ['proveedor_id' => $proveedor->id]) }}"
+    class="inline-flex items-center px-3 py-1 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition ease-in-out duration-150">
+    + Agregar Ganado
+</a>
                                     </td>
 
-                                    <!-- 2. Total Adelantos (adt.total_adelantos) -->
+                                    <!-- 2. actuas -->
                                     <td class="p-3.5 font-medium text-slate-700">
-                                        {{ formatoPesos($proveedor->total_adelantos ?? 0, 2) }}
+                                        {{ ($proveedor->numeroFactura ?? 'N/A') }}
+                                    </td>
+
+                                     <td class="p-3.5 font-medium text-slate-700">
+                                        {{ ($proveedor->cantidad_ganado ?? 'N/A') }}
                                     </td>
 
                                     <!-- 3. Total Facturado de Ganado (fac.total_facturas) -->
                                     <td class="p-3.5 font-medium text-slate-700">
-                                        {{ formatoPesos($proveedor->total_facturas ?? 0, 2) }}
+                                        {{ formatoPesos($proveedor->montoTotal ?? 0, 2) }}
                                     </td>
 
                                     <!-- 4. Saldo / Liquidación Neta -->

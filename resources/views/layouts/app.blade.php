@@ -28,32 +28,52 @@
                 <span>GanaderíaSystem</span>
             </div>
 
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <!-- Enlace al Dashboard -->
-                <a href="{{ route('dashboard') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-emerald-600 text-white font-medium' : 'hover:bg-slate-800 text-slate-300' }} transition">
-                    <i class="fa-solid fa-chart-pie"></i> Dashboard
-                </a>
+           <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+    <!-- Enlace al Dashboard -->
+    <a href="{{ route('dashboard') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-emerald-600 text-white font-medium' : 'hover:bg-slate-800 text-slate-300' }} transition">
+        <i class="fa-solid fa-chart-pie"></i> Dashboard
+    </a>
 
-                   <!-- aca estan los vendedores de los ganados-->
-                <a href="{{ route('proveedores.index') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
-                    <i class="fa-solid fa-list-check"></i> Vendedores
-                </a>
+    <!-- Menú Desplegable de Proveedores / Vendedores -->
+    <div x-data="{ open: {{ request()->routeIs('proveedores.*') ? 'true' : 'false' }} }" class="space-y-1">
+        <!-- Botón Principal del Desplegable -->
+        <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-truck-field"></i>
+                <span>Proveedores</span>
+            </div>
+            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
+        </button>
 
-                <!-- Enlace de Inventario (Ejemplo de ruta personalizada) -->
-                <a href="{{ route('compras.ganado.index') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
-                    <i class="fa-solid fa-list-check"></i> Compras de Ganado
-                </a>
+        <!-- Submenú / Opciones desplegables -->
+        <div x-show="open" x-cloak class="pl-9 space-y-1">
+            <!-- Opción: Vendedores -->
+            <a href="{{ route('proveedores.index') }}" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg {{ request()->routeIs('proveedores.index') ? 'bg-emerald-600 text-white font-medium' : 'hover:bg-slate-800 text-slate-400' }} text-sm transition">
+                <i class="fa-solid fa-list-check text-xs"></i> Vendedores
+            </a>
 
-                <!-- Enlace de Pesajes -->
-                <a href="{{ route('compras.ganado.perfil') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
-                    <i class="fa-solid fa-weight-scale"></i> Perfil
-                </a>
+            <!-- Opción: Facturas (Ejemplo de ruta) -->
+            <a href="{{ route('proveedores.facturas.index') }}" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg {{ request()->routeIs('proveedores.facturas.index') ? 'bg-emerald-600 text-white font-medium' : 'hover:bg-slate-800 text-slate-400' }} text-sm transition">
+                <i class="fa-solid fa-file-invoice text-xs"></i> Facturas
+            </a>
+        </div>
+    </div>
 
-                <!-- Enlace de Exportación -->
-                <a href="#" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
-                    <i class="fa-solid fa-file-invoice-dollar"></i> Exportación USA
-                </a>
-            </nav>
+    <!-- Enlace de Compras de Ganado -->
+    <a href="{{ route('compras.ganado.index') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
+        <i class="fa-solid fa-cart-shopping"></i> Compras de Ganado
+    </a>
+
+    <!-- Enlace de Perfil -->
+    <a href="{{ route('compras.ganado.perfil') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
+        <i class="fa-solid fa-weight-scale"></i> Perfil
+    </a>
+
+    <!-- Enlace de Exportación -->
+    <a href="#" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 transition">
+        <i class="fa-solid fa-file-invoice-dollar"></i> Exportación USA
+    </a>
+</nav>
 
             <div class="p-4 bg-slate-950 text-xs text-slate-500 text-center">
                 Módulo México - EE.UU. v1.0

@@ -4,8 +4,8 @@ namespace App\Models\Ganado;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class FacturaGanado extends Model
 {
@@ -33,10 +33,19 @@ class FacturaGanado extends Model
     /**
      * Relación: Una factura pertenece a un proveedor.
      */
-    public function proveedor(): BelongsTo
+   public function proveedor()
+{
+    return $this->belongsTo(ProveedorGanado::class, 'proveedorID', 'id');
+}
+
+      public function proveedorData()
     {
-        return $this->belongsTo(ProveedorGanado::class, 'proveedorID');
+        return $this->belongsTo(ProveedorGanado::class, 'proveedorID', 'id');
     }
+
+
+
+
 
     /**
      * Relación: Una factura agrupa a muchos animales (ganado).
@@ -44,5 +53,29 @@ class FacturaGanado extends Model
     public function animales(): HasMany
     {
         return $this->hasMany(Ganado::class, 'facturaID');
+    }
+    public function adelantos(): BelongsToMany
+    {
+        return $this->belongsToMany(Adelanto::class, 'adelanto_factura', 'factura_id', 'adelanto_id')
+                    ->withPivot('montoAplicado')
+                    ->withTimestamps();
+    }
+
+    // ACCESOR: Monto Total calculado del ganado
+    public function getMontoTotalAttribute()
+    {
+        return $this->animales->sum('precioGanadoTotal');
+    }
+
+    // ACCESOR: Total de adelantos aplicados
+    public function getTotalAdelantosAplicadosAttribute()
+    {
+        return $this->adelantos->sum('pivot.montoAplicado');
+    }
+
+    // ACCESOR: Saldo pendiente real
+    public function getSaldoPendienteAttribute()
+    {
+        return max(0, $this->montoTotal - $this->total_adelantos_aplicados);
     }
 }
