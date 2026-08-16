@@ -7,6 +7,9 @@ use App\Models\Ganado\FacturaGanado;
 use App\Models\Ganado\ProveedorGanado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
 
 class FacturasProveedorController extends Controller
 {
@@ -86,4 +89,52 @@ class FacturasProveedorController extends Controller
         ->withInput();
 }
 }
+
+public function liquidar($id)
+{
+    // 1. Buscamos la factura y cargamos la relación con el proveedor
+    $factura = FacturaGanado::with(['proveedor', 'animales'])->findOrFail($id);
+
+    $proveedor = $factura->proveedor;
+
+    // 2. Protegemos los adelantos asegurándonos de que el proveedor y la relación existan
+    $totalAdelantos = 0;
+    if ($proveedor && $proveedor->adelantos) {
+        $totalAdelantos = $proveedor->adelantos->sum('dinero');
+    }
+
+    // 3. Sumamos los animales de la factura de forma segura
+    $totalGanado = $factura->animales ? $factura->animales->sum('precioGanadoTotal') : 0;
+
+    $saldoFinal = $totalAdelantos - $totalGanado;
+        $montoAbsoluto = abs($saldoFinal);
+
+    return view('proveedores.facturas.liquidar', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto'));
+}
+
+public function generarPdf($id)
+{
+    $factura = FacturaGanado::with(['proveedor', 'animales'])->findOrFail($id);
+    $proveedor = $factura->proveedor;
+
+    $totalAdelantos = $proveedor && $proveedor->adelantos ? $proveedor->adelantos->sum('dinero') : 0;
+    $totalGanado = $factura->animales ? $factura->animales->sum('precioGanadoTotal') : 0;
+    $saldoFinal = $totalAdelantos - $totalGanado;
+    $montoAbsoluto = abs($saldoFinal);
+
+
+
+    // Cargamos una vista específica para el PDF (o puedes usar la misma adaptada)
+    $pdf = Pdf::loadView('reportes.liquidacionProveedores', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto'));
+
+    // Opciones de papel (opcional: 'letter' o 'a4')
+    $pdf->setPaper('letter', 'portrait');
+
+    // Descargar el PDF directamente:
+  //  return $pdf->download('liquidacion-factura-' . $factura->id . '.pdf');
+
+    // O si prefieres mostrarlo en el navegador en lugar de descargarlo de golpe:
+     return $pdf->stream('liquidacion-factura-' . $factura->id . '.pdf');
+}
+
 }
