@@ -66,9 +66,8 @@ public function store(Request $request)
 
     // 1. Validar los datos generales del formulario y el array de animales
     $request->validate([
-        'supplier_id'          => 'required|exists:proveedorGanado,id',
-        'purchase_date'        => 'required|date',
-        'invoice_number'       => 'nullable|string|max:255',
+
+       'factura-id'            => 'required|numeric',
         'animals'              => 'required|array|min:1',
         'animals.*.tag_number' => 'required|string|distinct|unique:ganado,areteID',
         'animals.*.gender'     => 'required|in:Macho,Hembra',
@@ -86,20 +85,20 @@ public function store(Request $request)
     try {
         // Crear el lote o la compra general de ganado según tu estructura de BD
         // ...
-  $montoTotal = collect($request->animals)->sum('total');
+ // $montoTotal = collect($request->animals)->sum('total');
 
-    $factura = FacturaGanado::create([
-            'proveedorID'   => $request->supplier_id,
-            'fechaFactura'  => $request->purchase_date,
-            'numeroFactura' => $request->invoice_number,
-            'montoTotal'    => $montoTotal,
-            'estado'        => 'pendiente', // o el valor por defecto que prefieras
-        ]);
+   // $factura = FacturaGanado::create([
+     //       'proveedorID'   => $request->supplier_id,
+       //     'fechaFactura'  => $request->purchase_date,
+        //    'numeroFactura' => $request->invoice_number,
+          //  'montoTotal'    => $montoTotal,
+            //'estado'        => 'pendiente', // o el valor por defecto que prefieras
+       // ]);
 
   // 4. SEGUNDO: Recorrer el arreglo y crear cada animal vinculado a la factura recién creada
         foreach ($request->animals as $animalData) {
             Ganado::create([
-                'facturaID'    => $factura->id, // Aquí vinculamos el ID de la factura creada
+                'facturaID'    => $request['factura-id'], // Aquí vinculamos el ID de la factura creada
                 'areteID'      => $animalData['tag_number'],
                 'raza'         => $animalData['breed'] ?? null,
                 'genero'       => $animalData['gender'],

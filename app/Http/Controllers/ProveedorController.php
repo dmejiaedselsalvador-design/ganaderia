@@ -14,27 +14,30 @@ class ProveedorController extends Controller
      */
 public function index()
 {
-$proveedores = ProveedorGanado::query()
-    ->where('estado', 'activo')
-    ->withSum('adelantos as total_adelantos', 'dinero')
-    ->withSum('ganadoDirecto as total_facturas', 'precioCompra') // Apunta a la columna correcta
-    ->get();
+    $proveedores = ProveedorGanado::query()
+        ->where('estado', 'activo')
+        ->withSum('adelantos as total_adelantos', 'dinero')
+        ->withSum('ganadoDirecto as total_facturas', 'precioGanadoTotal')
+        ->get();
 
-    // Calcular el saldo neto de liquidación por proveedor
+    // Calcular los totales y el saldo neto de liquidación por proveedor
     $proveedores->each(function($proveedor) {
-        $totalAdelantos = $proveedor->total_adelantos ?? 0;
-        $totalFacturas = $proveedor->total_facturas ?? 0;
+        // Asegurarnos de que sean números flotantes/enteros y no null
+        $proveedor->total_adelantos = (float) ($proveedor->total_adelantos ?? 0);
+        $proveedor->total_facturas = (float) ($proveedor->total_facturas ?? 0);
 
-        // Adelantos dados menos facturas de ganado (saldo neto)
-        $proveedor->saldo_liquidacion = $totalAdelantos - $totalFacturas;
+        // Si te referías a un total general acumulado o al saldo:
+        $proveedor->saldo_liquidacion = $proveedor->total_adelantos - $proveedor->total_facturas;
+
+        // Si necesitas específicamente una variable llamada precioGanadoTotal:
+        $proveedor->precioGanadoTotal = $proveedor->total_facturas;
     });
 
-    // Opcional: ordenar por mayor saldo
+    // Ordenar por mayor saldo
     $proveedores = $proveedores->sortByDesc('saldo_liquidacion');
 
     return view('proveedores.index', compact('proveedores'));
 }
-
     /**
      * Show the form for creating a new resource.
      */

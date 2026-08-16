@@ -44,6 +44,8 @@
                             <div class="mt-1 text-gray-900 dark:text-white font-semibold">
                                 {{ $factura->numeroFactura ?? 'No factura' }}
                             </div>
+
+                            <input  name="factura-id" id="factura-id" value="{{ $factura->id }}" type="hidden">
                         </div>
 
                         <!-- Fecha de Compra -->
