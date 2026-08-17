@@ -30,7 +30,7 @@
 
            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
     <!-- Enlace al Dashboard -->
-    <a href="{{ route('dashboard') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-emerald-600 text-white font-medium' : 'hover:bg-slate-800 text-slate-300' }} transition">
+    <a href="{{ route('welcome') }}" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-emerald-600 text-white font-medium' : 'hover:bg-slate-800 text-slate-300' }} transition">
         <i class="fa-solid fa-chart-pie"></i> Dashboard
     </a>
 

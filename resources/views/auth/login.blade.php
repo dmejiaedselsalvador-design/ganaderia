@@ -29,21 +29,9 @@
         <x-input-error :messages="$errors->get('password')" class="mt-2" />
     </div>
 
-    <!-- Remember Me -->
-    <div class="block mt-4">
-        <label for="remember_me" class="inline-flex items-center">
-            <input id="remember_me" type="checkbox" class="rounded border-emerald-300 text-emerald-700 shadow-sm focus:ring-emerald-500" name="remember">
-            <span class="ml-2 text-sm text-emerald-900">{{ __('Recordar mi cuenta') }}</span>
-        </label>
-    </div>
 
-    <!-- Acciones -->
-    <div class="flex items-center justify-between pt-2">
-        @if (Route::has('password.request'))
-            <a class="underline text-sm text-emerald-800 hover:text-emerald-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500" href="{{ route('password.request') }}">
-                {{ __('¿Olvidaste tu contraseña?') }}
-            </a>
-        @endif
+
+
 
         <x-primary-button class="bg-emerald-700 hover:bg-emerald-800 focus:bg-emerald-900 active:bg-emerald-950 focus:ring-emerald-500 transition-colors px-5 py-2.5 rounded-xl text-white font-semibold shadow-md ml-3">
             🚪 {{ __('Ingresar') }}
