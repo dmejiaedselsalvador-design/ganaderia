@@ -31,90 +31,62 @@
         </div>
     </div>
 
-    <!-- Preparación de colecciones -->
+    <!-- Preparación de colecciones por categorías -->
     @php
-        $machos = $factura->animales->where('genero', 'Macho');
-        $hembras = $factura->animales->where('genero', 'Hembra');
+        $categoriasPosibles = ['Becerro', 'Torete', 'Toro', 'Becerra', 'Vaquilla', 'Vaca'];
         $adelantosProveedor = $proveedor->adelantos ?? collect();
     @endphp
 
-    <!-- Tabla de Machos (Se muestra SOLO si existen registros) -->
-    @if($machos->count() > 0)
-    <div class="mb-8">
-        <h2 class="text-lg font-bold text-slate-800 mb-3 uppercase tracking-wide border-b-2 border-slate-200 pb-2">Ganado Machos</h2>
-        <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
-            <table class="min-w-full bg-white text-left text-sm">
-                <thead class="bg-slate-900 text-white uppercase text-xs tracking-wider">
-                    <tr>
-                        <th class="py-3 px-4">Arete ID</th>
-                        <th class="py-3 px-4">Peso (Kg)</th>
-                        <th class="py-3 px-4 text-right">Precio Unitario</th>
-                        <th class="py-3 px-4 text-right">Precio Total</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @foreach($machos as $animal)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-3 px-4 font-bold text-slate-700">{{ $animal->areteID }}</td>
-                            <td class="py-3 px-4 text-slate-600">{{ $animal->ultimoPeso ?? 'N/D' }}</td>
-                            <td class="py-3 px-4 text-right text-slate-600">${{ number_format($animal->precioCompra, 2) }}</td>
-                            <td class="py-3 px-4 text-right font-semibold text-slate-800">${{ number_format($animal->precioGanadoTotal, 2) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-                <tfoot class="bg-slate-100 font-bold text-slate-800 border-t border-slate-200">
-                    <tr>
-                        <td colspan="2" class="py-2 px-4 text-right text-xs uppercase text-slate-500">Promedio Machos:</td>
-                        <td colspan="2" class="py-2 px-4 text-right font-normal text-slate-700">${{ number_format($machos->avg('precioCompra'), 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="py-2 px-4 text-right text-xs uppercase text-slate-700">Precio Total Machos:</td>
-                        <td class="py-2 px-4 text-right text-emerald-700">${{ number_format($machos->sum('precioGanadoTotal'), 2) }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-    @endif
+    <!-- Bucle dinámico para mostrar una tabla por cada categoría con animales -->
+    @foreach($categoriasPosibles as $cat)
+        @php
+            $animalesCat = $factura->animales->where('categoria', $cat);
+        @endphp
 
-    <!-- Tabla de Hembras (Se muestra SOLO si existen registros) -->
-    @if($hembras->count() > 0)
-    <div class="mb-8">
-        <h2 class="text-lg font-bold text-slate-800 mb-3 uppercase tracking-wide border-b-2 border-slate-200 pb-2">Ganado Hembras</h2>
-        <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
-            <table class="min-w-full bg-white text-left text-sm">
-                <thead class="bg-slate-900 text-white uppercase text-xs tracking-wider">
-                    <tr>
-                        <th class="py-3 px-4">Arete ID</th>
-                        <th class="py-3 px-4">Peso (Kg)</th>
-                        <th class="py-3 px-4 text-right">Precio Unitario</th>
-                        <th class="py-3 px-4 text-right">Precio Total</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @foreach($hembras as $animal)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-3 px-4 font-bold text-slate-700">{{ $animal->areteID }}</td>
-                            <td class="py-3 px-4 text-slate-600">{{ $animal->ultimoPeso ?? 'N/D' }}</td>
-                            <td class="py-3 px-4 text-right text-slate-600">${{ number_format($animal->precioCompra, 2) }}</td>
-                            <td class="py-3 px-4 text-right font-semibold text-slate-800">${{ number_format($animal->precioGanadoTotal, 2) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-                <tfoot class="bg-slate-100 font-bold text-slate-800 border-t border-slate-200">
-                    <tr>
-                        <td colspan="2" class="py-2 px-4 text-right text-xs uppercase text-slate-500">Promedio Hembras:</td>
-                        <td colspan="2" class="py-2 px-4 text-right font-normal text-slate-700">${{ number_format($hembras->avg('precioCompra'), 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="py-2 px-4 text-right text-xs uppercase text-slate-700">Precio Total Hembras:</td>
-                        <td class="py-2 px-4 text-right text-emerald-700">${{ number_format($hembras->sum('precioGanadoTotal'), 2) }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-    @endif
+        @if($animalesCat->count() > 0)
+            @php
+                $esMacho = in_array($cat, ['Becerro', 'Torete', 'Toro']);
+                $emojiIcono = $esMacho ? '🐂' : '🐄';
+            @endphp
+            <div class="mb-8">
+                <h2 class="text-lg font-bold text-slate-800 mb-3 uppercase tracking-wide border-b-2 border-slate-200 pb-2">
+                    {{ $emojiIcono }} Tabla de {{ $cat }}s
+                </h2>
+                <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                    <table class="min-w-full bg-white text-left text-sm">
+                        <thead class="bg-slate-900 text-white uppercase text-xs tracking-wider">
+                            <tr>
+                                <th class="py-3 px-4">Arete ID</th>
+                                <th class="py-3 px-4">Peso (Kg)</th>
+                                <th class="py-3 px-4 text-right">Precio Unitario</th>
+                                <th class="py-3 px-4 text-right">Precio Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            @foreach($animalesCat as $animal)
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 px-4 font-bold text-slate-700">{{ $animal->areteID }}</td>
+                                    <td class="py-3 px-4 text-slate-600">{{ $animal->ultimoPeso ?? 'N/D' }} kg</td>
+                                    <td class="py-3 px-4 text-right text-slate-600">${{ number_format($animal->precioCompra, 2) }}</td>
+                                    <td class="py-3 px-4 text-right font-semibold text-slate-800">${{ number_format($animal->precioGanadoTotal, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="bg-slate-100 font-bold text-slate-800 border-t border-slate-200">
+                            <tr>
+                                <td colspan="2" class="py-2 px-4 text-right text-xs uppercase text-slate-500">Promedio {{ $cat }}:</td>
+                                <td colspan="2" class="py-2 px-4 text-right font-normal text-slate-700">${{ number_format($animalesCat->avg('precioCompra'), 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="py-2 px-4 text-right text-xs uppercase text-slate-700">Total {{ $cat }}s:</td>
+                                <td class="py-2 px-4 text-right text-emerald-700">${{ number_format($animalesCat->sum('precioGanadoTotal'), 2) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Tabla de Anticipos / Dinero Entregado al Proveedor -->
     <div class="mb-8">
@@ -159,46 +131,30 @@
                 <span class="text-blue-600 font-bold">${{ number_format($totalAdelantos, 2) }}</span>
             </div>
             <div class="flex justify-between py-2 text-sm border-t border-slate-200">
-                <span class="text-slate-600">Total valor ganado recibido:</span>
+                <span class="text-slate-600">Total valor ganado:</span>
                 <span class="text-red-600 font-bold">-${{ number_format($totalGanado, 2) }}</span>
             </div>
         </div>
     </div>
 
-    <div class="p-6 border-2
-        @if(($totalGanado ?? 0) == 0 && ($totalAdelantos ?? 0) > 0) border-red-500 bg-red-50/70
-        @elseif(($saldoFinal ?? 0) >= 0) border-emerald-500 bg-emerald-50/70
-        @else border-red-500 bg-red-50/70 @endif
-        rounded-xl shadow-md flex flex-col justify-center text-center">
+    <!-- Caja de resultado basada en $esDeudaProveedor -->
+    <div class="p-6 border-2 {{ $esDeudaProveedor ? 'border-red-500 bg-red-50/70' : 'border-emerald-500 bg-emerald-50/70' }} rounded-xl shadow-md flex flex-col justify-center text-center">
 
-        <h3 class="font-bold text-sm uppercase
-            @if(($totalGanado ?? 0) == 0 && ($totalAdelantos ?? 0) > 0) text-red-800
-            @else text-emerald-800 @endif
-            tracking-wider mb-1">
-            @if(($totalGanado ?? 0) == 0 && ($totalAdelantos ?? 0) > 0) Deuda del Proveedor (Anticipo sin aplicar) @else Total a Liquidar @endif
+        <h3 class="font-bold text-sm uppercase {{ $esDeudaProveedor ? 'text-red-800' : 'text-emerald-800' }} tracking-wider mb-1">
+            {{ $esDeudaProveedor ? 'Deuda del Proveedor' : 'Total a Liquidar' }}
         </h3>
 
-        <div class="text-4xl font-black
-            @if(($totalGanado ?? 0) == 0 && ($totalAdelantos ?? 0) > 0) text-red-900
-            @else text-emerald-900 @endif
-            my-1">
+        <div class="text-4xl font-black {{ $esDeudaProveedor ? 'text-red-900' : 'text-emerald-900' }} my-1">
             ${{ number_format($montoAbsoluto, 2) }}
         </div>
 
-        <p class="text-xs font-bold uppercase tracking-wide mt-1
-            @if(($totalGanado ?? 0) == 0 && ($totalAdelantos ?? 0) > 0) text-red-700
-            @elseif(($saldoFinal ?? 0) > 0) text-emerald-700
-            @elseif(($saldoFinal ?? 0) < 0) text-red-700
-            @else text-slate-600 @endif">
-
-            @if(($totalGanado ?? 0) == 0 && ($totalAdelantos ?? 0) > 0)
-                El proveedor te debe este anticipo en dinero
-            @elseif(($saldoFinal ?? 0) > 0)
-                A favor del proveedor
-            @elseif(($saldoFinal ?? 0) < 0)
-                Saldo pendiente (Deuda del proveedor)
+        <p class="text-xs font-bold uppercase tracking-wide mt-1 {{ $esDeudaProveedor ? 'text-red-700' : 'text-emerald-700' }}">
+            @if($esDeudaProveedor)
+                El proveedor tiene un saldo pendiente con la empresa
+            @elseif($montoAbsoluto > 0)
+                A favor del proveedor (Pago pendiente)
             @else
-                Cuenta Saldada / Sin adeudos pendientes
+                Cuenta Saldada / Sin adeudos
             @endif
         </p>
     </div>
@@ -207,11 +163,11 @@
     <!-- Botones de Acción -->
     <div class="mt-8 pt-4 border-t border-slate-200 flex gap-4">
         <a href="{{ url()->previous() }}" class="px-5 py-2.5 bg-slate-500 hover:bg-slate-600 text-white font-medium rounded-lg transition shadow-sm">Volver</a>
-       <a href="{{ route('proveedores.facturas.liquidar.generarPdf', $factura->id) }}"
-   id="btnGenerarPdf"
-   class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition shadow-md flex items-center gap-2">
-    Confirmar Pago y Generar PDF
-</a>
+        <a href="{{ route('proveedores.facturas.liquidar.generarPdf', $factura->id) }}"
+           id="btnGenerarPdf"
+           class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition shadow-md flex items-center gap-2">
+            Confirmar Pago y Generar PDF
+        </a>
     </div>
 
 </div>
@@ -219,7 +175,7 @@
 <!-- Script de SweetAlert2 -->
 <script>
     document.getElementById('btnGenerarPdf').addEventListener('click', function(e) {
-        e.preventDefault(); // Evita que abra el enlace inmediatamente
+        e.preventDefault();
         const urlPdf = this.getAttribute('href');
 
         Swal.fire({
@@ -227,16 +183,13 @@
             text: "¿Deseas confirmar el pago y generar el comprobante PDF?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#059669', // Color esmeralda acorde a tu diseño
-            cancelButtonColor: '#64748b',   // Color pizarra para cancelar
+            confirmButtonColor: '#059669',
+            cancelButtonColor: '#64748b',
             confirmButtonText: 'Sí, confirmar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Abre el PDF en una pestaña nueva
                 window.open(urlPdf, '_blank');
-
-                // Opcional: Si deseas que la página también recargue o haga algo después de confirmar, puedes agregarlo aquí
             }
         });
     });

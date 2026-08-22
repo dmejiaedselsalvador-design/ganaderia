@@ -15,7 +15,7 @@ class DashboardController extends Controller
         $pesoGanados = Ganado::average('ultimoPeso');
 
         $ganadoExportar = Ganado::where('status', 'activo')->where('ultimoPeso', '>', 200)->count();
-        $distribucionSexo = Ganado::where('status', 'activo')->select('genero', \DB::raw('count(*) as total'))->groupBy('genero')->get();
+        $distribucionSexo = Ganado::where('status', 'activo')->select('categoria', \DB::raw('count(*) as total'))->groupBy('categoria')->get();
 
         $tendenciaRaw = Ganado::where('status', 'activo')
         ->select(

@@ -19,7 +19,10 @@ return new class extends Migration
             // Identificación del animal
             $table->string('areteID')->unique(); // Número de arete oficial (ej. SINIIGA o local)
             $table->string('raza')->nullable(); // Raza (ej. Angus, Hereford, Brahman, Cruzado)
-            $table->enum('genero', ['Macho', 'Hembra']); // Sexo
+            $table->enum('categoria', ['Becerro', 'Becerra', 'Vaca', 'Vaquilla', 'Toro', 'Torete']);
+
+    // El sexo se llena solo en la base de datos
+    $table->enum('sexo', ['Macho', 'Hembra']);
 
             // Métricas y pesos (Guardados como números puros)
             $table->decimal('pesoActual', 8, 2)->nullable(); // Peso al nacer o ingreso en kg

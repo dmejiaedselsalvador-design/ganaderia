@@ -62,48 +62,32 @@ class AnimalController extends Controller
      */
 public function store(Request $request)
 {
-
-
     // 1. Validar los datos generales del formulario y el array de animales
     $request->validate([
-
-       'factura-id'            => 'required|numeric',
-        'animals'              => 'required|array|min:1',
-        'animals.*.tag_number' => 'required|string|distinct|unique:ganado,areteID',
-        'animals.*.gender'     => 'required|in:Macho,Hembra',
-        'animals.*.weight'     => 'required|numeric|min:0.01',
-        'animals.*.unit_price' => 'required|numeric|min:0',
-        'animals.*.total'      => 'required|numeric|min:0',
-        'animals.*.breed'      => 'nullable|string|max:255',
-        'animals.*.observation'=> 'nullable|string|max:255',
+        'factura-id'             => 'required|numeric',
+        'animals'                => 'required|array|min:1',
+        'animals.*.tag_number'   => 'required|string|distinct|unique:ganado,areteID',
+        'animals.*.category'     => 'required|in:Becerro,Becerra,Vaca,Vaquilla,Toro,Torete',
+        'animals.*.gender'       => 'required|in:Macho,Hembra',
+        'animals.*.weight'       => 'required|numeric|min:0.01',
+        'animals.*.unit_price'   => 'required|numeric|min:0',
+        'animals.*.total'        => 'required|numeric|min:0',
+        'animals.*.breed'        => 'nullable|string|max:255',
+        'animals.*.observation'  => 'nullable|string|max:255',
     ]);
 
-
-
-    // 2. Proceso de guardado (ejemplo usando una transacción)
+    // 2. Proceso de guardado usando una transacción
     \DB::beginTransaction();
     try {
-        // Crear el lote o la compra general de ganado según tu estructura de BD
-        // ...
- // $montoTotal = collect($request->animals)->sum('total');
-
-   // $factura = FacturaGanado::create([
-     //       'proveedorID'   => $request->supplier_id,
-       //     'fechaFactura'  => $request->purchase_date,
-        //    'numeroFactura' => $request->invoice_number,
-          //  'montoTotal'    => $montoTotal,
-            //'estado'        => 'pendiente', // o el valor por defecto que prefieras
-       // ]);
-
-  // 4. SEGUNDO: Recorrer el arreglo y crear cada animal vinculado a la factura recién creada
+        // 3. Recorrer el arreglo y crear cada animal vinculado
         foreach ($request->animals as $animalData) {
             Ganado::create([
-                'facturaID'    => $request['factura-id'], // Aquí vinculamos el ID de la factura creada
+                'facturaID'    => $request['factura-id'],
                 'areteID'      => $animalData['tag_number'],
                 'raza'         => $animalData['breed'] ?? null,
-                'genero'       => $animalData['gender'],
+                'categoria'    => $animalData['category'], // Al asignar esto, tu modelo activa automáticamente el mutador para el 'sexo'
                 'pesoActual'   => $animalData['weight'],
-                'ultimoPeso'   => $animalData['weight'], // Al ingresar por primera vez, el último peso es el inicial
+                'ultimoPeso'   => $animalData['weight'],
                 'precioCompra' => $animalData['unit_price'],
                 'fechaCompra'  => $request->purchase_date,
                 'status'       => 'Activo',
@@ -111,7 +95,7 @@ public function store(Request $request)
             ]);
         }
 
-        DB::commit();
+        \DB::commit();
 
         return redirect()->route('compras.ganado.index')
             ->with('success', 'Lote de ganado registrado exitosamente.');
@@ -121,7 +105,6 @@ public function store(Request $request)
         return back()->withErrors(['error' => 'Ocurrió un error al registrar el lote: ' . $e->getMessage()])->withInput();
     }
 }
-
     /**
      * Display the specified resource.
      */

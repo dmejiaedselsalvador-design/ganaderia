@@ -108,8 +108,9 @@ public function liquidar($id)
 
     $saldoFinal = $totalAdelantos - $totalGanado;
         $montoAbsoluto = abs($saldoFinal);
+         $esDeudaProveedor = $saldoFinal > 0;
 
-    return view('proveedores.facturas.liquidar', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto'));
+    return view('proveedores.facturas.liquidar', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto', 'esDeudaProveedor'));
 }
 
 public function generarPdf($id)
@@ -121,11 +122,12 @@ public function generarPdf($id)
     $totalGanado = $factura->animales ? $factura->animales->sum('precioGanadoTotal') : 0;
     $saldoFinal = $totalAdelantos - $totalGanado;
     $montoAbsoluto = abs($saldoFinal);
+    $esDeudaProveedor = $saldoFinal > 0;
 
 
 
     // Cargamos una vista específica para el PDF (o puedes usar la misma adaptada)
-    $pdf = Pdf::loadView('reportes.liquidacionProveedores', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto'));
+    $pdf = Pdf::loadView('reportes.liquidacionProveedores', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto', 'esDeudaProveedor'));
 
     // Opciones de papel (opcional: 'letter' o 'a4')
     $pdf->setPaper('letter', 'portrait');

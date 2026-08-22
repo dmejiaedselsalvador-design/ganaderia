@@ -18,7 +18,8 @@ class Ganado extends Model
         'facturaID',
         'areteID',
         'raza',
-        'genero',
+        'categoria',
+        'sexo',
         'pesoActual',
         'ultimoPeso',
         'precioCompra',
@@ -43,4 +44,16 @@ class Ganado extends Model
     {
         return $this->belongsTo(FacturaGanado::class, 'facturaID');
     }
+
+    public function setCategoriaAttribute($value)
+    {
+        $this->attributes['categoria'] = $value;
+
+        // Definimos qué categorías pertenecen a Machos
+        $machos = ['Becerro', 'Torete', 'Toro'];
+
+        // Asigna automáticamente 'Macho' o 'Hembra' según la selección
+        $this->attributes['sexo'] = in_array($value, $machos) ? 'Macho' : 'Hembra';
+    }
+
 }

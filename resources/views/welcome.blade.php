@@ -61,29 +61,51 @@
 
         // --- GRÁFICA DE DONA ---
         const distribucionData = @json($distribucionSexo ?? []);
-        const labels = distribucionData.map(item => item.genero ? (item.genero.charAt(0).toUpperCase() + item.genero.slice(1)) : 'No especificado');
+        const labels = distribucionData.map(item => item.categoria ? (item.categoria.charAt(0).toUpperCase() + item.categoria.slice(1)) : 'No especificado');
         const data = distribucionData.map(item => item.total);
 
-        new Chart(document.getElementById('doughnutChart'), {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: ['#3b82f6', '#ec4899', '#94a3b8']
-                }]
+        new Chart(document.getElementById('doughnutChart'), { // Puedes cambiar el id del canvas si gustas, ej. 'barChart'
+        type: 'bar', // Cambiamos de 'doughnut' a 'bar'
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Cantidad de Animales',
+                data: data,
+                backgroundColor: [
+                    '#3b82f6', // Becerro (Azul)
+                    '#ec4899', // Becerra (Rosa)
+                    '#10b981', // Torete (Esmeralda)
+                    '#f43f5e', // Vaquilla (Rosa oscuro/Rojo)
+                    '#8b5cf6', // Toro (Morado)
+                    '#f59e0b'  // Vaca (Ámbar/Naranja)
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false // En las barras por lo general se oculta la leyenda porque las etiquetas ya están abajo en el eje X
+                },
+                datalabels: {
+                    color: '#4b5563', // Color de texto visible sobre las barras
+                    anchor: 'end',
+                    align: 'top',
+                    font: { weight: 'bold', size: 12 },
+                    formatter: (value) => value
+                }
             },
-            options: {
-                plugins: {
-                    legend: { position: 'bottom' },
-                    datalabels: {
-                        color: '#ffffff',
-                        font: { weight: 'bold', size: 14 },
-                        formatter: (value) => value
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0 // Evita que salgan decimales en el conteo de animales (ej. 1.5 animales)
                     }
                 }
             }
-        });
+        }
+    });
     });
 </script>
 </x-app-layout>
