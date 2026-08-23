@@ -5,6 +5,9 @@ use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Proveedor\DeudoresProveedorController;
+
+
 
 
 use App\Http\Controllers\Proveedor\FacturasProveedorController;
@@ -55,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('proveedores/facturas/crear',[FacturasProveedorController::class, 'crearFactura'])->name('proveedores.facturas.crear');
     Route::post('proveedores/facturas/store',[FacturasProveedorController::class, 'storeFactura'])->name('proveedores.facturas.ganado.store');
    // Route::get('proveedores/facturas/editar/{id}',[FacturasProveedor
+   Route::get('proveedores/deudores/lista',[DeudoresProveedorController::class, 'index'])->name('provedores.deudores.lista');
+
 
 
   Route::get('/adelantos/proveedores/{proveedor}',[AdelantoController::class,'create'])->name('adelantos.proveedores.index');

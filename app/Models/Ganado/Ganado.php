@@ -56,4 +56,12 @@ class Ganado extends Model
         $this->attributes['sexo'] = in_array($value, $machos) ? 'Macho' : 'Hembra';
     }
 
+    /**
+     * Relación: Un animal pertenece a un proveedor.
+     */
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(ProveedorGanado::class, 'facturaID', 'id');
+    }
+
 }

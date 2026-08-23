@@ -16,7 +16,7 @@ class DashboardController extends Controller
 
         $ganadoExportar = Ganado::where('status', 'activo')->where('ultimoPeso', '>', 200)->count();
         $distribucionSexo = Ganado::where('status', 'activo')->select('categoria', \DB::raw('count(*) as total'))->groupBy('categoria')->get();
-
+       $distribucionCategoria = Ganado::where('status', 'activo')->select('sexo', \DB::raw('count(*) as total'))->groupBy('sexo')->get();
         $tendenciaRaw = Ganado::where('status', 'activo')
         ->select(
             \DB::raw("DATE_FORMAT(created_at, '%Y-%m') as mes"),
@@ -32,6 +32,6 @@ class DashboardController extends Controller
     $labelsTendencia = $tendenciaRaw->pluck('mes');
     $dataTendencia = $tendenciaRaw->pluck('peso_promedio');
         //   return response()->json($ganados);
-        return view('welcome', compact('ganados', 'pesoGanados', 'ganadoExportar','distribucionSexo','labelsTendencia','dataTendencia'));
+        return view('welcome', compact('ganados', 'pesoGanados', 'ganadoExportar','distribucionSexo','labelsTendencia','dataTendencia','distribucionCategoria'));
     }
 }

@@ -8,12 +8,12 @@
                 <!-- Encabezado de la Sección -->
                 <div class="p-6 sm:p-8 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-slate-50/50 to-white">
                     <div>
-                        <h3 class="text-xl font-black text-slate-900 tracking-tight">Facturas de Proveedores</h3>
-                        <p class="text-sm text-slate-500 mt-0.5">Gestión de listas de facturas, balances de cuentas y liquidaciones</p>
+                        <h3 class="text-xl font-black text-slate-900 tracking-tight">Guias de Proveedores</h3>
+                        <p class="text-sm text-slate-500 mt-0.5">Gestión de listas de Guias, balances de cuentas y liquidaciones</p>
                     </div>
                     <a href="{{ route('proveedores.facturas.crear') }}"
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-semibold text-sm rounded-xl hover:bg-indigo-700 shadow-sm hover:shadow transition-all duration-200">
-                        <i class="fa-solid fa-plus text-xs"></i> Crear Nueva Factura
+                        <i class="fa-solid fa-plus text-xs"></i> Crear Nueva Guia
                     </a>
                 </div>
 
@@ -23,7 +23,7 @@
                         <thead>
                             <tr class="bg-slate-900 text-white text-xs uppercase tracking-wider font-semibold">
                                 <th class="py-3.5 px-6">Proveedor / Contacto</th>
-                                <th class="py-3.5 px-6"># Factura</th>
+                                <th class="py-3.5 px-6"># Guia</th>
                                 <th class="py-3.5 px-6">Cantidad Ganado</th>
                                 <th class="py-3.5 px-6">Monto a Pagar</th>
                                 <th class="py-3.5 px-6">Saldo / Balance</th>
@@ -77,17 +77,14 @@
                                                 {{ $saldo < 0 ? 'bg-red-50 text-red-700 border border-red-200' : ($saldo > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-700') }}">
                                                 {{ formatoPesos($saldo, 2) }}
                                             </span>
-                                            <span class="text-[10px] font-bold tracking-wide uppercase mt-1
-                                                @if($saldo < 0) text-red-500 @elseif($saldo > 0) text-emerald-600 @else text-slate-400 @endif">
-                                                @if ($saldo < 0)
-                                                    ● Saldo Pendiente
+                                            <span class="text-[11px] text-slate-400 mt-0.5">
+                                                @if($saldo < 0)
+                                                    Deuda Pendiente
                                                 @elseif($saldo > 0)
-                                                    ● A Favor
+                                                    Saldo a Favor
                                                 @else
-                                                    ● Saldado
+                                                    Saldo Cero
                                                 @endif
-                                            </span>
-                                        </div>
                                     </td>
 
                                     <!-- Estatus -->
@@ -110,7 +107,7 @@
                                     <td colspan="7" class="py-12 text-center text-slate-400 italic">
                                         <div class="flex flex-col items-center justify-center space-y-2">
                                             <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
-                                            <p class="text-sm font-medium">No hay facturas registradas en este momento.</p>
+                                            <p class="text-sm font-medium">No hay guias registradas en este momento.</p>
                                         </div>
                                     </td>
                                 </tr>

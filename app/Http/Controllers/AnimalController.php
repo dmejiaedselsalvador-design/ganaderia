@@ -23,9 +23,24 @@ class AnimalController extends Controller
         return view('animals.index',compact('ganados'));
     }
 
-    public function perfil()
+    public function perfil(Request $request)
     {
-        return view('animals.perfil');
+        $areteBuscado = $request->input('arete');
+        $ganadoSeleccionado = null;
+
+        if($areteBuscado){
+
+            $ganadoSeleccionado = Ganado::where('areteID','LIKE', "%$areteBuscado%")->first();
+        }
+
+        if ($request->filled('ganado_id')) {
+            $ganadoSeleccionado = Ganado::find($request->ganado_id);
+        }
+
+
+
+
+        return view('animals.perfil',compact('ganadoSeleccionado'));
     }
 
 

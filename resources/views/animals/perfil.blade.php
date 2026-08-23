@@ -1,124 +1,117 @@
 <x-app-layout>
-    <x-slot name="header">
+    <style>
+    [x-cloak] { display: none !important; }
+</style>
+    <!-- Contenedor principal con estado Alpine para controlar los modales -->
+    <div class="py-4 sm:py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6"
+         x-data="{ modalPesajeOpen: false, modalVacunaOpen: false }">
 
-            {{ __('Expediente del Animal (Perfil Clínico y Productivo)') }}
-
-    </x-slot>
-
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-
-            <!-- ENCABEZADO ESTILO PERFIL (COVER & AVATAR) -->
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
-                <!-- Portada del perfil -->
-                <div class="h-40 bg-gradient-to-r from-emerald-700 via-teal-600 to-slate-800 relative p-6 flex justify-end items-start">
-                    <span class="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full bg-emerald-500/90 text-white shadow-sm backdrop-blur-xs">
-                        Estatus: Activo
-                    </span>
+        <!-- 1. BARRA DE BÚSQUEDA Y ACCESO RÁPIDO -->
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 sm:p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg shrink-0">
+                    <i class="fa-solid fa-cow"></i>
                 </div>
-
-                <!-- Contenido del perfil (Avatar superpuesto y datos principales) -->
-                <div class="px-6 pb-6 pt-0 relative flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-16 sm:-mt-12">
-                    <div class="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
-                        <!-- Icono / Avatar del animal -->
-                        <div class="w-28 h-28 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center text-emerald-700 text-4xl bg-slate-50">
-                            <i class="fa-solid fa-cow"></i>
-                        </div>
-                        <div class="mb-1">
-                            <h3 class="text-2xl font-bold text-slate-900 flex items-center justify-center sm:justify-start gap-2">
-                                MEX-849201
-                                <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-normal">Arete SINIIGA</span>
-                            </h3>
-                            <p class="text-sm text-slate-500">Raza: <strong class="text-slate-700">Angus</strong> | Sexo: <strong class="text-slate-700">Macho</strong> | Procedencia: <span class="text-emerald-700 font-medium">Rancho El Sausalito</span></p>
-                        </div>
-                    </div>
-
-                    <!-- Botones de acción rápida -->
-                    <div class="flex items-center gap-2">
-                        <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-sm">
-                            <i class="fa-solid fa-weight-scale"></i> Registrar Pesaje
-                        </button>
-                        <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2">
-                            <i class="fa-solid fa-syringe"></i> Aplicar Vacuna
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Pestañas de navegación del perfil (Estilo FB) -->
-                <div class="px-6 border-t border-slate-100 flex gap-8 text-sm font-semibold text-slate-600">
-                    <a href="#" class="py-4 border-b-2 border-emerald-600 text-emerald-700 flex items-center gap-2">
-                        <i class="fa-solid fa-timeline"></i> Línea de Tiempo y Pesos
-                    </a>
-                    <a href="#" class="py-4 border-b-2 border-transparent hover:text-slate-900 transition flex items-center gap-2">
-                        <i class="fa-solid fa-notes-medical"></i> Sanidad y Medicamentos
-                    </a>
-                    <a href="#" class="py-4 border-b-2 border-transparent hover:text-slate-900 transition flex items-center gap-2">
-                        <i class="fa-solid fa-file-invoice-dollar"></i> Costos y Compra ({{ formatoPesos(24500) }})
-                    </a>
+                <div>
+                    <h2 class="font-bold text-slate-800 text-base sm:text-lg">Expediente Operativo</h2>
+                    <p class="text-xs text-slate-500">Gestión de báscula, sanidad y alimentación en corral.</p>
                 </div>
             </div>
 
-            <!-- GRID DE CONTENIDO PRINCIPAL DEL PERFIL -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Buscador optimizado táctil -->
+            <form action="{{ route('compras.ganado.perfil') }}" method="GET" class="flex items-center gap-2 w-full md:w-96">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </span>
+                    <input type="text" name="arete" value="{{ request('arete') }}" placeholder="Escanear o digitar Arete..." class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                </div>
+                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shrink-0 shadow-xs">
+                    Buscar
+                </button>
+            </form>
+        </div>
 
-                <!-- COLUMNA IZQUIERDA: Resumen y Métricas Clave -->
-                <div class="space-y-6">
-                    <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 space-y-4">
-                        <h4 class="font-bold text-slate-800 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-info text-emerald-600"></i> Resumen Productivo
-                        </h4>
+        @if(isset($ganadoSeleccionado))
+            <!-- 2. TARJETA DE RESUMEN DE IDENTIDAD -->
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 sm:p-6">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
 
-                        <div class="space-y-3 text-sm">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Peso Inicial (Ingreso):</span>
-                                <span class="font-semibold text-slate-800">420.00 kg</span>
+                    <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+                        <div class="px-4 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
+                            <span class="text-[10px] uppercase font-bold text-emerald-600 block tracking-wider">Arete ID</span>
+                            <span class="text-xl font-black text-emerald-900">{{ $ganadoSeleccionado->areteID }}</span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-slate-800 text-base">
+                                    {{ $ganadoSeleccionado->raza ?? 'Cruzado / General' }}
+                                </h3>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase {{ $ganadoSeleccionado->status == 'activo' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
+                                    {{ $ganadoSeleccionado->status }}
+                                </span>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Peso Actual en Báscula:</span>
-                                <span class="font-bold text-emerald-700 text-base">480.00 kg</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Ganancia Total:</span>
-                                <span class="font-semibold text-emerald-600">+60.00 kg</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Fecha de Adquisición:</span>
-                                <span class="font-medium text-slate-700">12 de Mayo, 2026</span>
-                            </div>
+                            <p class="text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                                <span>Sexo: <strong class="text-slate-700">{{ $ganadoSeleccionado->sexo }}</strong></span>
+                                <span>Categoría: <strong class="text-slate-700">{{ $ganadoSeleccionado->categoria }}</strong></span>
+                                <span>Proveedor: <strong class="text-slate-700">{{ $ganadoSeleccionado->proveedor->nombreContacto ?? 'N/D' }}</strong></span>
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Alertas o Notas Veterinarias -->
-                    <div class="bg-amber-50 rounded-xl border border-amber-200 p-6 space-y-2">
-                        <h4 class="font-bold text-amber-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-triangle-exclamation"></i> Próximo Refuerzo Sanitario
+                    <!-- Botones de Acción Táctil (Disparan los modales Alpine) -->
+                    <div class="flex items-center gap-2.5 w-full lg:w-auto">
+                        <button @click="modalPesajeOpen = true" class="flex-1 lg:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 shadow-xs">
+                            <i class="fa-solid fa-weight-scale"></i> + Pesaje
+                        </button>
+                        <button @click="modalVacunaOpen = true" class="flex-1 lg:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 shadow-xs">
+                            <i class="fa-solid fa-syringe"></i> + Vacuna / Tratamiento
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 3. GRID DE TRABAJO RÁPIDO -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Columna Izquierda: Métricas -->
+                <div class="space-y-6">
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4">
+                        <h4 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-gauge-high text-emerald-600"></i> Métricas del Hato
                         </h4>
-                        <p class="text-xs text-amber-700 leading-relaxed">
-                            Se programó la aplicación de desparasitante y refuerzo contra derriengue para el próximo <strong>15 de Agosto, 2026</strong>.
-                        </p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                                <span class="text-[11px] font-semibold text-slate-400 block uppercase">Último Peso</span>
+                                <span class="text-lg font-black text-slate-800 mt-1 block">{{ $ganadoSeleccionado->ultimoPeso ?? 0 }} <span class="text-xs font-normal text-slate-500">kg</span></span>
+                            </div>
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                                <span class="text-[11px] font-semibold text-slate-400 block uppercase">Ingreso</span>
+                                <span class="text-xs font-bold text-slate-700 mt-2 block">{{ $ganadoSeleccionado->created_at->format('d/m/Y') }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA / PRINCIPAL: Historial de Pesajes y Sanidad (Feed tipo muro) -->
+                <!-- Columna Derecha: Tablas -->
                 <div class="lg:col-span-2 space-y-6">
-
-                    <!-- Tarjeta: Historial de Pesos Históricos -->
-                    <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 space-y-4">
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4">
                         <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                            <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                                <i class="fa-solid fa-weight-scale text-emerald-600"></i> Historial de Báscula (Pesajes)
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-weight-scale text-emerald-600"></i> Bitácora de Pesajes
                             </h4>
-                            <span class="text-xs text-slate-400">Actualizado al último pesaje</span>
+                            <span class="text-xs text-slate-400">Historial de báscula</span>
                         </div>
 
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-sm">
+                            <table class="w-full text-left text-sm">
                                 <thead>
-                                    <tr class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200">
-                                        <th class="p-3">Fecha</th>
-                                        <th class="p-3">Peso Registrado</th>
-                                        <th class="p-3">Ganancia vs Anterior</th>
-                                        <th class="p-3">Observaciones del Pesaje</th>
+                                    <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider">
+                                        <th class="p-3 rounded-l-lg">Fecha</th>
+                                        <th class="p-3">Peso</th>
+                                        <th class="p-3">Ganancia</th>
+                                        <th class="p-3 rounded-r-lg">Notas</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -126,66 +119,156 @@
                                         <td class="p-3 text-slate-600 font-medium">01 Ago, 2026</td>
                                         <td class="p-3 font-bold text-emerald-700">480.00 kg</td>
                                         <td class="p-3 text-emerald-600 font-semibold">+15.00 kg</td>
-                                        <td class="p-3 text-slate-500 text-xs">Buen desarrollo en corral de engorda.</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50/50">
-                                        <td class="p-3 text-slate-600 font-medium">01 Jul, 2026</td>
-                                        <td class="p-3 font-bold text-slate-800">465.00 kg</td>
-                                        <td class="p-3 text-emerald-600 font-semibold">+25.00 kg</td>
-                                        <td class="p-3 text-slate-500 text-xs">Cambio a dieta de finalización.</td>
-                                    </tr>
-                                    <tr class="hover:bg-slate-50/50">
-                                        <td class="p-3 text-slate-600 font-medium">12 Jun, 2026</td>
-                                        <td class="p-3 font-bold text-slate-800">440.00 kg</td>
-                                        <td class="p-3 text-slate-500 font-semibold">+20.00 kg</td>
-                                        <td class="p-3 text-slate-500 text-xs">Pesaje de adaptación post-ingreso.</td>
+                                        <td class="p-3 text-slate-500 text-xs">Corral de engorda principal.</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-
-                    <!-- Tarjeta: Control de Vacunaciones y Medicamentos -->
-                    <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                            <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                                <i class="fa-solid fa-syringe text-emerald-600"></i> Historial de Vacunación y Medicamentos
-                            </h4>
-                        </div>
-
-                        <div class="space-y-3">
-                            <!-- Item de Vacuna 1 -->
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                                <div>
-                                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Vacuna</span>
-                                    <h5 class="font-bold text-slate-800 text-sm mt-1">Cemvac (Derriengue y Carbón Sintomático)</h5>
-                                    <p class="text-xs text-slate-500">Aplicado por: <strong>Dr. Ramírez</strong> | Lote: #CV-9921</p>
-                                </div>
-                                <div class="text-right sm:text-right w-full sm:w-auto">
-                                    <span class="text-xs font-medium text-slate-600 block">10 Jun, 2026</span>
-                                    <span class="text-xs text-emerald-700 font-semibold">Aplicado con éxito</span>
-                                </div>
-                            </div>
-
-                            <!-- Item de Medicamento 2 -->
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                                <div>
-                                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-teal-100 text-teal-800">Medicamento</span>
-                                    <h5 class="font-bold text-slate-800 text-sm mt-1">Ivermectina 1% (Desparasitante)</h5>
-                                    <p class="text-xs text-slate-500">Dosis: <strong>10 ml (Vía subcutánea)</strong></p>
-                                </div>
-                                <div class="text-right sm:text-right w-full sm:w-auto">
-                                    <span class="text-xs font-medium text-slate-600 block">15 May, 2026</span>
-                                    <span class="text-xs text-emerald-700 font-semibold">Aplicado con éxito</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-
             </div>
 
-        </div>
+
+            <!-- ========================================== -->
+            <!-- MODAL 1: REGISTRAR PESAJE                     -->
+            <!-- ========================================== -->
+            <div x-show="modalPesajeOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+                <div @click.outside="modalPesajeOpen = false" class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-100">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-weight-scale text-emerald-600"></i> Registrar Nuevo Pesaje
+                        </h3>
+                        <button @click="modalPesajeOpen = false" class="text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Formulario de Pesaje -->
+                    <form id="formPesaje" @submit.prevent="guardarPesaje()" class="space-y-4">
+                        @csrf
+                        <input type="hidden" name="ganado_id" value="{{ $ganadoSeleccionado->id }}">
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Arete Seleccionado</label>
+                            <input type="text" disabled value="{{ $ganadoSeleccionado->areteID }}" class="w-full bg-slate-100 border border-slate-200 rounded-xl text-sm px-3 py-2 text-slate-600 font-bold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Peso Actual (kg) *</label>
+                            <input type="number" step="0.01" name="peso" required placeholder="Ej. 485.50" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Observaciones / Corral</label>
+                            <textarea name="observaciones" rows="2" placeholder="Ej. Buen desarrollo en báscula..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"></textarea>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" @click="modalPesajeOpen = false" class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 transition">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs">Guardar Pesaje</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+            <!-- ========================================== -->
+            <!-- MODAL 2: APLICAR VACUNA / TRATAMIENTO       -->
+            <!-- ========================================== -->
+            <div x-show="modalVacunaOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+                <div @click.outside="modalVacunaOpen = false" class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-100">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-syringe text-indigo-600"></i> Registrar Vacuna / Tratamiento
+                        </h3>
+                        <button @click="modalVacunaOpen = false" class="text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Formulario de Vacunación -->
+                    <form id="formVacuna" @submit.prevent="guardarVacuna()" class="space-y-4">
+                        @csrf
+                        <input type="hidden" name="ganado_id" value="{{ $ganadoSeleccionado->id }}">
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tipo de Producto</label>
+                            <select name="tipo" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                <option value="vacuna">Vacuna</option>
+                                <option value="medicamento">Medicamento / Desparasitante</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre del Producto / Lote *</label>
+                            <input type="text" name="producto" required placeholder="Ej. Ivermectina / Lote #9921" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Dosis o Aplicación</label>
+                            <input type="text" name="dosis" placeholder="Ej. 10 ml (Vía subcutánea)" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" @click="modalVacunaOpen = false" class="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 transition">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-xs">Guardar Sanidad</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        @else
+            <!-- Estado vacío minimalista -->
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-12 text-center space-y-3">
+                <div class="w-14 h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto text-xl">
+                    <i class="fa-solid fa-barcode"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Listo para escanear o buscar</h3>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto">Digita el número de arete arriba para desplegar el expediente y registrar operaciones al instante.</p>
+            </div>
+        @endif
+
     </div>
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inicialización de SweetAlert2 para confirmaciones
+            const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: 'bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow-xs',
+                    cancelButton: 'bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold transition'
+                },
+                buttonsStyling: false
+            });
+
+
+        function guardarPesaje() {
+            // Aquí puedes hacer tu petición AJAX (Axios / Fetch) hacia tu ruta de Laravel
+            // Simulación visual con SweetAlert2 exitoso:
+            Swal.fire({
+                icon: 'success',
+                title: '¡Pesaje registrado!',
+                text: 'El nuevo peso se ha guardado correctamente en el expediente.',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload(); // Recarga para actualizar datos
+            });
+        }
+
+        function guardarVacuna() {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Sanidad registrada!',
+                text: 'El registro de vacuna o medicamento se aplicó con éxito.',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        }
+          });
+    </script>
 </x-app-layout>
