@@ -163,7 +163,7 @@
     <!-- Botones de Acción -->
     <div class="mt-8 pt-4 border-t border-slate-200 flex gap-4">
         <a href="{{ url()->previous() }}" class="px-5 py-2.5 bg-slate-500 hover:bg-slate-600 text-white font-medium rounded-lg transition shadow-sm">Volver</a>
-        <a href="{{ route('proveedores.facturas.liquidar.generarPdf', $factura->id) }}"
+        <a href="{{ route('proveedores.facturas.liquidar.pago', $factura->id) }}"
            id="btnGenerarPdf"
            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition shadow-md flex items-center gap-2">
             Confirmar Pago y Generar PDF

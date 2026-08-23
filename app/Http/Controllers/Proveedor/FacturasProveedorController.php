@@ -18,6 +18,7 @@ class FacturasProveedorController extends Controller
     {
         $proveedores = FacturaGanado::with('proveedorData')
         ->withCount('animales as cantidad_ganado')
+        ->where('estado', 'proceso')
         ->get();
        // $proveedores = ProveedorGanado::all();
         return view('proveedores.facturas.facturasProveedor', compact('proveedores'));
@@ -93,7 +94,12 @@ class FacturasProveedorController extends Controller
 public function liquidar($id)
 {
     // 1. Buscamos la factura y cargamos la relación con el proveedor
-    $factura = FacturaGanado::with(['proveedor', 'animales'])->findOrFail($id);
+   $factura = FacturaGanado::with(['proveedor', 'animales'])->findOrFail($id);
+
+
+
+
+
 
     $proveedor = $factura->proveedor;
 
@@ -111,6 +117,31 @@ public function liquidar($id)
          $esDeudaProveedor = $saldoFinal > 0;
 
     return view('proveedores.facturas.liquidar', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto', 'esDeudaProveedor'));
+}
+
+public function liquidarFactura(Request $request, $id)
+{
+    // Validamos los datos recibidos
+  // $request->validate([
+  //     'observaciones' => 'nullable|string|max:255',
+  //      'estado' => 'required|in:liquidado,pendiente',
+  // ]);
+
+    // Buscamos la factura
+    $factura = FacturaGanado::findOrFail($id);
+    $factura->estado = 'pagada';
+    $factura->save();
+
+    return view('proveedores.facturas.ExitoLiquidaciones', compact('factura'));
+
+
+
+    // Actualizamos los campos de la factura
+    //$factura->observaciones = $request->input('observaciones');
+
+
+    //return redirect()->route('proveedores.facturas.index')
+           //          ->with('success', 'Factura liquidada exitosamente.');
 }
 
 public function generarPdf($id)
