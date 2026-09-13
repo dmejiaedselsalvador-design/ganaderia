@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Proveedor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ganado\Adelanto;
 use App\Models\Ganado\FacturaGanado;
 use App\Models\Ganado\ProveedorGanado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+
 
 
 
@@ -102,6 +104,7 @@ public function liquidar($id)
 
 
     $proveedor = $factura->proveedor;
+    $adelantosProveedor = $proveedor ? $proveedor->adelantos()->where('status','entregado')->get():collect();
 
     // 2. Protegemos los adelantos asegurándonos de que el proveedor y la relación existan
     $totalAdelantos = 0;
@@ -116,23 +119,43 @@ public function liquidar($id)
         $montoAbsoluto = abs($saldoFinal);
          $esDeudaProveedor = $saldoFinal > 0;
 
-    return view('proveedores.facturas.liquidar', compact('factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto', 'esDeudaProveedor'));
+    return view('proveedores.facturas.liquidar', compact('adelantosProveedor','factura', 'proveedor', 'totalAdelantos', 'totalGanado', 'saldoFinal','montoAbsoluto', 'esDeudaProveedor'));
 }
 
 public function liquidarFactura(Request $request, $id)
 {
-    // Validamos los datos recibidos
-  // $request->validate([
-  //     'observaciones' => 'nullable|string|max:255',
-  //      'estado' => 'required|in:liquidado,pendiente',
-  // ]);
 
     // Buscamos la factura
     $factura = FacturaGanado::findOrFail($id);
-    $factura->estado = 'pagada';
-    $factura->save();
 
-    return view('proveedores.facturas.ExitoLiquidaciones', compact('factura'));
+    $adelantosSeleccionado = $request->input('adelantos',[]);
+
+   try {
+
+    DB::transaction(function () use ($factura,$adelantosSeleccionado){
+        $factura->estado = 'liquidado';
+        $factura->save();
+
+            if(!empty($adelantosSeleccionado)){
+    Adelanto::whereIn('id',$adelantosSeleccionado)
+    ->update([
+        'status' => 'liquidado',
+    ]);
+}
+
+    });
+
+return view('proveedores.facturas.ExitoLiquidaciones', compact('factura'));
+
+    } catch (\Exception $e) {
+        // Manejo de errores en caso de fallo en la base de datos
+        return back()->with('error', 'Ocurrió un error al procesar la liquidación: ' . $e->getMessage());
+    }
+
+
+
+
+   // return view('proveedores.facturas.ExitoLiquidaciones', compact('factura'));
 
 
 

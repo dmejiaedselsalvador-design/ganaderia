@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+/**
+ * @property int $id
+ * @property int $proveedorID
+ * @property \Illuminate\Support\Carbon|null $fechaFactura
+ * @property string|null $numeroFactura
+ * @property float $montoTotal
+ * @property string $estado
+ * @property string|null $notas
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ */
 
 class FacturaGanado extends Model
 {

@@ -17,7 +17,7 @@ return new class extends Migration
          $table->date('fechaFactura');
          $table->string('numeroFactura')->unique(); // Número de factura o recibo
          $table->text('notas')->nullable();
-         $table->enum('estado',['pendiente','pagada','proceso','parcial','anulada'])->default('pendiente');
+         $table->enum('estado',['pendiente','liquidado','parcial','anulada'])->default('pendiente');
           $table->timestamps();
            });
     }
