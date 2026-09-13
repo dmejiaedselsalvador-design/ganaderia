@@ -8,9 +8,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+Use App\Models\User;
 
 class ProfileController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    public function index()
+    {
+        $users = User::where('status', 'active')->get();
+
+     return view('profile.usuarios.usuariosLista',compact('users'));
+
+    }
     /**
      * Display the user's profile form.
      */

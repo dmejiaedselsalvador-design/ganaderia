@@ -60,7 +60,8 @@ class FacturasProveedorController extends Controller
             'proveedorID'   => $request->proveedor_id,
             'fechaFactura'  => $request->fecha_factura,
             'numeroFactura' => $request->factura,
-            'estado'        => 'proceso',
+            'notas'         => $request->observaciones,
+            'estado'        => 'pendiente',
         ]);
 
 
@@ -75,7 +76,7 @@ class FacturasProveedorController extends Controller
 
    } catch (\Exception $e) {
     \DB::rollBack();
-
+dd($e->getMessage());
     // Registramos el error real en los logs del servidor para ti
     \Log::error('Error al registrar factura de ganado: ' . $e->getMessage());
 

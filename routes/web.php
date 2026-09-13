@@ -36,8 +36,11 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
+
     Route::get('/admin/crear-usuario', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/admin/crear-usuario', [RegisteredUserController::class, 'store'])->name('store');
+    Route::get('/admin/lista-usuarios', [ProfileController::class, 'index'])->name('usuarios.lista');
+
 });
 
 Route::middleware(['auth'])->group(function () {
