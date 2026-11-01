@@ -20,7 +20,7 @@ class FacturasProveedorController extends Controller
     {
         $proveedores = FacturaGanado::with('proveedorData')
         ->withCount('animales as cantidad_ganado')
-        ->where('estado', 'proceso')
+        ->where('estado', 'pendiente')
         ->get();
        // $proveedores = ProveedorGanado::all();
         return view('proveedores.facturas.facturasProveedor', compact('proveedores'));
