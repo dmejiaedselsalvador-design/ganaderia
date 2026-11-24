@@ -1,3 +1,12 @@
+@php
+    $userId     = Auth::id() ?? 'guest';
+    $temaActual = session('tema_usuario', cache("tema_usuario_{$userId}", 'claro'));
+    $temaClass  = match($temaActual) {
+        'metal' => 'tema-metal',
+        'dark'  => 'tema-dark',
+        default => 'tema-claro',
+    };
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -24,9 +33,74 @@
         ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
         aside nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); }
+
+        /* ══════════════════════════════════════════
+           TEMA CLARO  (default · verde oscuro)
+        ══════════════════════════════════════════ */
+        body.tema-claro {
+            background-color: #f5f5f4; /* stone-100 */
+            color: #292524;
+        }
+        body.tema-claro .main-content-area {
+            background: linear-gradient(to bottom, #f5f5f4, #fafaf9);
+        }
+        body.tema-claro .topnav {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+        body.tema-claro .topnav-text   { color: #334155; }
+        body.tema-claro .topnav-muted  { color: #64748b; }
+        body.tema-claro .topnav-input  { background:#f8fafc; border-color:#e2e8f0; color:#1e293b; }
+
+        /* ══════════════════════════════════════════
+           TEMA METAL  (acero / industrial)
+        ══════════════════════════════════════════ */
+        body.tema-metal {
+            background-color: #cbd5e1; /* slate-300 */
+            color: #0f172a;
+        }
+        body.tema-metal .main-content-area {
+            background: linear-gradient(to bottom, #cbd5e1, #e2e8f0);
+        }
+        body.tema-metal aside {
+            background: #334155 !important; /* slate-700 */
+        }
+        body.tema-metal .topnav {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+        }
+        body.tema-metal .topnav-text   { color: #0f172a; }
+        body.tema-metal .topnav-muted  { color: #334155; }
+        body.tema-metal .topnav-input  { background:#cbd5e1; border-color:#94a3b8; color:#0f172a; }
+
+        /* ══════════════════════════════════════════
+           TEMA DARK   (oscuro completo)
+        ══════════════════════════════════════════ */
+        body.tema-dark {
+            background-color: #030712; /* gray-950 */
+            color: #f1f5f9;
+        }
+        body.tema-dark .main-content-area {
+            background: linear-gradient(to bottom, #0f172a, #030712);
+        }
+        body.tema-dark aside {
+            background: #111827 !important; /* gray-900 */
+        }
+        body.tema-dark .topnav {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        body.tema-dark .topnav-text   { color: #f1f5f9; }
+        body.tema-dark .topnav-muted  { color: #94a3b8; }
+        body.tema-dark .topnav-input  { background:#0f172a; border-color:#334155; color:#f1f5f9; }
+        body.tema-dark header { background: rgba(30,41,59,0.85) !important; border-color:#334155 !important; }
+
+        /* Transition suave al cambiar tema */
+        body { transition: background-color .3s ease, color .3s ease; }
+        aside { transition: background-color .3s ease; }
     </style>
 </head>
-<body class="bg-stone-100 font-['Inter'] antialiased text-stone-800">
+<body class="font-['Inter'] antialiased {{ $temaClass }}">
 
     <div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
 
@@ -54,13 +128,13 @@
             <div class="relative mx-6 h-px bg-gradient-to-r from-amber-300/40 via-white/10 to-transparent"></div>
 
             <!-- Navegación -->
-            <nav class="relative flex-1 space-y-1 overflow-y-auto px-4 py-6">
+            <nav class="relative flex-1 space-y-1 overflow-y-auto px-4 py-4">
 
-                <p class="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-200/30">Principal</p>
+                <p class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-200/30">Principal</p>
 
                 @php
-                    $base = 'group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200';
-                    $on   = 'bg-gradient-to-r from-emerald-600/30 to-transparent text-white';
+                    $base = 'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium transition-all duration-200';
+                    $on   = 'bg-gradient-to-r from-emerald-600/30 to-transparent text-white font-semibold';
                     $off  = 'text-emerald-100/60 hover:bg-white/5 hover:text-white';
                     $bar  = 'absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-amber-300';
                 @endphp
@@ -72,45 +146,81 @@
                     <i class="fa-solid fa-chart-pie w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Dashboard
                 </a>
 
+                <p class="mb-2 mt-4 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-200/30">Compra & Proveedores</p>
+
                 <!-- Proveedores -->
-                <div x-data="{ open: {{ request()->routeIs('proveedores.*') || request()->routeIs('provedores.*') ? 'true' : 'false' }} }" class="space-y-1">
+                <div x-data="{ open: {{ request()->routeIs('proveedores.*') || request()->routeIs('provedores.*') || request()->routeIs('adelantos.*') ? 'true' : 'false' }} }" class="space-y-1">
                     <button @click="open = !open" class="{{ $base }} {{ $off }} justify-between">
                         <span class="flex items-center gap-3">
-                            <i class="fa-solid fa-truck-field w-5 text-center group-hover:text-amber-200"></i> Proveedores
+                            <i class="fa-solid fa-truck-field w-5 text-center group-hover:text-amber-200"></i> Proveedores & Guías
                         </span>
                         <i class="fa-solid fa-chevron-down text-[10px] text-emerald-200/40 transition-transform duration-200" :class="open ? 'rotate-180 text-amber-300' : ''"></i>
                     </button>
 
                     <div x-show="open" x-cloak x-transition.opacity.duration.200ms class="ml-6 space-y-1 border-l border-white/10 pl-3 pt-1">
                         @php $a1 = request()->routeIs('proveedores.index'); @endphp
-                        <a href="{{ route('proveedores.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition {{ $a1 ? 'bg-emerald-600/30 text-white' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
+                        <a href="{{ route('proveedores.index') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition {{ $a1 ? 'bg-emerald-600/30 text-white font-semibold' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
                             <i class="fa-solid fa-list-check w-4 text-center {{ $a1 ? 'text-amber-300' : '' }}"></i> Vendedores
                         </a>
                         @php $a2 = request()->routeIs('proveedores.facturas.index'); @endphp
-                        <a href="{{ route('proveedores.facturas.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition {{ $a2 ? 'bg-emerald-600/30 text-white' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
-                            <i class="fa-solid fa-file-invoice w-4 text-center {{ $a2 ? 'text-amber-300' : '' }}"></i> Guias
+                        <a href="{{ route('proveedores.facturas.index') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition {{ $a2 ? 'bg-emerald-600/30 text-white font-semibold' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
+                            <i class="fa-solid fa-file-invoice w-4 text-center {{ $a2 ? 'text-amber-300' : '' }}"></i> Guías de Compra
                         </a>
                         @php $a3 = request()->routeIs('proveedores.deudores.lista') || request()->routeIs('provedores.deudores.lista'); @endphp
-                        <a href="{{ route('proveedores.deudores.lista') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition {{ $a3 ? 'bg-emerald-600/30 text-white' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
+                        <a href="{{ route('proveedores.deudores.lista') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition {{ $a3 ? 'bg-emerald-600/30 text-white font-semibold' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
                             <i class="fa-solid fa-money-bill-transfer w-4 text-center {{ $a3 ? 'text-amber-300' : '' }}"></i> Deudores
+                        </a>
+                        @php $a4 = request()->routeIs('adelantos.*'); @endphp
+                        <a href="{{ route('adelantos.index') }}" class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition {{ $a4 ? 'bg-emerald-600/30 text-white font-semibold' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
+                            <i class="fa-solid fa-hand-holding-dollar w-4 text-center {{ $a4 ? 'text-amber-300' : '' }}"></i> Anticipos Proveedor
                         </a>
                     </div>
                 </div>
 
-                <p class="mb-3 mt-6 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-200/30">Operación</p>
+                <p class="mb-2 mt-4 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-200/30">Engorda & Zootecnia</p>
 
-                <!-- Ganado -->
+                <!-- Corrales y Lotes -->
+                @php $act = request()->routeIs('corrales.*'); @endphp
+                <a href="{{ route('corrales.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
+                    @if($act)<span class="{{ $bar }}"></span>@endif
+                    <i class="fa-solid fa-warehouse w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Corrales & Lotes
+                </a>
+
+                <!-- Nutrición y Dietas -->
+                @php $act = request()->routeIs('nutricion.*'); @endphp
+                <a href="{{ route('nutricion.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
+                    @if($act)<span class="{{ $bar }}"></span>@endif
+                    <i class="fa-solid fa-wheat-awn w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Nutrición & Raciones
+                </a>
+
+                <!-- Sanidad y Retiro -->
+                @php $act = request()->routeIs('sanidad.*'); @endphp
+                <a href="{{ route('sanidad.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
+                    @if($act)<span class="{{ $bar }}"></span>@endif
+                    <i class="fa-solid fa-notes-medical w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Sanidad & Retiro
+                </a>
+
+                <p class="mb-2 mt-4 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-200/30">Hato & Comercialización</p>
+
+                <!-- Inventario Ganado -->
                 @php $act = request()->routeIs('compras.ganado.index'); @endphp
                 <a href="{{ route('compras.ganado.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
                     @if($act)<span class="{{ $bar }}"></span>@endif
-                    <i class="fa-solid fa-cow w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Inventario Ganado
+                    <i class="fa-solid fa-cow w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Inventario de Ganado
                 </a>
 
-                <!-- Perfil / Expediente -->
+                <!-- Expediente Bovino -->
                 @php $act = request()->routeIs('compras.ganado.perfil'); @endphp
                 <a href="{{ route('compras.ganado.perfil') }}" class="{{ $base }} {{ $act ? $on : $off }}">
                     @if($act)<span class="{{ $bar }}"></span>@endif
                     <i class="fa-solid fa-id-card w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Expediente Bovino
+                </a>
+
+                <!-- Calidad de Carne y Canal -->
+                @php $act = request()->routeIs('calidad.carne.*'); @endphp
+                <a href="{{ route('calidad.carne.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
+                    @if($act)<span class="{{ $bar }}"></span>@endif
+                    <i class="fa-solid fa-drumstick-bite w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Calidad Carne & Canal
                 </a>
 
                 <!-- Ventas de Ganado -->
@@ -125,6 +235,15 @@
                 <a href="{{ route('ganado.bajas.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
                     @if($act)<span class="{{ $bar }}"></span>@endif
                     <i class="fa-solid fa-skull w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Bajas / Mortalidad
+                </a>
+
+                <p class="mb-2 mt-4 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-200/30">Finanzas & Proyecciones</p>
+
+                <!-- Simulador Financiero MXN -->
+                @php $act = request()->routeIs('simulador.index'); @endphp
+                <a href="{{ route('simulador.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
+                    @if($act)<span class="{{ $bar }}"></span>@endif
+                    <i class="fa-solid fa-calculator w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Simulador Engorda MXN
                 </a>
             </nav>
 

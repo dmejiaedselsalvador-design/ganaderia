@@ -2,6 +2,9 @@
 
 namespace App\Models\Ganado;
 
+use App\Models\Calidad\EvaluacionCanal;
+use App\Models\Engorda\CorralLote;
+use App\Models\Sanidad\TratamientoSanitario;
 use App\Models\Venta\DetalleVentaGanado;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -76,6 +79,9 @@ class Ganado extends Model
         'raza',
         'categoria',
         'lote_potrero',
+        'corral_lote_id',
+        'condicion_corporal',
+        'dias_en_engorda',
         'sexo',
         'pesoActual',
         'ultimoPeso',
@@ -158,6 +164,31 @@ class Ganado extends Model
     }
 
     /**
+     * Relación: Corral o Lote de engorda técnico.
+     */
+    public function corralLote(): BelongsTo
+    {
+        return $this->belongsTo(CorralLote::class, 'corral_lote_id', 'id');
+    }
+
+    /**
+     * Relación: Bitácora de tratamientos sanitarios y medicamentos.
+     */
+    public function tratamientos(): HasMany
+    {
+        return $this->hasMany(TratamientoSanitario::class, 'ganado_id', 'GanadoID')
+                    ->orderBy('fecha_aplicacion', 'desc');
+    }
+
+    /**
+     * Relación: Evaluación de canal y calidad cárnica al sacrificio.
+     */
+    public function evaluacionCanal(): HasOne
+    {
+        return $this->hasOne(EvaluacionCanal::class, 'ganado_id', 'GanadoID');
+    }
+
+    /**
      * Accesor para proveedor con fallback seguro.
      */
     public function getProveedorAttribute(): ?ProveedorGanado
@@ -236,6 +267,53 @@ class Ganado extends Model
         $dias = $this->fechaCompra ? max(1, now()->diffInDays($this->fechaCompra)) : 1;
 
         return round($this->ganancia_total / $dias, 3);
+    }
+
+    /**
+     * Verifica si el animal está en periodo de retiro sanitario.
+     */
+    public function getEstaEnRetiroAttribute(): bool
+    {
+        return $this->tratamientos->contains(fn($t) => $t->esta_en_retiro);
+    }
+
+    /**
+     * Días máximos restantes de retiro entre todos los tratamientos activos.
+     */
+    public function getDiasRestantesRetiroAttribute(): int
+    {
+        return (int) $this->tratamientos->max(fn($t) => $t->dias_restantes_retiro) ?? 0;
+    }
+
+    /**
+     * Costo sanitario acumulado en medicamentos (MXN).
+     */
+    public function getCostoSanitarioTotalMxnAttribute(): float
+    {
+        return (float) $this->tratamientos->sum('costo_medicamento_mxn');
+    }
+
+    /**
+     * Rendimiento estimado en canal caliente (%) basado en la raza y conformación.
+     */
+    public function getRendimientoCanalEstimadoPctAttribute(): float
+    {
+        $raza = strtolower($this->raza ?? '');
+        if (str_contains($raza, 'angus') || str_contains($raza, 'charolais') || str_contains($raza, 'brangus') || str_contains($raza, 'beefmaster')) {
+            return 61.50; // Cruzas cárnicas pesadas
+        }
+        if (str_contains($raza, 'cebu') || str_contains($raza, 'brahman')) {
+            return 58.00;
+        }
+        return 59.50; // Estándar nacional mexicano
+    }
+
+    /**
+     * Peso estimado de canal caliente (kg).
+     */
+    public function getPesoCanalEstimadoKgAttribute(): float
+    {
+        return round(((float) $this->ultimoPeso * ($this->rendimiento_canal_estimado_pct / 100)), 2);
     }
 
     /**

@@ -14,4 +14,10 @@ Sistema web desarrollado para la administración integral de operaciones pecuari
 
 ---
 
+# librerias de composer
+composer install
+composer update
+
+composer require barryvdh/laravel-dompdf
+
 

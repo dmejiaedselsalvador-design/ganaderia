@@ -33,7 +33,26 @@
             </div>
         @endif
 
-        <!-- 1. FILA DE TARJETAS (KPIs) CON ICONOS -->
+        @if(($animalesEnRetiroCount ?? 0) > 0)
+            <!-- ALERTA DE PERIODO DE RETIRO SANITARIO -->
+            <div class="p-4 bg-gradient-to-r from-rose-600 to-rose-700 rounded-2xl text-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <div>
+                        <strong class="font-bold text-sm block">¡Alerta Sanitaria: {{ $animalesEnRetiroCount }} cabezas bajo periodo de retiro de fármacos!</strong>
+                        <span class="text-xs text-rose-100">Tienen tratamientos médicos activos y NO deben enviarse a rastro hasta cumplir el tiempo reglamentario.</span>
+                    </div>
+                </div>
+                <a href="{{ route('sanidad.index', ['filtro' => 'en_retiro']) }}"
+                   class="bg-white hover:bg-slate-50 text-rose-900 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm shrink-0 flex items-center gap-1.5">
+                    Consultar Retiros <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        @endif
+
+        <!-- 1. FILA DE TARJETAS (KPIs) PRINCIPALES -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <!-- Total Ganado -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
@@ -46,25 +65,25 @@
                 </div>
             </div>
 
-            <!-- Peso Promedio -->
+            <!-- Inversión en Ganado en Pie (MXN) -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Peso Promedio</p>
-                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($pesoGanados, 2) }} <span class="text-sm font-semibold text-slate-500">kg</span></h3>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Inversión Ganado en Pie</p>
+                    <h3 class="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-1">{{ formatoPesos($inversionGanadoPieMXN ?? 0) }}</h3>
                 </div>
-                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <i class="fa-solid fa-cow text-xl"></i>
                 </div>
             </div>
 
-            <!-- Listos Exportación -->
+            <!-- Inversión en Alimento Servido (MXN) -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Listos Exportación</p>
-                    <h3 class="text-2xl font-black text-emerald-600 mt-1">{{ $ganadoExportar }} <span class="text-sm font-semibold text-slate-500">Cabezas</span></h3>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Alimento Servido</p>
+                    <h3 class="text-xl sm:text-2xl font-black text-amber-700 font-mono mt-1">{{ formatoPesos($inversionAlimentoMXN ?? 0) }}</h3>
                 </div>
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i class="fa-solid fa-wheat-awn text-xl"></i>
                 </div>
             </div>
 
@@ -72,12 +91,78 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ingresos por Ventas</p>
-                    <h3 class="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-1">{{ formatoPesos($ingresosVentasMXN ?? 0) }}</h3>
+                    <h3 class="text-xl sm:text-2xl font-black text-emerald-800 font-mono mt-1">{{ formatoPesos($ingresosVentasMXN ?? 0) }}</h3>
                 </div>
-                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
                     <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
                 </div>
             </div>
+        </div>
+
+        <!-- 2. KPIs ZOOTÉCNICOS & ENGORDA -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
+                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Peso Promedio Actual</span>
+                <div class="text-xl font-black text-slate-800 font-mono mt-0.5">
+                    {{ number_format($pesoGanados, 1) }} <span class="text-xs font-normal text-slate-400">kg</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
+                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Corrales Activos</span>
+                <div class="text-xl font-black text-indigo-700 mt-0.5">
+                    {{ $totalCorralesActivos ?? 0 }} <span class="text-xs font-normal text-slate-400">lotes</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
+                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Rend. Canal Promedio</span>
+                <div class="text-xl font-black text-rose-700 font-mono mt-0.5">
+                    {{ $rendimientoPromedioCanal ?? 60.0 }}%
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
+                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Cabezas Exportación</span>
+                <div class="text-xl font-black text-emerald-700 mt-0.5">
+                    {{ $ganadoExportar }} <span class="text-xs font-normal text-slate-400">(>200 kg)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCESOS RÁPIDOS A MÓDULOS ZOOTÉCNICOS -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <a href="{{ route('corrales.index') }}"
+               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
+                <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-warehouse"></i>
+                </span>
+                <span>Feedlot / Corrales</span>
+            </a>
+
+            <a href="{{ route('nutricion.index') }}"
+               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-wheat-awn"></i>
+                </span>
+                <span>Nutrición & Dietas</span>
+            </a>
+
+            <a href="{{ route('calidad.carne.index') }}"
+               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
+                <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-drumstick-bite"></i>
+                </span>
+                <span>Calidad Carne & Canal</span>
+            </a>
+
+            <a href="{{ route('simulador.index') }}"
+               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
+                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-calculator"></i>
+                </span>
+                <span>Simulador Engorda MXN</span>
+            </a>
         </div>
 
         <!-- 2. FILA DE ANÁLISIS VISUAL (GRÁFICAS) -->

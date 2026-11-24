@@ -70,20 +70,20 @@ class AnimalController extends Controller
     {
         $ganadoSeleccionado = null;
 
+        $relations = [
+            'factura.proveedor',
+            'pesajes.usuario',
+            'baja.usuario',
+            'detalleVenta.venta',
+            'corralLote',
+            'tratamientos.usuario',
+            'evaluacionCanal',
+        ];
+
         if ($request->filled('arete')) {
-            $ganadoSeleccionado = Ganado::with([
-                'factura.proveedor',
-                'pesajes.usuario',
-                'baja.usuario',
-                'detalleVenta.venta',
-            ])->where('areteID', $request->input('arete'))->first();
+            $ganadoSeleccionado = Ganado::with($relations)->where('areteID', $request->input('arete'))->first();
         } elseif ($request->filled('ganado_id')) {
-            $ganadoSeleccionado = Ganado::with([
-                'factura.proveedor',
-                'pesajes.usuario',
-                'baja.usuario',
-                'detalleVenta.venta',
-            ])->find($request->input('ganado_id'));
+            $ganadoSeleccionado = Ganado::with($relations)->find($request->input('ganado_id'));
         }
 
         $causasMuerte = BajaGanado::CAUSAS_COMUNES;

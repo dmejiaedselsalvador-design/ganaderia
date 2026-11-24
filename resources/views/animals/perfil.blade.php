@@ -76,6 +76,25 @@
                 </div>
             @endif
 
+            @if($ganadoSeleccionado->esta_en_retiro)
+                <div class="p-4 bg-gradient-to-r from-rose-600 to-rose-700 text-white rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
+                            <i class="fa-solid fa-ban"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm sm:text-base">¡Alerta Sanitaria: Animal en Periodo de Retiro!</h3>
+                            <p class="text-xs text-rose-100">
+                                Tiene medicamentos activos en su organismo. <strong>Faltan {{ $ganadoSeleccionado->dias_restantes_retiro }} días</strong> de tiempo de espera antes de ser enviado a rastro o faena.
+                            </p>
+                        </div>
+                    </div>
+                    <span class="bg-white text-rose-900 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-xs shrink-0">
+                        No Comercializar
+                    </span>
+                </div>
+            @endif
+
             @if($ganadoSeleccionado->isMuerto())
                 <div class="p-4 bg-rose-900 text-white rounded-2xl shadow-sm flex items-start gap-3 border border-rose-800">
                     <div class="w-10 h-10 rounded-xl bg-rose-800/80 flex items-center justify-center text-lg shrink-0 text-rose-300">
@@ -271,6 +290,124 @@
                                     <td colspan="8" class="p-8 text-center text-slate-400">
                                         <i class="fa-solid fa-weight-scale text-2xl mb-1 text-slate-300 block"></i>
                                         Aún no se han registrado pesajes subsecuentes para este animal.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6. CALIDAD CÁRNICA Y PROYECCIÓN DE CANAL (ENGORMIX / DRA. SALUD RUBIO) -->
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-drumstick-bite text-rose-600"></i> Proyección Cárnica y Rendimiento en Canal
+                        </h4>
+                        <p class="text-xs text-slate-500">Estimación de rendimiento al sacrificio (Norma Mexicana NMX-FF-078-SCFI).</p>
+                    </div>
+                    <span class="text-[11px] bg-rose-50 text-rose-700 font-bold px-2.5 py-1 rounded-lg border border-rose-200">
+                        Metodología Engormix
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="p-3 bg-slate-50 rounded-xl">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block">Rend. Estimado (PCC)</span>
+                        <span class="text-xl font-black text-rose-700 font-mono">{{ $ganadoSeleccionado->rendimiento_canal_estimado_pct }}%</span>
+                        <span class="text-[10px] text-slate-400 block">Canal caliente</span>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 rounded-xl">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block">Peso Canal Estimado</span>
+                        <span class="text-xl font-black text-slate-800 font-mono">{{ number_format($ganadoSeleccionado->peso_canal_estimado_kg, 1) }} kg</span>
+                        <span class="text-[10px] text-slate-400 block">A peso actual báscula</span>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 rounded-xl">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block">Canal a Meta Faena</span>
+                        <span class="text-xl font-black text-emerald-700 font-mono">
+                            {{ number_format($ganadoSeleccionado->peso_objetivo_calculado * ($ganadoSeleccionado->rendimiento_canal_estimado_pct / 100), 1) }} kg
+                        </span>
+                        <span class="text-[10px] text-slate-400 block">A {{ number_format($ganadoSeleccionado->peso_objetivo_calculado, 0) }} kg meta</span>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 rounded-xl">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block">pH Objetivo (24h)</span>
+                        <span class="text-xl font-black text-emerald-700 font-mono">5.40 - 5.75</span>
+                        <span class="text-[10px] text-slate-400 block">Carne tierna y brillante</span>
+                    </div>
+                </div>
+
+                @if($ganadoSeleccionado->evaluacionCanal)
+                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-emerald-900 text-xs uppercase">Evaluación Real en Rastro: {{ $ganadoSeleccionado->evaluacionCanal->folio_rastro_canal }}</span>
+                            <span class="font-mono font-black text-emerald-800">{{ formatoPesos($ganadoSeleccionado->evaluacionCanal->valor_total_canal_mxn) }}</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-emerald-800 font-mono">
+                            <div>Rend. PCC: <strong>{{ $ganadoSeleccionado->evaluacionCanal->rendimiento_canal_caliente_pct }}%</strong></div>
+                            <div>pH 24h: <strong>{{ $ganadoSeleccionado->evaluacionCanal->ph_24h }}</strong></div>
+                            <div>Marmoleo: <strong>{{ $ganadoSeleccionado->evaluacionCanal->marmoleo }}</strong></div>
+                            <div>Clasificación: <strong>{{ $ganadoSeleccionado->evaluacionCanal->clasificacion_mexicana }}</strong></div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <!-- 7. HISTORIAL SANITARIO Y MEDICAMENTOS -->
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-notes-medical text-teal-600"></i> Historial Sanitario y Medicamentos
+                        </h4>
+                        <p class="text-xs text-slate-500">Vacunación, desparasitaciones, implantes y control de días de retiro.</p>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-teal-700">
+                        Inversión Médica: {{ formatoPesos($ganadoSeleccionado->costo_sanitario_total_mxn) }}
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
+                                <th class="p-2.5">Fecha</th>
+                                <th class="p-2.5">Tipo</th>
+                                <th class="p-2.5">Medicamento</th>
+                                <th class="p-2.5">Dosis / Vía</th>
+                                <th class="p-2.5">Días Retiro</th>
+                                <th class="p-2.5">Estatus Retiro</th>
+                                <th class="p-2.5">Costo (MXN)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse($ganadoSeleccionado->tratamientos as $tratamiento)
+                                <tr>
+                                    <td class="p-2.5 font-semibold text-slate-800">{{ $tratamiento->fecha_aplicacion->format('d/m/Y') }}</td>
+                                    <td class="p-2.5 font-medium text-slate-600">{{ $tratamiento->tipo_evento }}</td>
+                                    <td class="p-2.5 font-bold text-slate-700">{{ $tratamiento->medicamento_producto }}</td>
+                                    <td class="p-2.5 text-slate-500">{{ $tratamiento->dosis_aplicada }}</td>
+                                    <td class="p-2.5 font-mono text-slate-600">{{ $tratamiento->dias_retiro_rastro }} d</td>
+                                    <td class="p-2.5">
+                                        @if($tratamiento->esta_en_retiro)
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">
+                                                En Retiro ({{ $tratamiento->dias_restantes_retiro }} d)
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                                                Apto
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="p-2.5 font-mono font-semibold text-slate-800">{{ formatoPesos($tratamiento->costo_medicamento_mxn) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="p-6 text-center text-slate-400 italic">
+                                        No se han registrado eventos sanitarios para este animal.
                                     </td>
                                 </tr>
                             @endforelse
