@@ -42,9 +42,11 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+     //   $user->assignRole('operador'); // Asignar el rol "user" al nuevo usuario
+
         event(new Registered($user));
 
-        Auth::login($user);
+      //  Auth::login($user);
 
         return redirect(RouteServiceProvider::HOME);
     }

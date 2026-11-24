@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,17 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Muestra la lista de usuarios activos para administradores.
+     */
+    public function index(): View
+    {
+        $users = User::where('status', 'active')->latest()->get();
+
+        return view('profile.usuarios.usuariosLista', compact('users'));
+    }
+
+    /**
+     * Muestra el formulario de edición de perfil.
      */
     public function edit(Request $request): View
     {
@@ -22,7 +33,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Actualiza la información del perfil del usuario.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
@@ -38,7 +49,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Da de baja o elimina la cuenta del usuario.
      */
     public function destroy(Request $request): RedirectResponse
     {

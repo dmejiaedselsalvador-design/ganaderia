@@ -14,7 +14,7 @@ class ProveedorGanadoSeeder extends Seeder
     {
         DB::table('proveedorGanado')->insert([
             [
-                'nombreProoveedor' => 'Ganadería San José',
+                'nombreProveedor' => 'Ganadería San José',
                 'nombreContacto' => 'Don Mario Meléndez',
                 'telefono' => '7890-1234',
                 'lugar' => 'San Vicente',
@@ -24,7 +24,7 @@ class ProveedorGanadoSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'nombreProoveedor' => 'Agropecuaria El Progreso',
+                'nombreProveedor' => 'Agropecuaria El Progreso',
                 'nombreContacto' => 'Ing. Roberto Cárdenas',
                 'telefono' => '7211-4589',
                 'lugar' => 'Santa Ana',
@@ -34,7 +34,7 @@ class ProveedorGanadoSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'nombreProoveedor' => 'Finca Los Amates',
+                'nombreProveedor' => 'Finca Los Amates',
                 'nombreContacto' => 'Lic. Carlos Ramírez',
                 'telefono' => '7033-9871',
                 'lugar' => 'Usulután',

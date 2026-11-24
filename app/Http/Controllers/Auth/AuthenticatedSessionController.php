@@ -8,6 +8,7 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -26,6 +27,22 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+
+        $user = Auth::user();
+
+        if($user->status !== 'active'){
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Tu cuenta esta inactiva. Por favor, contacta al administrador para más información.',
+            ]);
+           // return redirect()->back()->withErrors(['email' => 'Tu cuenta esta inactiva.']);
+        }
+
+        $user->update([
+            'last_login_ip' => $request->ip(),
+            'last_login_user_agent' => $request->userAgent(),
+            'last_login_at' => now(),
+        ]);
 
         $request->session()->regenerate();
 

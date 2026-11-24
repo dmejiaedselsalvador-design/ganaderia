@@ -1,56 +1,38 @@
 <?php
 
-use App\Http\Controllers\AdelantoController;
-use App\Http\Controllers\AnimalController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-
-
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Web Routes - Ganadería Taurino
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
+| Rutas base: Dashboard principal, perfil de usuario y autenticación.
+| Las rutas operativas se gestionan de forma modular por tema en:
+| - routes/admin.php
+| - routes/ganado.php
+| - routes/proveedores.php
+| - routes/corrales.php
+| - routes/nutricion.php
+| - routes/calidad_carne.php
+| - routes/sanidad.php
+| - routes/simulador.php
+| - routes/ventas.php
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->middleware(['auth','role:admin'])->name('welcome');
+Route::middleware(['auth'])->group(function () {
+    // Dashboard principal del rancho
+    Route::get('/', [DashboardController::class, 'index'])->name('welcome');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
+    // Perfil de Usuario
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Preferencia de Tema Visual (Claro, Metal, Dark) en Caché
+    Route::post('/cambiar-tema', [DashboardController::class, 'cambiarTema'])->name('tema.cambiar');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/crear-usuario', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('/admin/crear-usuario', [RegisteredUserController::class, 'store'])->name('store');
-});
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/compras/registro-ganado', [AnimalController::class, 'index'])->name('compras.ganado.index');
-    Route::get('/compras/nuevo-ganado',[AnimalController::class,'nuevoGanado'])->name('compras.nuevo.ganado');
-    Route::get('/ganado/perfil', [AnimalController::class, 'perfil'])->name('compras.ganado.perfil');
-    Route::get('/adelantos/proveedores',[AdelantoController::class,'index'])->name('adelantos.proveedores.index');
-
-});
-
-Route::get('/test-moneda', function () {
-    // Probamos con una cantidad de ejemplo (ej. Venta de ganado)
-    $montoEjemplo = 500;
-
-    return formatoPesos($montoEjemplo);
-});
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

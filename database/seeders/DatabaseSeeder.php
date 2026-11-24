@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AdminUserSeeder::class,
-            ProveedorGanadoSeeder::class
+            ProveedorGanadoSeeder::class,
+            EngordaYCalidadSeeder::class,
         ]);
     }
 }
