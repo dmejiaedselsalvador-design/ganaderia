@@ -14,6 +14,25 @@
             </div>
         </div>
 
+        @if(($listosVenta ?? 0) > 0)
+            <!-- ALERTA DE GANADO LISTO PARA VENDER -->
+            <div class="p-4 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl text-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">
+                        🎯
+                    </div>
+                    <div>
+                        <strong class="font-bold text-sm block">¡Hay {{ $listosVenta }} cabezas de ganado que alcanzaron su peso objetivo!</strong>
+                        <span class="text-xs text-amber-100">Cumplen con el peso meta de venta para su categoría y están listos para comercialización.</span>
+                    </div>
+                </div>
+                <a href="{{ route('compras.ganado.index', ['filtro' => 'listos_venta']) }}"
+                   class="bg-white hover:bg-slate-50 text-amber-900 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm shrink-0 flex items-center gap-1.5">
+                    Ver Animales Listos <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        @endif
+
         <!-- 1. FILA DE TARJETAS (KPIs) CON ICONOS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <!-- Total Ganado -->
@@ -49,14 +68,14 @@
                 </div>
             </div>
 
-            <!-- Costo Alimento -->
+            <!-- Ingresos Ventas MXN -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Costo Alimento / Día</p>
-                    <h3 class="text-2xl font-black text-slate-800 mt-1">$0.00</h3>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ingresos por Ventas</p>
+                    <h3 class="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-1">{{ formatoPesos($ingresosVentasMXN ?? 0) }}</h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
                 </div>
             </div>
         </div>

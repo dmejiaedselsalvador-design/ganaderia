@@ -2,153 +2,134 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ganado\ProveedorGanado;
+use App\Http\Requests\Ganado\StoreGanadoBatchRequest;
+use App\Models\Ganado\BajaGanado;
 use App\Models\Ganado\FacturaGanado;
 use App\Models\Ganado\Ganado;
-use App\Models\Ganado\Adelanto;
-use App\Models\Ganado\AdelantoFactura;
-
-use Illuminate\Support\Facades\DB;
+use App\Models\Ganado\ProveedorGanado;
+use App\Services\GanadoService;
+use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class AnimalController extends Controller
 {
+    public function __construct(
+        protected GanadoService $ganadoService
+    ) {}
+
     /**
-     * Display a listing of the resource.
+     * Muestra el catálogo de ganado con filtros operativos en tiempo real
+     * (Activos, Listos para Venta, Vendidos, Bajas/Mortalidad).
      */
-    public function index()
+    public function index(Request $request): View
     {
-        //
-     $ganados =   Ganado::where('status','=','Activo')->get();
-        return view('animals.index',compact('ganados'));
+        $filtro = $request->input('filtro', 'activos');
+
+        // Conteos globales para los tabs de filtro
+        $conteos = [
+            'todos'        => Ganado::count(),
+            'activos'      => Ganado::activo()->count(),
+            'listos_venta' => Ganado::listoParaVenta()->count(),
+            'vendidos'     => Ganado::vendido()->count(),
+            'muertos'      => Ganado::muerto()->count(),
+        ];
+
+        $query = Ganado::with(['factura.proveedor', 'ultimoPesaje']);
+
+        match ($filtro) {
+            'todos'        => null,
+            'listos_venta' => $query->listoParaVenta(),
+            'vendidos'     => $query->vendido(),
+            'muertos'      => $query->muerto(),
+            default        => $query->activo(),
+        };
+
+        if ($request->filled('buscar')) {
+            $buscar = $request->input('buscar');
+            $query->where(function ($q) use ($buscar) {
+                $q->where('areteID', 'LIKE', "%{$buscar}%")
+                  ->orWhere('raza', 'LIKE', "%{$buscar}%")
+                  ->orWhere('categoria', 'LIKE', "%{$buscar}%");
+            });
+        }
+
+        $ganados = $query->latest('GanadoID')->paginate(20)->withQueryString();
+
+        return view('animals.index', compact('ganados', 'filtro', 'conteos'));
     }
 
-    public function perfil(Request $request)
+    /**
+     * Muestra el expediente operativo y perfil individual de un animal:
+     * - Historial de pesajes y GDP (Ganancia Diaria de Peso).
+     * - Estatus de peso objetivo de venta.
+     * - Registro de baja/mortalidad o venta si aplica.
+     */
+    public function perfil(Request $request): View
     {
-        $areteBuscado = $request->input('arete');
         $ganadoSeleccionado = null;
 
-        if($areteBuscado){
-
-            $ganadoSeleccionado = Ganado::where('areteID','LIKE', "%$areteBuscado%")->first();
+        if ($request->filled('arete')) {
+            $ganadoSeleccionado = Ganado::with([
+                'factura.proveedor',
+                'pesajes.usuario',
+                'baja.usuario',
+                'detalleVenta.venta',
+            ])->where('areteID', $request->input('arete'))->first();
+        } elseif ($request->filled('ganado_id')) {
+            $ganadoSeleccionado = Ganado::with([
+                'factura.proveedor',
+                'pesajes.usuario',
+                'baja.usuario',
+                'detalleVenta.venta',
+            ])->find($request->input('ganado_id'));
         }
 
-        if ($request->filled('ganado_id')) {
-            $ganadoSeleccionado = Ganado::find($request->ganado_id);
+        $causasMuerte = BajaGanado::CAUSAS_COMUNES;
+
+        return view('animals.perfil', compact('ganadoSeleccionado', 'causasMuerte'));
+    }
+
+    /**
+     * Formulario de ingreso de un nuevo lote de ganado vinculado a una factura o proveedor.
+     */
+    public function nuevoGanado(Request $request): View
+    {
+        $factura = null;
+        $proveedorSeleccionado = null;
+
+        if ($request->filled('factura_id')) {
+            $factura = FacturaGanado::with('proveedor')->find($request->factura_id);
+            if ($factura) {
+                $proveedorSeleccionado = $factura->proveedor;
+            }
+        } elseif ($request->filled('proveedor_id')) {
+            $proveedorSeleccionado = ProveedorGanado::find($request->proveedor_id);
         }
 
-
-
-
-        return view('animals.perfil',compact('ganadoSeleccionado'));
+        return view('compras.nuevoGanado', compact('factura', 'proveedorSeleccionado'));
     }
 
-
-
-    public function nuevoGanado(Request $request)
+    /**
+     * Guarda un lote de animales en una transacción controlada.
+     */
+    public function store(StoreGanadoBatchRequest $request): RedirectResponse
     {
-      $factura = null;
-    $proveedorSeleccionado = null;
+        try {
+            $facturaId = (int) ($request->input('factura_id') ?? $request->input('factura-id'));
+            $fechaCompra = $request->input('purchase_date') ?: now()->toDateString();
+            $animals = (array) $request->input('animals', []);
 
-    // Si viene desde la creación de factura
-    if ($request->filled('factura_id')) {
-        $factura = FacturaGanado::with('proveedor')->find($request->factura_id);
-        if ($factura) {
-            $proveedorSeleccionado = $factura->proveedor;
+            $this->ganadoService->registrarLote($facturaId, $fechaCompra, $animals);
+
+            return redirect()
+                ->route('compras.ganado.index')
+                ->with('success', 'Lote de ganado registrado exitosamente.');
+        } catch (Exception $e) {
+            return back()
+                ->withErrors(['error' => 'Ocurrió un error al registrar el lote: ' . $e->getMessage()])
+                ->withInput();
         }
-    }
-    // Si viene desde el botón de la tabla con ?proveedor_id=X
-    elseif ($request->filled('proveedor_id')) {
-        $proveedorSeleccionado = ProveedorGanado::find($request->proveedor_id);
-    }
-        return view('compras.nuevoGanado',compact('factura','proveedorSeleccionado'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-public function store(Request $request)
-{
-    // 1. Validar los datos generales del formulario y el array de animales
-    $request->validate([
-        'factura-id'             => 'required|numeric',
-        'animals'                => 'required|array|min:1',
-        'animals.*.tag_number'   => 'required|string|distinct|unique:ganado,areteID',
-        'animals.*.category'     => 'required|in:Becerro,Becerra,Vaca,Vaquilla,Toro,Torete',
-        'animals.*.gender'       => 'required|in:Macho,Hembra',
-        'animals.*.weight'       => 'required|numeric|min:0.01',
-        'animals.*.unit_price'   => 'required|numeric|min:0',
-        'animals.*.total'        => 'required|numeric|min:0',
-        'animals.*.breed'        => 'nullable|string|max:255',
-        'animals.*.observation'  => 'nullable|string|max:255',
-    ]);
-
-    // 2. Proceso de guardado usando una transacción
-    \DB::beginTransaction();
-    try {
-        // 3. Recorrer el arreglo y crear cada animal vinculado
-        foreach ($request->animals as $animalData) {
-            Ganado::create([
-                'facturaID'    => $request['factura-id'],
-                'areteID'      => $animalData['tag_number'],
-                'raza'         => $animalData['breed'] ?? null,
-                'categoria'    => $animalData['category'], // Al asignar esto, tu modelo activa automáticamente el mutador para el 'sexo'
-                'pesoActual'   => $animalData['weight'],
-                'ultimoPeso'   => $animalData['weight'],
-                'precioCompra' => $animalData['unit_price'],
-                'fechaCompra'  => $request->purchase_date,
-                'status'       => 'Activo',
-                'notas'        => $animalData['observation'] ?? null,
-            ]);
-        }
-
-        \DB::commit();
-
-        return redirect()->route('compras.ganado.index')
-            ->with('success', 'Lote de ganado registrado exitosamente.');
-
-    } catch (\Exception $e) {
-        \DB::rollBack();
-        return back()->withErrors(['error' => 'Ocurrió un error al registrar el lote: ' . $e->getMessage()])->withInput();
-    }
-}
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

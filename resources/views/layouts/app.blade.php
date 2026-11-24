@@ -90,8 +90,8 @@
                         <a href="{{ route('proveedores.facturas.index') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition {{ $a2 ? 'bg-emerald-600/30 text-white' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
                             <i class="fa-solid fa-file-invoice w-4 text-center {{ $a2 ? 'text-amber-300' : '' }}"></i> Guias
                         </a>
-                        @php $a3 = request()->routeIs('provedores.deudores.lista'); @endphp
-                        <a href="{{ route('provedores.deudores.lista') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition {{ $a3 ? 'bg-emerald-600/30 text-white' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
+                        @php $a3 = request()->routeIs('proveedores.deudores.lista') || request()->routeIs('provedores.deudores.lista'); @endphp
+                        <a href="{{ route('proveedores.deudores.lista') }}" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition {{ $a3 ? 'bg-emerald-600/30 text-white' : 'text-emerald-100/50 hover:bg-white/5 hover:text-white' }}">
                             <i class="fa-solid fa-money-bill-transfer w-4 text-center {{ $a3 ? 'text-amber-300' : '' }}"></i> Deudores
                         </a>
                     </div>
@@ -103,19 +103,28 @@
                 @php $act = request()->routeIs('compras.ganado.index'); @endphp
                 <a href="{{ route('compras.ganado.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
                     @if($act)<span class="{{ $bar }}"></span>@endif
-                    <i class="fa-solid fa-cart-shopping w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Ganado
+                    <i class="fa-solid fa-cow w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Inventario Ganado
                 </a>
 
-                <!-- Perfil -->
+                <!-- Perfil / Expediente -->
                 @php $act = request()->routeIs('compras.ganado.perfil'); @endphp
                 <a href="{{ route('compras.ganado.perfil') }}" class="{{ $base }} {{ $act ? $on : $off }}">
                     @if($act)<span class="{{ $bar }}"></span>@endif
-                    <i class="fa-solid fa-weight-scale w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Perfil
+                    <i class="fa-solid fa-id-card w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Expediente Bovino
                 </a>
 
-                <!-- Exportación -->
-                <a href="#" class="{{ $base }} {{ $off }}">
-                    <i class="fa-solid fa-file-invoice-dollar w-5 text-center group-hover:text-amber-200"></i> Exportación USA
+                <!-- Ventas de Ganado -->
+                @php $act = request()->routeIs('ventas.*'); @endphp
+                <a href="{{ route('ventas.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
+                    @if($act)<span class="{{ $bar }}"></span>@endif
+                    <i class="fa-solid fa-cart-shopping w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Ventas de Ganado
+                </a>
+
+                <!-- Bajas y Mortalidad -->
+                @php $act = request()->routeIs('ganado.bajas.*'); @endphp
+                <a href="{{ route('ganado.bajas.index') }}" class="{{ $base }} {{ $act ? $on : $off }}">
+                    @if($act)<span class="{{ $bar }}"></span>@endif
+                    <i class="fa-solid fa-skull w-5 text-center {{ $act ? 'text-amber-300' : 'group-hover:text-amber-200' }}"></i> Bajas / Mortalidad
                 </a>
             </nav>
 

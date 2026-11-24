@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('liquidacion_guias', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('adelanto_id')->constrained('adelantos')->onDelete('cascade');
-            $table->foreignId('guia_id')->constrained('facturaGanado')->onDelete('cascade');
-            $table->decimal('montoAplicado', 12, 2); // Cuánto dinero se usó de este adelanto para esta factura
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('adelanto_factura')) {
+            Schema::create('adelanto_factura', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('adelanto_id')->constrained('adelantos')->onDelete('cascade');
+                $table->foreignId('factura_id')->constrained('facturaGanado')->onDelete('cascade');
+                $table->decimal('montoAplicado', 12, 2)->default(0);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -1,49 +1,48 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Http\Requests\Adelanto\StoreAdelantoRequest;
 use App\Models\Ganado\Adelanto;
 use App\Models\Ganado\ProveedorGanado;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class AdelantoController extends Controller
 {
-    //
-    public function index(){
-            $proveedores = ProveedorGanado::all();
+    /**
+     * Muestra la pantalla general de adelantos con todos los proveedores activos.
+     */
+    public function index(): View
+    {
+        $proveedores = ProveedorGanado::activo()->orderBy('nombreProveedor')->get();
 
-        return view('adelantos.prestamos',compact('proveedores'));
+        return view('adelantos.prestamos', compact('proveedores'));
     }
 
-    public function create(ProveedorGanado $proveedor){
-
-        return view('adelantos.prestamos',compact('proveedor'));
+    /**
+     * Formulario para emitir un adelanto o préstamo a un proveedor específico.
+     */
+    public function create(ProveedorGanado $proveedor): View
+    {
+        return view('adelantos.prestamos', compact('proveedor'));
     }
 
-    public function store(Request $Request){
-
-       $Request->validate([
-            'supplier_id'   => 'required|exists:proveedorGanado,id', // Cambia 'proveedorGanado' por el nombre real de tu tabla de proveedores si es distinta
-            'advance_date'  => 'required|date',
-            'concept'       => 'required|string|max:255',
-            'amount'        => 'required|numeric|min:0.01',
-
-        ], [
-            'supplier_id.required'  => 'El identificador del proveedor es obligatorio.',
-            'advance_date.required' => 'La fecha del adelanto es obligatoria.',
-            'concept.required'      => 'El concepto o descripción es obligatorio.',
-            'amount.required'       => 'El monto equivalente es obligatorio.',
-            'amount.min'            => 'El monto debe ser mayor a cero.',
+    /**
+     * Registra un nuevo adelanto financiero.
+     */
+    public function store(StoreAdelantoRequest $request): RedirectResponse
+    {
+        Adelanto::create([
+            'proveedor_id' => $request->input('supplier_id'),
+            'date'         => $request->input('advance_date'),
+            'concepto'     => $request->input('concept'),
+            'dinero'       => $request->input('amount'),
+            'status'       => Adelanto::STATUS_ENTREGADO,
         ]);
 
-           Adelanto::create([
-         'proveedor_id'    => $Request->supplier_id,
-            'date'           => $Request->advance_date,
-            'concepto'        => $Request->concept,
-            'dinero'           => $Request->amount,
-          //  'montoDisponible'  => $Request->amount,
-            'estado'          => 'disponible',
-           ]);
-
-           return redirect()->route('proveedores.index')->with('success','Adelanto o prestamo Registrado con Exito');
+        return redirect()
+            ->route('proveedores.index')
+            ->with('success', 'Adelanto o préstamo registrado con éxito.');
     }
 }
