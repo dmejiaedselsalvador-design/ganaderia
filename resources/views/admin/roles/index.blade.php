@@ -55,7 +55,7 @@
                             <i class="fa-solid fa-pen-to-square"></i> {{ $esSistema ? 'Ver' : 'Editar' }}
                         </a>
                         @unless ($esSistema)
-                            <form method="POST" action="{{ route('roles.destroy', $r) }}" onsubmit="return confirm('¿Eliminar el rol {{ e($r->display_name ?? $r->name) }}?')">
+                            <form method="POST" action="{{ route('roles.destroy', $r) }}" data-confirm="¿Eliminar el rol {{ $r->display_name ?? $r->name }}?" data-peligro data-boton="Eliminar">
                                 @csrf @method('DELETE')
                                 <button class="rounded-lg px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-trash-can"></i></button>
                             </form>

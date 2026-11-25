@@ -2,6 +2,8 @@
 
 namespace App\Models\Venta;
 
+use App\Models\Concerns\Auditable;
+use App\Models\Concerns\TieneDocumentos;
 use App\Models\Ganado\Ganado;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  */
 class VentaGanado extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable, TieneDocumentos;
 
     protected $table = 'ventas_ganado';
 
@@ -44,6 +46,12 @@ class VentaGanado extends Model
 
     protected $fillable = [
         'folio_venta',
+        'cliente_id',
+        'condicion_pago',
+        'forma_pago',
+        'fecha_vencimiento',
+        'saldo_pendiente',
+        'folio_cfdi',
         'cliente_nombre',
         'cliente_telefono',
         'cliente_identificacion',
@@ -62,6 +70,8 @@ class VentaGanado extends Model
 
     protected $casts = [
         'fecha_venta'   => 'date',
+        'fecha_vencimiento' => 'date',
+        'saldo_pendiente' => 'decimal:2',
         'peso_total_kg' => 'decimal:2',
         'subtotal'      => 'decimal:2',
         'descuento'     => 'decimal:2',
@@ -97,5 +107,40 @@ class VentaGanado extends Model
         $consecutivo = isset($partes[2]) ? ((int) $partes[2]) + 1 : 1;
 
         return sprintf('%s-%04d', $prefijo, $consecutivo);
+    }
+
+    public const CONTADO = 'contado';
+    public const CREDITO = 'credito';
+
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Ganaderia\Cliente::class)->withTrashed();
+    }
+
+    public function abonos(): HasMany
+    {
+        return $this->hasMany(\App\Models\Ganaderia\AbonoVenta::class, 'venta_id')->orderByDesc('fecha')->orderByDesc('id');
+    }
+
+    /** Recalcula el saldo pendiente a partir de los abonos vigentes. */
+    public function recalcularSaldo(): void
+    {
+        $pagado = (float) $this->abonos()->where('estado', 'vigente')->sum('monto');
+        $this->forceFill(['saldo_pendiente' => max(0, round((float) $this->total_venta - $pagado, 2))])->save();
+    }
+
+    public function totalPagado(): float
+    {
+        return round((float) $this->total_venta - (float) $this->saldo_pendiente, 2);
+    }
+
+    public function vencida(): bool
+    {
+        return (float) $this->saldo_pendiente > 0 && $this->fecha_vencimiento && $this->fecha_vencimiento->isPast() && ! $this->fecha_vencimiento->isToday();
+    }
+
+    public function descripcionAuditoria(): string
+    {
+        return "Venta {$this->folio_venta}";
     }
 }

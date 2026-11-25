@@ -42,10 +42,12 @@ class BajaGanadoController extends Controller
                 causaMuerte: $request->input('causa_muerte'),
                 necropsia: $request->input('necropsia'),
                 observaciones: $request->input('observaciones'),
-                userId: Auth::id()
+                userId: Auth::id(),
+                tipoBaja: $request->input('tipo_baja', 'Muerte'),
+                valorRecuperado: (float) $request->input('valor_recuperado_mxn', 0)
             );
 
-            return back()->with('success', "Baja por mortalidad del animal registrada correctamente.");
+            return back()->with('success', "Baja ({$baja->tipo_baja}) registrada. Pérdida económica estimada: " . formatoPesos($baja->valor_perdido_mxn) . '.');
         } catch (Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }

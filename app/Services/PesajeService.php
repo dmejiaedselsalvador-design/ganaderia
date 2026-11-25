@@ -21,7 +21,9 @@ class PesajeService
         ?string $bascula = null,
         ?string $lote = null,
         ?string $observaciones = null,
-        ?int $userId = null
+        ?int $userId = null,
+        ?float $condicionCorporal = null,
+        bool $enAyuno = false
     ): PesajeGanado {
         $ganado = Ganado::findOrFail($ganadoId);
 
@@ -33,7 +35,7 @@ class PesajeService
             throw new Exception("El peso registrado debe ser mayor a cero.");
         }
 
-        return DB::transaction(function () use ($ganado, $peso, $fecha, $bascula, $lote, $observaciones, $userId) {
+        return DB::transaction(function () use ($ganado, $peso, $fecha, $bascula, $lote, $observaciones, $userId, $condicionCorporal, $enAyuno) {
             $fechaPesaje = Carbon::parse($fecha);
 
             // Obtener el pesaje anterior más reciente
@@ -51,7 +53,7 @@ class PesajeService
             if ($pesajeAnterior) {
                 $pesoAnterior = (float) $pesajeAnterior->peso;
                 $gananciaPeso = round($peso - $pesoAnterior, 2);
-                $diasTranscurridos = max(1, $fechaPesaje->diffInDays($pesajeAnterior->fecha_pesaje));
+                $diasTranscurridos = max(1, (int) abs($fechaPesaje->diffInDays($pesajeAnterior->fecha_pesaje)));
                 $gdp = round($gananciaPeso / $diasTranscurridos, 3);
             } else {
                 // Si es el primer pesaje registrado en la bitácora, comparamos con el peso de ingreso
@@ -59,7 +61,7 @@ class PesajeService
                 $pesoAnterior = $pesoIngreso;
                 $gananciaPeso = round($peso - $pesoIngreso, 2);
                 $fechaInicio = $ganado->fechaCompra ? Carbon::parse($ganado->fechaCompra) : Carbon::parse($ganado->created_at);
-                $diasTranscurridos = max(1, $fechaPesaje->diffInDays($fechaInicio));
+                $diasTranscurridos = max(1, (int) abs($fechaPesaje->diffInDays($fechaInicio)));
                 $gdp = round($gananciaPeso / $diasTranscurridos, 3);
             }
 
@@ -76,10 +78,19 @@ class PesajeService
                 'lote_corral'        => $lote,
                 'observaciones'      => $observaciones,
                 'user_id'            => $userId,
+                'condicion_corporal' => $condicionCorporal,
+                'en_ayuno'           => $enAyuno,
             ]);
 
-            // Actualizar último peso en el animal
-            $ganado->ultimoPeso = $peso;
+            // Actualizar último peso en el animal (solo si es el pesaje más reciente)
+            $hayPosterior = PesajeGanado::where('ganado_id', $ganado->GanadoID)->where('id', '!=', $pesaje->id)
+                ->whereDate('fecha_pesaje', '>', $fechaPesaje->toDateString())->exists();
+            if (! $hayPosterior) {
+                $ganado->ultimoPeso = $peso;
+            }
+            if ($condicionCorporal !== null) {
+                $ganado->condicion_corporal = $condicionCorporal;
+            }
             if (!empty($lote)) {
                 $ganado->lote_potrero = $lote;
             }

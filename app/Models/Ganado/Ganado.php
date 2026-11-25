@@ -2,6 +2,8 @@
 
 namespace App\Models\Ganado;
 
+use App\Models\Concerns\Auditable;
+use App\Models\Concerns\TieneDocumentos;
 use App\Models\Calidad\EvaluacionCanal;
 use App\Models\Engorda\CorralLote;
 use App\Models\Sanidad\TratamientoSanitario;
@@ -43,7 +45,7 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
  */
 class Ganado extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable, TieneDocumentos;
 
     protected $table = 'ganado';
 
@@ -57,6 +59,9 @@ class Ganado extends Model
     public const STATUS_VENDIDO = 'Vendido';
     public const STATUS_MUERTO = 'Muerto';
     public const STATUS_EXPORTADO = 'Exportado';
+    public const STATUS_BAJA = 'Baja'; // robo, extravío o descarte
+
+    public const DENTICIONES = ['Dientes de leche', '2 dientes', '4 dientes', '6 dientes', 'Boca llena'];
 
     public const CATEGORIAS_MACHOS = ['Becerro', 'Torete', 'Toro'];
     public const CATEGORIAS_HEMBRAS = ['Becerra', 'Vaquilla', 'Vaca'];
@@ -76,6 +81,15 @@ class Ganado extends Model
     protected $fillable = [
         'facturaID',
         'areteID',
+        'arete_siniiga',
+        'fierro',
+        'color_senas',
+        'procedencia',
+        'upp_origen',
+        'denticion',
+        'peso_origen',
+        'fecha_ingreso_corral',
+        'costo_adicional_compra',
         'raza',
         'categoria',
         'lote_potrero',
@@ -103,6 +117,9 @@ class Ganado extends Model
         'precioCompra'     => 'decimal:2',
         'fechaCompra'      => 'date',
         'fecha_nacimiento' => 'date',
+        'fecha_ingreso_corral' => 'date',
+        'peso_origen'      => 'decimal:2',
+        'costo_adicional_compra' => 'decimal:2',
     ];
 
     /**
@@ -264,7 +281,7 @@ class Ganado extends Model
      */
     public function getGdpHistoricaAttribute(): float
     {
-        $dias = $this->fechaCompra ? max(1, now()->diffInDays($this->fechaCompra)) : 1;
+        $dias = $this->fechaCompra ? max(1, (int) abs(now()->diffInDays($this->fechaCompra))) : 1;
 
         return round($this->ganancia_total / $dias, 3);
     }
@@ -368,5 +385,43 @@ class Ganado extends Model
     public function scopeVendido(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_VENDIDO);
+    }
+
+    /** Historial de movimientos entre corrales. */
+    public function movimientosCorral(): HasMany
+    {
+        return $this->hasMany(\App\Models\Ganaderia\MovimientoCorral::class, 'ganado_id', 'GanadoID')->orderByDesc('fecha')->orderByDesc('id');
+    }
+
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(\App\Models\Ganaderia\GanadoFoto::class, 'ganado_id', 'GanadoID')->latest();
+    }
+
+    public function eventosEnfermedad(): HasMany
+    {
+        return $this->hasMany(\App\Models\Ganaderia\EventoEnfermedad::class, 'ganado_id', 'GanadoID')->orderByDesc('fecha_inicio');
+    }
+
+    /** Costo de adquisición del animal: peso de ingreso x precio + prorrateo de flete/comisión/trámites. */
+    public function costoAdquisicion(): float
+    {
+        return round((float) $this->pesoActual * (float) $this->precioCompra + (float) $this->costo_adicional_compra, 2);
+    }
+
+    /** Merma de viaje (destare) en kg y % contra el peso en origen. */
+    public function mermaViaje(): ?array
+    {
+        if (! $this->peso_origen || (float) $this->peso_origen <= 0) {
+            return null;
+        }
+        $kg = round((float) $this->peso_origen - (float) $this->pesoActual, 2);
+
+        return ['kg' => $kg, 'pct' => round($kg / (float) $this->peso_origen * 100, 2)];
+    }
+
+    public function descripcionAuditoria(): string
+    {
+        return "Arete {$this->areteID}";
     }
 }

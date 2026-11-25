@@ -113,4 +113,12 @@ return [
     */
     'remember_minutes' => (int) env('AUTH_REMEMBER_MINUTES', 43200),
 
+    /*
+    | Cuenta inicial de Súper Administrador (la crea AdminUserSeeder con clave temporal).
+    */
+    'admin_inicial' => [
+        'name'  => env('ADMIN_NAME'),
+        'email' => env('ADMIN_EMAIL'),
+    ],
+
 ];

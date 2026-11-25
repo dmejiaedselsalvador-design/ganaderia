@@ -1,6 +1,36 @@
 <x-app-layout>
     <div class="mx-auto max-w-7xl space-y-6">
 
+        @if ($ct = session('clave_temporal'))
+            <!-- Clave temporal: se muestra UNA sola vez -->
+            <div x-data="{ open: true, copiado: false }" x-show="open" x-cloak
+                 class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+                <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-2xl">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-lg text-amber-600"><i class="fa-solid fa-key"></i></div>
+                    <h2 class="mt-4 text-lg font-bold text-slate-900">Clave temporal de {{ $ct['nombre'] }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">Entrégasela por un medio seguro. <strong class="text-slate-700">No se volverá a mostrar</strong>; en su primer ingreso deberá cambiarla.</p>
+
+                    <div class="mt-5 space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-xs text-slate-500">Usuario</p>
+                        <p class="font-mono text-sm font-semibold text-slate-800">{{ $ct['email'] }}</p>
+                        <p class="pt-2 text-xs text-slate-500">Clave temporal</p>
+                        <div class="flex items-center gap-2">
+                            <code id="clave-temporal" class="flex-1 select-all rounded-lg bg-white px-3 py-2 font-mono text-lg font-bold tracking-wider text-slate-900 border border-slate-200">{{ $ct['clave'] }}</code>
+                            <button type="button" class="rounded-lg bg-slate-900 px-3 py-2.5 text-xs font-semibold text-white hover:bg-slate-800"
+                                    @click="navigator.clipboard.writeText(document.getElementById('clave-temporal').innerText.trim()); copiado = true">
+                                <span x-show="!copiado"><i class="fa-regular fa-copy"></i> Copiar</span>
+                                <span x-show="copiado" x-cloak><i class="fa-solid fa-check"></i> Copiada</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" @click="open = false" class="mt-6 w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+                        Ya la entregué, cerrar
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <!-- Encabezado -->
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -21,6 +51,17 @@
                 @endcan
             </div>
         </div>
+
+        @can('usuarios.solicitudes_clave')
+            @php $pend = \App\Models\SolicitudClave::pendientesCount(); @endphp
+            @if ($pend)
+                <a href="{{ route('solicitudes.index') }}" class="flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-800 hover:bg-rose-100">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="flex-1">Tienes {{ $pend }} {{ $pend === 1 ? 'solicitud' : 'solicitudes' }} de cambio de clave esperando respuesta.</span>
+                    <span class="text-xs">Revisar →</span>
+                </a>
+            @endif
+        @endcan
 
         <!-- Resumen -->
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -126,6 +167,12 @@
                                 <td class="px-5 py-3.5">
                                     @if ($u->estaActivo())
                                         <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> Activo</span>
+                                        @if ($u->bloqueo_solicitud_clave)
+                                            <span class="mt-1 flex items-center gap-1 text-[11px] font-semibold text-rose-600" title="No puede solicitar cambios de clave"><i class="fa-solid fa-ban"></i> Solicitudes bloqueadas</span>
+                                        @endif
+                                        @if ($u->debeCambiarClave())
+                                            <span class="mt-1 flex items-center gap-1 text-[11px] font-semibold text-amber-600" title="Aún no cambia su clave temporal"><i class="fa-solid fa-key"></i> Clave temporal</span>
+                                        @endif
                                     @else
                                         <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700"><span class="h-2 w-2 rounded-full bg-rose-500"></span> De baja</span>
                                     @endif
@@ -146,9 +193,28 @@
                                                 </a>
                                             @endcan
                                             @if (! $soyYo)
+                                                @can('usuarios.editar')
+                                                    <form method="POST" action="{{ route('usuarios.clave-temporal', $u) }}"
+                                                          data-confirm="¿Generar una nueva clave temporal para {{ $u->name }}? Su clave actual dejará de funcionar y deberá cambiarla al ingresar.">
+                                                        @csrf
+                                                        <button class="flex h-8 w-8 items-center justify-center rounded-lg text-indigo-600 hover:bg-indigo-50" title="Generar clave temporal">
+                                                            <i class="fa-solid fa-key"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                                @can('usuarios.solicitudes_clave')
+                                                    <form method="POST" action="{{ route('solicitudes.bloqueo', $u) }}"
+                                                          data-confirm="{{ $u->bloqueo_solicitud_clave ? '¿Permitir que ' . $u->name . ' vuelva a solicitar cambios de clave?' : '¿Bloquear las solicitudes de cambio de clave de ' . $u->name . '?' }}">
+                                                        @csrf @method('PATCH')
+                                                        <button class="flex h-8 w-8 items-center justify-center rounded-lg {{ $u->bloqueo_solicitud_clave ? 'text-rose-600 bg-rose-50' : 'text-slate-400 hover:bg-slate-100' }}"
+                                                                title="{{ $u->bloqueo_solicitud_clave ? 'Desbloquear solicitudes de clave' : 'Bloquear solicitudes de clave' }}">
+                                                            <i class="fa-solid fa-ban"></i>
+                                                        </button>
+                                                    </form>
+                                                @endcan
                                                 @can('usuarios.baja')
                                                     <form method="POST" action="{{ route('usuarios.estado', $u) }}"
-                                                          onsubmit="return confirmar(event, '{{ $u->estaActivo() ? '¿Dar de baja a ' . e($u->name) . '? Ya no podrá ingresar.' : '¿Reactivar a ' . e($u->name) . '?' }}')">
+                                                          data-confirm="{{ $u->estaActivo() ? '¿Dar de baja a ' . $u->name . '? Ya no podrá ingresar.' : '¿Reactivar a ' . $u->name . '?' }}">
                                                         @csrf @method('PATCH')
                                                         <button class="flex h-8 w-8 items-center justify-center rounded-lg {{ $u->estaActivo() ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }}"
                                                                 title="{{ $u->estaActivo() ? 'Dar de baja' : 'Reactivar' }}">
@@ -158,7 +224,7 @@
                                                 @endcan
                                                 @can('usuarios.eliminar')
                                                     <form method="POST" action="{{ route('usuarios.destroy', $u) }}"
-                                                          onsubmit="return confirmar(event, '¿Eliminar definitivamente a {{ e($u->name) }}? Esta acción no se puede deshacer.', true)">
+                                                          data-confirm="¿Eliminar definitivamente a {{ $u->name }}? Esta acción no se puede deshacer." data-peligro data-boton="Eliminar">
                                                         @csrf @method('DELETE')
                                                         <button class="flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50" title="Eliminar">
                                                             <i class="fa-solid fa-trash-can"></i>
@@ -182,19 +248,4 @@
         </div>
     </div>
 
-    <script>
-        function confirmar(e, mensaje, peligro = false) {
-            if (!window.Swal) return confirm(mensaje);
-            e.preventDefault();
-            const form = e.target;
-            Swal.fire({
-                title: '¿Estás seguro?', text: mensaje, icon: peligro ? 'warning' : 'question',
-                showCancelButton: true, confirmButtonText: 'Sí, continuar', cancelButtonText: 'Cancelar',
-                confirmButtonColor: peligro ? '#e11d48' : '#059669',
-                background: getComputedStyle(document.body).getPropertyValue('--t-surface'),
-                color: getComputedStyle(document.body).getPropertyValue('--t-text'),
-            }).then(r => { if (r.isConfirmed) form.submit(); });
-            return false;
-        }
-    </script>
 </x-app-layout>

@@ -37,10 +37,21 @@
 </head>
 <body class="font-['Inter'] antialiased {{ $temaClass }}" data-tema="{{ $tema }}" data-planta="{{ $plantaClave }}">
 
-    <div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
+    @php $colapsadoInicial = (bool) session('sb_colapsado', request()->cookie('sb_colapsado') === '1'); @endphp
+    <div class="flex h-screen overflow-hidden"
+         x-data="{
+            sidebarOpen: false,
+            colapsado: @js($colapsadoInicial),
+            alternarSidebar() {
+                this.colapsado = ! this.colapsado;
+                document.cookie = 'sb_colapsado=' + (this.colapsado ? '1' : '0') + ';path=/;max-age=31536000;SameSite=Lax';
+                // También en la sesión: al recargar la página se respeta como lo dejó
+                window.axios?.post(@js(route('preferencias.sidebar')), { colapsado: this.colapsado }).catch(() => {});
+            }
+         }">
 
         <!-- ================= SIDEBAR (según planta activa) ================= -->
-        @include('layouts.sidebar.' . $plantaClave, ['planta' => $planta])
+        @include('layouts.sidebar.' . $plantaClave, ['planta' => $planta, 'colapsadoInicial' => $colapsadoInicial])
 
         <!-- Fondo oscuro móvil -->
         <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"></div>
@@ -50,6 +61,14 @@
 
             <!-- Barra superior -->
             @include('layouts.navigation', ['planta' => $planta, 'plantaClave' => $plantaClave, 'tema' => $tema])
+
+            <!-- Aviso: el sistema tiene datos de prueba cargados -->
+            @if (\App\Support\Simulacion::activa())
+                <div class="border-b border-amber-300 bg-amber-100 px-6 py-2 text-center text-xs font-semibold text-amber-900">
+                    <i class="fa-solid fa-flask-vial"></i> Estás viendo <strong>datos de prueba</strong> (simulación). No captures información real hasta eliminarlos.
+                    @role('super-admin')<a href="{{ route('datos-prueba.index') }}" class="ml-2 underline">Administrar</a>@endrole
+                </div>
+            @endif
 
             <!-- Cabecera opcional -->
             @if (isset($header))

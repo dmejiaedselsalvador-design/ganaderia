@@ -2,6 +2,7 @@
     $usuario    = Auth::user();
     $otras      = \App\Support\Plantas::accesibles($usuario)->except($plantaClave);
     $rolUsuario = $usuario->roles->sortByDesc('nivel')->first();
+    $solicitudesPendientes = $usuario->can('usuarios.solicitudes_clave') ? \App\Models\SolicitudClave::pendientesCount() : null;
     $temas      = ['claro' => ['Claro', 'fa-sun'], 'oscuro' => ['Oscuro', 'fa-moon'], 'metal' => ['Metal', 'fa-gears']];
 @endphp
 
@@ -47,6 +48,20 @@
                 </button>
             @endforeach
         </div>
+
+        <!-- Ayuda de la pantalla y preguntas con captura -->
+        @include('layouts._ayuda')
+
+        <!-- Notificación: solicitudes de cambio de clave -->
+        @if ($solicitudesPendientes !== null)
+            <a href="{{ route('solicitudes.index') }}" title="{{ $solicitudesPendientes ? $solicitudesPendientes . ' solicitud(es) de cambio de clave' : 'Sin solicitudes de clave' }}"
+               class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 transition hover:text-slate-900">
+                <i class="fa-solid fa-bell"></i>
+                @if ($solicitudesPendientes)
+                    <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white ring-2 ring-white animate-pulse">{{ $solicitudesPendientes }}</span>
+                @endif
+            </a>
+        @endif
 
         <!-- Menú de usuario -->
         <div class="relative" x-data="{ open: false, plantas: false }" @keydown.escape.window="open = false">
@@ -111,10 +126,46 @@
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
                         <i class="fa-solid fa-user-gear w-4 text-center text-slate-400"></i> Mi perfil
                     </a>
+                    <a href="{{ route('profile.edit') }}#clave" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+                        <i class="fa-solid fa-key w-4 text-center text-slate-400"></i> Cambiar mi clave
+                    </a>
 
                     @can('usuarios.ver')
                         <a href="{{ route('usuarios.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
                             <i class="fa-solid fa-users w-4 text-center text-slate-400"></i> Usuarios
+                        </a>
+                    @endcan
+                    @can('usuarios.solicitudes_clave')
+                        <a href="{{ route('solicitudes.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+                            <i class="fa-solid fa-key w-4 text-center text-slate-400"></i>
+                            <span class="flex-1">Solicitudes de clave</span>
+                            @if ($solicitudesPendientes)
+                                <span class="rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ $solicitudesPendientes }}</span>
+                            @endif
+                        </a>
+                    @endcan
+                    @can('ayuda.responder')
+                        @php $preguntasPendientes = \App\Models\PreguntaAyuda::pendientes()->count(); @endphp
+                        <a href="{{ route('ayuda.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+                            <i class="fa-solid fa-circle-question w-4 text-center text-slate-400"></i>
+                            <span class="flex-1">Preguntas de usuarios</span>
+                            @if ($preguntasPendientes)
+                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $preguntasPendientes }}</span>
+                            @endif
+                        </a>
+                    @endcan
+                    @role('super-admin')
+                        <a href="{{ route('datos-prueba.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+                            <i class="fa-solid fa-flask-vial w-4 text-center text-slate-400"></i>
+                            <span class="flex-1">Datos de prueba</span>
+                            @if (\App\Support\Simulacion::activa())
+                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">cargados</span>
+                            @endif
+                        </a>
+                    @endrole
+                    @can('auditoria.ver')
+                        <a href="{{ route('auditoria.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+                            <i class="fa-solid fa-clipboard-list w-4 text-center text-slate-400"></i> Bitácora de auditoría
                         </a>
                     @endcan
                     @can('roles.gestionar')

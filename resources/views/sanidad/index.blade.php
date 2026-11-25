@@ -304,6 +304,66 @@
                         </div>
                     </div>
 
+                    <!-- Medicamento del inventario (descuenta existencia y llena datos) -->
+                    <div class="rounded-xl border border-teal-100 bg-teal-50/50 p-3 space-y-3">
+                        <div>
+                            <div class="mb-1 flex items-center justify-between">
+                                <label class="block font-semibold text-slate-700">Medicamento del inventario</label>
+                                <x-ui.atajo tipo="insumo" target="select[name=insumo_id]" :valores="['tipo' => 'medicamento', 'unidad' => 'ml']" texto="+ Nuevo medicamento" />
+                            </div>
+                            <select name="insumo_id" onchange="elegirMedicamento(this)" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500">
+                                <option value="">— No descontar de inventario —</option>
+                                @foreach ($medicamentos ?? [] as $m)
+                                    <option value="{{ $m->id }}" data-nombre="{{ $m->nombre }}" data-retiro="{{ $m->dias_retiro }}" data-costo="{{ (float) $m->costo_promedio }}" data-unidad="{{ $m->unidad }}">
+                                        {{ $m->nombre }} · existencia {{ rtrim(rtrim(number_format((float) $m->existencia, 2), '0'), '.') }} {{ $m->unidad }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Cantidad <span id="unidad_med" class="font-normal text-slate-400"></span></label>
+                                <input type="number" step="0.001" min="0" name="cantidad_insumo" id="cantidad_insumo" oninput="calcularCostoMed()" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Lote</label>
+                                <input type="text" name="lote_medicamento" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Caducidad</label>
+                                <input type="date" name="caducidad_medicamento" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl">
+                            </div>
+                        </div>
+                        @if (($casosAbiertos ?? collect())->isNotEmpty())
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Caso de enfermedad (opcional)</label>
+                                <select name="evento_enfermedad_id" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl">
+                                    <option value="">— Ninguno —</option>
+                                    @foreach ($casosAbiertos as $caso)
+                                        <option value="{{ $caso->id }}">{{ $caso->ganado->areteID ?? '' }} · {{ $caso->diagnostico }} ({{ $caso->fecha_inicio->format('d/m') }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                    </div>
+                    <script>
+                        let costoUnitMed = 0;
+                        function elegirMedicamento(sel) {
+                            const op = sel.options[sel.selectedIndex];
+                            const f = sel.form;
+                            if (!op.value) { costoUnitMed = 0; document.getElementById('unidad_med').innerText = ''; return; }
+                            f.medicamento_producto.value = op.dataset.nombre;
+                            if (op.dataset.retiro !== '') f.dias_retiro_rastro.value = op.dataset.retiro;
+                            costoUnitMed = Number(op.dataset.costo || 0);
+                            document.getElementById('unidad_med').innerText = '(' + op.dataset.unidad + ')';
+                            calcularCostoMed();
+                        }
+                        function calcularCostoMed() {
+                            const c = Number(document.getElementById('cantidad_insumo').value || 0);
+                            if (costoUnitMed > 0 && c > 0) document.querySelector('[name=costo_medicamento_mxn]').value = (c * costoUnitMed).toFixed(2);
+                        }
+                    </script>
+
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Producto / Medicamento Comercial *</label>
                         <input type="text" name="medicamento_producto" required placeholder="Ej. Bovilis Vista Once, Dectomax, Revalor-S..."

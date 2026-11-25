@@ -39,6 +39,8 @@ class SanidadController extends Controller
         $inversionSanitariaMXN = (float) TratamientoSanitario::sum('costo_medicamento_mxn');
 
         $ganadosActivos = Ganado::activo()->orderBy('areteID', 'asc')->get();
+        $medicamentos = \App\Models\Ganaderia\Insumo::activos()->where('tipo', 'medicamento')->orderBy('nombre')->get();
+        $casosAbiertos = \App\Models\Ganaderia\EventoEnfermedad::abiertos()->with('ganado:GanadoID,areteID')->get();
 
         return view('sanidad.index', compact(
             'tratamientos',
@@ -46,7 +48,9 @@ class SanidadController extends Controller
             'totalTratamientos',
             'inversionSanitariaMXN',
             'ganadosActivos',
-            'filtro'
+            'filtro',
+            'medicamentos',
+            'casosAbiertos'
         ));
     }
 
@@ -66,6 +70,11 @@ class SanidadController extends Controller
             'costo_medicamento_mxn'  => 'required|numeric|min:0|max:10000',
             'veterinario_responsable'=> 'nullable|string|max:150',
             'diagnostico_motivo'     => 'nullable|string|max:500',
+            'insumo_id'              => 'nullable|exists:insumos,id',
+            'cantidad_insumo'        => 'nullable|numeric|min:0',
+            'lote_medicamento'       => 'nullable|string|max:60',
+            'caducidad_medicamento'  => 'nullable|date',
+            'evento_enfermedad_id'   => 'nullable|exists:eventos_enfermedad,id',
         ]);
 
         $diasRetiro = (int) $validated['dias_retiro_rastro'];
@@ -73,8 +82,13 @@ class SanidadController extends Controller
             ? Carbon::parse($validated['fecha_aplicacion'])->addDays($diasRetiro)->toDateString()
             : null;
 
-        TratamientoSanitario::create([
+        $tratamiento = TratamientoSanitario::create([
             'ganado_id'               => $validated['ganado_id'],
+            'insumo_id'               => $validated['insumo_id'] ?? null,
+            'cantidad_insumo'         => $validated['cantidad_insumo'] ?? null,
+            'lote_medicamento'        => $validated['lote_medicamento'] ?? null,
+            'caducidad_medicamento'   => $validated['caducidad_medicamento'] ?? null,
+            'evento_enfermedad_id'    => $validated['evento_enfermedad_id'] ?? null,
             'tipo_evento'             => $validated['tipo_evento'],
             'medicamento_producto'    => $validated['medicamento_producto'],
             'dosis_aplicada'          => $validated['dosis_aplicada'],
@@ -88,7 +102,17 @@ class SanidadController extends Controller
             'user_id'                 => Auth::id(),
         ]);
 
-        return redirect()->route('sanidad.index')
-            ->with('success', "Tratamiento registrado correctamente.");
+        // Descuenta el medicamento del inventario
+        if ($tratamiento->insumo_id && (float) $tratamiento->cantidad_insumo > 0) {
+            app(\App\Services\Ganaderia\InventarioService::class)->salida($tratamiento->insumo, (float) $tratamiento->cantidad_insumo, [
+                'fecha'       => $tratamiento->fecha_aplicacion,
+                'lote'        => $tratamiento->lote_medicamento,
+                'referencia'  => "Tratamiento #{$tratamiento->id}",
+                'origen_type' => 'TratamientoSanitario',
+                'origen_id'   => $tratamiento->id,
+            ], permitirNegativo: true);
+        }
+
+        return back()->with('success', "Tratamiento registrado correctamente.");
     }
 }

@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\AyudaController;
+use App\Http\Controllers\Admin\AuditoriaController;
+use App\Http\Controllers\Admin\DatosPruebaController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SolicitudClaveController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,12 +21,36 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/usuarios', [UserController::class, 'store'])->middleware('can:usuarios.crear')->name('usuarios.store');
     Route::get('/usuarios/{user}/editar', [UserController::class, 'edit'])->middleware('can:usuarios.editar')->name('usuarios.edit');
     Route::put('/usuarios/{user}', [UserController::class, 'update'])->middleware('can:usuarios.editar')->name('usuarios.update');
+    Route::post('/usuarios/{user}/clave-temporal', [UserController::class, 'claveTemporal'])->middleware('can:usuarios.editar')->name('usuarios.clave-temporal');
     Route::patch('/usuarios/{user}/estado', [UserController::class, 'toggleEstado'])->middleware('can:usuarios.baja')->name('usuarios.estado');
     Route::delete('/usuarios/{user}', [UserController::class, 'destroy'])->middleware('can:usuarios.eliminar')->name('usuarios.destroy');
 
     // Compatibilidad con enlaces anteriores
-    Route::get('/lista-usuarios', fn () => redirect()->route('usuarios.index'))->name('usuarios.lista');
-    Route::get('/crear-usuario', fn () => redirect()->route('usuarios.create'))->name('register');
+    Route::redirect('/lista-usuarios', '/admin/usuarios')->name('usuarios.lista');
+    Route::redirect('/crear-usuario', '/admin/usuarios/crear')->name('register');
+
+    // Solicitudes de cambio de clave (desde "¿Olvidó su contraseña?")
+    Route::middleware('can:usuarios.solicitudes_clave')->group(function () {
+        Route::get('/solicitudes-clave', [SolicitudClaveController::class, 'index'])->name('solicitudes.index');
+        Route::post('/solicitudes-clave/{solicitud}/aprobar', [SolicitudClaveController::class, 'aprobar'])->name('solicitudes.aprobar');
+        Route::post('/solicitudes-clave/{solicitud}/denegar', [SolicitudClaveController::class, 'denegar'])->name('solicitudes.denegar');
+        Route::patch('/usuarios/{user}/bloqueo-solicitudes', [SolicitudClaveController::class, 'bloqueo'])->name('solicitudes.bloqueo');
+    });
+
+    // Preguntas enviadas desde el botón de Ayuda
+    Route::middleware('can:ayuda.responder')->group(function () {
+        Route::get('/preguntas', [AyudaController::class, 'index'])->name('ayuda.index');
+        Route::put('/preguntas/{pregunta}', [AyudaController::class, 'responder'])->name('ayuda.responder');
+        Route::patch('/preguntas/{pregunta}/cerrar', [AyudaController::class, 'cerrar'])->name('ayuda.cerrar');
+    });
+
+    // Datos de prueba: cargar / eliminar la simulación (solo Súper Administrador, se valida en el controlador)
+    Route::get('/datos-prueba', [DatosPruebaController::class, 'index'])->name('datos-prueba.index');
+    Route::post('/datos-prueba', [DatosPruebaController::class, 'cargar'])->name('datos-prueba.cargar');
+    Route::delete('/datos-prueba', [DatosPruebaController::class, 'eliminar'])->name('datos-prueba.eliminar');
+
+    // Bitácora de auditoría
+    Route::get('/auditoria', [AuditoriaController::class, 'index'])->middleware('can:auditoria.ver')->name('auditoria.index');
 
     // Roles y permisos
     Route::middleware('can:roles.gestionar')->group(function () {

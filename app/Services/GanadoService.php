@@ -34,11 +34,19 @@ class GanadoService
                     'ultimoPeso'   => $peso,
                     'precioCompra' => $precio,
                     'fechaCompra'  => $fechaCompra ?: now()->toDateString(),
+                    'peso_origen'  => isset($item['peso_origen']) && $item['peso_origen'] !== '' ? (float) $item['peso_origen'] : null,
+                    'arete_siniiga' => $item['arete_siniiga'] ?? null,
+                    'fierro'       => $item['fierro'] ?? null,
                     'status'       => Ganado::STATUS_ACTIVO,
                     'notas'        => $item['observation'] ?? $item['notas'] ?? null,
                 ]);
 
                 $registrados->push($ganado);
+            }
+
+            // Reparte flete/comisión/trámites de la guía entre todos sus animales
+            if ($factura = \App\Models\Ganado\FacturaGanado::find($facturaId)) {
+                app(\App\Services\Ganaderia\CostosCompraService::class)->prorratear($factura);
             }
 
             return $registrados;

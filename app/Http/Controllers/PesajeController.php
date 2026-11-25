@@ -30,7 +30,9 @@ class PesajeController extends Controller
                 bascula: $request->input('bascula'),
                 lote: $request->input('lote_corral'),
                 observaciones: $request->input('observaciones'),
-                userId: Auth::id()
+                userId: Auth::id(),
+                condicionCorporal: $request->filled('condicion_corporal') ? (float) $request->input('condicion_corporal') : null,
+                enAyuno: $request->boolean('en_ayuno')
             );
 
             if ($request->wantsJson()) {
@@ -65,5 +67,63 @@ class PesajeController extends Controller
             'arete'   => $ganado->areteID,
             'pesajes' => $ganado->pesajes,
         ]);
+    }
+
+    /**
+     * Carga masiva de pesajes desde un archivo CSV exportado de la báscula.
+     * Columnas: arete, peso, fecha (AAAA-MM-DD o DD/MM/AAAA) [, condicion_corporal]
+     */
+    public function importar(\Illuminate\Http\Request $request): RedirectResponse
+    {
+        $request->validate([
+            'archivo' => ['required', 'file', 'max:2048', 'mimes:csv,txt'],
+            'bascula' => ['nullable', 'string', 'max:100'],
+            'en_ayuno'=> ['nullable', 'boolean'],
+        ], ['archivo.mimes' => 'El archivo debe ser CSV (separado por comas o punto y coma).']);
+
+        $lineas = file($request->file('archivo')->getRealPath(), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $ok = 0;
+        $errores = [];
+
+        foreach ($lineas as $n => $linea) {
+            $linea = trim(preg_replace('/^\xEF\xBB\xBF/', '', $linea));
+            $col = str_getcsv($linea, str_contains($linea, ';') ? ';' : ',', '"', '\\');
+            if (count($col) < 2 || ! is_numeric(str_replace(',', '.', $col[1] ?? ''))) {
+                if ($n > 0) {
+                    $errores[] = 'Línea ' . ($n + 1) . ': formato no válido.';
+                }
+                continue; // encabezado u otra línea no numérica
+            }
+
+            $arete = trim($col[0]);
+            $ganado = \App\Models\Ganado\Ganado::where('areteID', $arete)->orWhere('arete_siniiga', $arete)->first();
+            if (! $ganado) {
+                $errores[] = "Línea " . ($n + 1) . ": arete {$arete} no encontrado.";
+                continue;
+            }
+
+            try {
+                $fechaTxt = trim($col[2] ?? '');
+                $fecha = $fechaTxt === '' ? now()->toDateString()
+                    : (str_contains($fechaTxt, '/') ? \Carbon\Carbon::createFromFormat('d/m/Y', $fechaTxt)->toDateString() : \Carbon\Carbon::parse($fechaTxt)->toDateString());
+
+                $this->pesajeService->registrarPesaje(
+                    ganadoId: $ganado->GanadoID,
+                    peso: (float) str_replace(',', '.', $col[1]),
+                    fecha: $fecha,
+                    bascula: $request->input('bascula') ?: 'Importación CSV',
+                    lote: $ganado->lote_potrero,
+                    observaciones: 'Carga masiva',
+                    userId: Auth::id(),
+                    condicionCorporal: isset($col[3]) && is_numeric($col[3]) ? (float) $col[3] : null,
+                    enAyuno: $request->boolean('en_ayuno')
+                );
+                $ok++;
+            } catch (Exception $e) {
+                $errores[] = 'Línea ' . ($n + 1) . " ({$arete}): " . $e->getMessage();
+            }
+        }
+
+        return back()->with('success', "Se importaron {$ok} pesajes.")->with('errores_importacion', $errores);
     }
 }

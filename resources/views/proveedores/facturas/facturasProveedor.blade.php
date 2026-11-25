@@ -100,6 +100,10 @@
                                             class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-sm">
                                             <i class="fa-solid fa-money-bill-wave text-xs"></i> Liquidar
                                         </a>
+                                        <a href="{{ route('compras.costos.edit', $proveedor->id) }}" title="Flete, comisión, trámites, destare y documentos"
+                                            class="ml-1 inline-flex items-center gap-1.5 px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition">
+                                            <i class="fa-solid fa-truck-ramp-box text-xs"></i> Costos
+                                        </a>
                                     </td>
                                 </tr>
                             @empty

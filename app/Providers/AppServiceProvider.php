@@ -25,5 +25,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Fechas relativas en español ("hace 5 minutos")
         \Carbon\Carbon::setLocale('es');
+
+        // Política de claves: mínimo 8, mayúsculas, minúsculas y números
+        \Illuminate\Validation\Rules\Password::defaults(fn () => \Illuminate\Validation\Rules\Password::min(8)
+            ->letters()
+            ->mixedCase()
+            ->numbers());
     }
 }

@@ -104,11 +104,10 @@ class CorralLoteController extends Controller
             'ganado_ids.*' => 'exists:ganado,GanadoID',
         ]);
 
-        Ganado::whereIn('GanadoID', $validated['ganado_ids'])
-            ->update([
-                'corral_lote_id' => $corral->id,
-                'lote_potrero'   => $corral->codigo,
-            ]);
+        // Se registra el historial de corrales de cada animal (base del costeo por lote)
+        Ganado::whereIn('GanadoID', $validated['ganado_ids'])->get()
+            ->filter(fn ($g) => $g->corral_lote_id !== $corral->id)
+            ->each(fn ($g) => \App\Models\Ganaderia\MovimientoCorral::mover($g, $corral, 'Asignación a corral'));
 
         return redirect()->route('corrales.show', $corral->id)
             ->with('success', count($validated['ganado_ids']) . ' cabezas asignadas al corral con éxito.');
@@ -120,7 +119,7 @@ class CorralLoteController extends Controller
     public function removerGanado(int $corralId, int $ganadoId): RedirectResponse
     {
         $ganado = Ganado::where('GanadoID', $ganadoId)->where('corral_lote_id', $corralId)->firstOrFail();
-        $ganado->update(['corral_lote_id' => null]);
+        \App\Models\Ganaderia\MovimientoCorral::mover($ganado, null, 'Retirado del corral');
 
         return redirect()->route('corrales.show', $corralId)
             ->with('success', "Animal arete {$ganado->areteID} desasignado del corral.");

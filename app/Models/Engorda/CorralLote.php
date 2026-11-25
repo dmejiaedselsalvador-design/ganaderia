@@ -2,6 +2,7 @@
 
 namespace App\Models\Engorda;
 
+use App\Models\Concerns\Auditable;
 use App\Models\Ganado\Ganado;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,13 +13,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class CorralLote extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'corrales_lotes';
 
     protected $fillable = [
         'codigo',
         'nombre',
+        'ubicacion_id',
+        'meta_gdp',
+        'meta_costo_kg',
+        'meta_mortalidad_pct',
+        'meta_conversion',
+        'presupuesto_mxn',
         'fase_engorda',
         'capacidad_maxima',
         'peso_promedio_objetivo',
@@ -94,7 +101,7 @@ class CorralLote extends Model
     public function getDiasPromedioEnEngordaAttribute(): int
     {
         if ($this->fecha_inicio_lote) {
-            return max(1, (int) now()->diffInDays($this->fecha_inicio_lote));
+            return max(1, (int) abs(now()->diffInDays($this->fecha_inicio_lote)));
         }
 
         $ganados = $this->ganadosActivos()->get();
@@ -102,7 +109,7 @@ class CorralLote extends Model
             return 0;
         }
 
-        $promedioDias = $ganados->avg(fn($g) => $g->fechaCompra ? now()->diffInDays($g->fechaCompra) : 0);
+        $promedioDias = $ganados->avg(fn($g) => $g->fechaCompra ? abs(now()->diffInDays($g->fechaCompra)) : 0);
         return (int) round($promedioDias ?? 0);
     }
 
@@ -148,5 +155,26 @@ class CorralLote extends Model
     {
         if ($this->capacidad_maxima <= 0) return 0.0;
         return round(($this->total_cabezas / $this->capacidad_maxima) * 100, 1);
+    }
+
+    public function ubicacion(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Ganaderia\Ubicacion::class);
+    }
+
+    public function descripcionAuditoria(): string
+    {
+        return "{$this->codigo} {$this->nombre}";
+    }
+
+    /** Dieta vigente del corral (la asignación sin fecha de término). */
+    public function dietaVigente(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Ganaderia\AsignacionDieta::class, 'corral_lote_id')->whereNull('hasta')->latestOfMany('desde');
+    }
+
+    public function asignacionesDieta(): HasMany
+    {
+        return $this->hasMany(\App\Models\Ganaderia\AsignacionDieta::class, 'corral_lote_id')->orderByDesc('desde')->orderByDesc('id');
     }
 }

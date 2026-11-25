@@ -1,6 +1,9 @@
 <x-app-layout>
     <div class="py-6 space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-         x-data="{ modalRacionOpen: false, modalServidoOpen: false }">
+         x-data="{ modalRacionOpen: @js($volver && ! $servir), modalServidoOpen: @js((bool) $servir),
+                  sug: @js($sugerencias), corralSel: @js((string) ($servir ?? $corrales->first()?->id ?? '')), racionSel: '', kilos: '',
+                  elegirCorral() { const s = this.sug[this.corralSel]; this.racionSel = s?.racion ? String(s.racion) : this.racionSel; this.kilos = s?.kg ?? '' } }"
+         x-init="elegirCorral()">
 
         <!-- Mensajes Flash -->
         @if(session('success'))
@@ -37,6 +40,10 @@
                 </p>
             </div>
             <div class="flex items-center gap-2.5">
+                <a href="{{ route('nutricion.planeacion') }}"
+                   class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 shadow-xs">
+                    <i class="fa-solid fa-diagram-project"></i> Plan de alimentación
+                </a>
                 <button @click="modalRacionOpen = true"
                         class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 shadow-xs">
                     <i class="fa-solid fa-plus"></i> Nueva Dieta
@@ -229,6 +236,10 @@
                         <div class="text-2xl font-black text-emerald-700 font-mono">
                             {{ formatoPesos($racion->costo_por_kg) }} <span class="text-xs text-slate-400 font-normal">/ kg</span>
                         </div>
+                        <div class="mt-2 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs">
+                            <span class="text-slate-500">{{ $racion->ingredientes_count ?? $racion->ingredientes()->count() }} ingredientes en la receta (BOM)</span>
+                            <a href="{{ route('raciones.formula', $racion) }}" class="font-semibold text-emerald-700 hover:underline"><i class="fa-solid fa-flask"></i> Receta / BOM</a>
+                        </div>
 
                         <div class="grid grid-cols-3 gap-2 text-center text-xs pt-2 border-t border-slate-200">
                             <div>
@@ -320,6 +331,7 @@
 
                 <form action="{{ route('nutricion.racion.store') }}" method="POST" class="p-5 space-y-4 text-xs sm:text-sm">
                     @csrf
+                    @if ($volver)<input type="hidden" name="volver" value="{{ $volver }}">@endif
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block font-semibold text-slate-700 mb-1">Código Ración *</label>
@@ -404,9 +416,10 @@
 
                 <form action="{{ route('nutricion.consumo.store') }}" method="POST" class="p-5 space-y-4 text-xs sm:text-sm">
                     @csrf
+                    @if ($volver)<input type="hidden" name="volver" value="{{ $volver }}">@endif
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Corral Destino *</label>
-                        <select name="corral_lote_id" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                        <select name="corral_lote_id" required x-model="corralSel" @change="elegirCorral()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
                             @foreach($corrales as $c)
                                 <option value="{{ $c->id }}">
                                     {{ $c->codigo }} - {{ $c->nombre }} ({{ $c->total_cabezas }} cabezas)
@@ -417,13 +430,15 @@
 
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Dieta a Servir *</label>
-                        <select name="racion_id" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                        <select name="racion_id" required x-model="racionSel" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
                             @foreach($raciones as $racion)
                                 <option value="{{ $racion->id }}">
                                     {{ $racion->nombre }} ({{ formatoPesos($racion->costo_por_kg) }}/kg)
                                 </option>
                             @endforeach
                         </select>
+                        <p class="mt-1 text-[11px] text-slate-500" x-show="sug[corralSel]?.racion"><i class="fa-solid fa-circle-check text-emerald-600"></i> Dieta asignada al corral (se puede cambiar).</p>
+                        <p class="mt-1 text-[11px] text-amber-700" x-show="corralSel && !sug[corralSel]?.racion">Este corral no tiene dieta asignada. <a :href="@js(route('nutricion.plan.corral', '__ID__')).replace('__ID__', corralSel)" class="font-semibold underline">Asignarla</a></p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -434,10 +449,15 @@
                         </div>
                         <div>
                             <label class="block font-semibold text-slate-700 mb-1">Kilos Servidos *</label>
-                            <input type="number" step="0.1" name="kilos_servidos" placeholder="Ej. 400.0" required
+                            <input type="number" step="0.1" name="kilos_servidos" placeholder="Ej. 400.0" required x-model="kilos"
                                    class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 font-mono">
                         </div>
                     </div>
+
+                    <p class="-mt-2 text-[11px] text-slate-500" x-show="sug[corralSel]?.kg">
+                        Sugerido por peso vivo: <strong x-text="Number(sug[corralSel]?.kg).toLocaleString('es-MX') + ' kg'"></strong>
+                        para <span x-text="sug[corralSel]?.cab"></span> cabezas. Ajusta si sirves otra cantidad.
+                    </p>
 
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Kilos Rechazo (Sobrante)</label>

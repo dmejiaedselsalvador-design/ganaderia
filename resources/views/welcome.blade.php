@@ -55,21 +55,48 @@
             </div>
         @endif
 
+        <!-- PENDIENTES DE GESTIÓN -->
+        @php $alertasVisibles = collect($alertasGestion)->filter(fn ($a) => auth()->user()->can($a[4])); @endphp
+        @if ($alertasVisibles->isNotEmpty())
+            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                @foreach ($alertasVisibles as [$color, $icono, $texto, $ruta])
+                    <a href="{{ route($ruta) }}" class="flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition hover:shadow-sm
+                        {{ $color === 'rose' ? 'border-rose-200 bg-rose-50 text-rose-800' : ($color === 'blue' ? 'border-blue-200 bg-blue-50 text-blue-800' : 'border-amber-200 bg-amber-50 text-amber-800') }}">
+                        <i class="fa-solid {{ $icono }}"></i><span class="flex-1">{{ $texto }}</span><i class="fa-solid fa-chevron-right text-[10px] opacity-60"></i>
+                    </a>
+                @endforeach
+            </div>
+        @endif
+
         <!-- KPIs FINANCIEROS -->
         @if ($verFinanzas)
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                @php [$dTxt, $dCls, $dIco] = $delta($plusvaliaPct); @endphp
-                <div class="{{ $card }} p-5">
-                    <div class="flex items-center justify-between">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor del hato en pie</p>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-cow"></i></span>
+                @if ($hayPrecios)
+                    @php $util = $rentabilidad['utilidad_proyectada']; @endphp
+                    <div class="{{ $card }} p-5">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor de mercado del hato</p>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-cow"></i></span>
+                        </div>
+                        <p class="mt-2 text-2xl font-black text-slate-900" title="{{ formatoPesos($rentabilidad['valor_mercado_activos']) }}">{{ formatoPesosCorto($rentabilidad['valor_mercado_activos']) }}</p>
+                        <p class="mt-1 flex items-center gap-1.5 text-xs">
+                            <span class="font-semibold {{ $util >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ $util >= 0 ? '+' : '' }}{{ formatoPesosCorto($util) }}</span>
+                            <span class="text-slate-400">utilidad proyectada vs costo acumulado</span>
+                        </p>
                     </div>
-                    <p class="mt-2 text-2xl font-black text-slate-900" title="{{ formatoPesos($valorHato) }}">{{ formatoPesosCorto($valorHato) }}</p>
-                    <p class="mt-1 flex items-center gap-1.5 text-xs">
-                        <span class="font-semibold {{ $dCls }}"><i class="fa-solid {{ $dIco }}"></i> {{ $dTxt }}</span>
-                        <span class="text-slate-400">vs costo de compra {{ formatoPesosCorto($costoCompraHato) }}</span>
-                    </p>
-                </div>
+                @else
+                    @php [$dTxt, $dCls, $dIco] = $delta($plusvaliaPct); @endphp
+                    <div class="{{ $card }} p-5">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor del hato (a precio de compra)</p>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-cow"></i></span>
+                        </div>
+                        <p class="mt-2 text-2xl font-black text-slate-900">{{ formatoPesosCorto($valorHato) }}</p>
+                        <p class="mt-1 text-xs text-amber-600">
+                            @can('ganaderia.configuracion')<a href="{{ route('configuracion.index') }}" class="underline">Registra precios de mercado</a>@else Faltan precios de mercado @endcan para ver el valor real.
+                        </p>
+                    </div>
+                @endif
 
                 @php [$dTxt, $dCls, $dIco] = $delta($ingresosVariacionPct); @endphp
                 <div class="{{ $card }} p-5">

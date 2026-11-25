@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ClaveTemporal;
 use App\Support\Plantas;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -64,18 +65,24 @@ class UserController extends Controller
         $actor = $request->user();
         $data = $this->validar($request);
 
+        // Siempre se entrega una clave TEMPORAL: el usuario deberá cambiarla en su primer ingreso.
+        $clave = ($data['password'] ?? null) ?: ClaveTemporal::generar();
+
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
             'telefono' => $data['telefono'] ?? null,
-            'password' => Hash::make($data['password']),
+            'password' => Hash::make($clave),
+            'must_change_password' => true,
             'status'   => $data['status'],
         ]);
 
         $user->syncRoles([$data['rol']]);
         $this->sincronizarPlantas($actor, $user, $data['plantas'] ?? []);
 
-        return redirect()->route('usuarios.index')->with('exito', "Usuario {$user->name} creado correctamente.");
+        return redirect()->route('usuarios.index')
+            ->with('exito', "Usuario {$user->name} creado. Entrégale su clave temporal; deberá cambiarla al ingresar.")
+            ->with('clave_temporal', ['nombre' => $user->name, 'email' => $user->email, 'clave' => $clave]);
     }
 
     public function edit(Request $request, User $user): View|RedirectResponse
@@ -118,16 +125,43 @@ class UserController extends Controller
             'status'   => $data['status'],
         ]);
 
-        if (! empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
-            $user->setRememberToken(null); // invalida "Mantener sesión" en otros equipos
-        }
-
         $user->save();
+
+        // Una clave escrita por el administrador siempre es temporal
+        if (! empty($data['password']) && ! $actor->is($user)) {
+            $user->asignarClaveTemporal($data['password']);
+        }
         $user->syncRoles([$data['rol']]);
         $this->sincronizarPlantas($actor, $user, $data['plantas'] ?? []);
 
-        return redirect()->route('usuarios.index')->with('exito', "Usuario {$user->name} actualizado.");
+        $redirect = redirect()->route('usuarios.index')->with('exito', "Usuario {$user->name} actualizado.");
+
+        if (! empty($data['password']) && ! $actor->is($user)) {
+            $redirect->with('clave_temporal', ['nombre' => $user->name, 'email' => $user->email, 'clave' => $data['password']]);
+        }
+
+        return $redirect;
+    }
+
+    /** Genera una nueva clave temporal (olvido de clave, primer acceso, etc.). */
+    public function claveTemporal(Request $request, User $user): RedirectResponse
+    {
+        $actor = $request->user();
+
+        if ($actor->is($user)) {
+            return back()->with('aviso', 'Para cambiar tu propia clave usa «Mi perfil».');
+        }
+
+        if ($error = $this->protegido($actor, $user, 'cambiar la clave de')) {
+            return back()->with('aviso', $error);
+        }
+
+        $clave = ClaveTemporal::generar();
+        $user->asignarClaveTemporal($clave);
+
+        return back()
+            ->with('exito', "Se generó una nueva clave temporal para {$user->name}. Sus sesiones abiertas en otros equipos se cerraron.")
+            ->with('clave_temporal', ['nombre' => $user->name, 'email' => $user->email, 'clave' => $clave]);
     }
 
     /** Dar de baja / reactivar. */
@@ -187,7 +221,7 @@ class UserController extends Controller
             'name'      => ['required', 'string', 'max:255'],
             'email'     => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
             'telefono'  => ['nullable', 'string', 'max:30'],
-            'password'  => [$user ? 'nullable' : 'required', 'confirmed', Password::min(8)],
+            'password'  => ['nullable', 'confirmed', Password::defaults()],
             'status'    => ['required', Rule::in([User::ESTADO_ACTIVO, User::ESTADO_INACTIVO])],
             'rol'       => ['required', Rule::in($roles)],
             'plantas'   => ['array'],

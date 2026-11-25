@@ -41,6 +41,58 @@
                         <i class="fa-solid fa-user-check text-emerald-600"></i> Datos del Comprador y Condiciones de Venta
                     </h3>
 
+                    <!-- Cliente registrado y condiciones de pago -->
+                    <div class="grid grid-cols-1 gap-4 rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 sm:grid-cols-2 md:grid-cols-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cliente registrado</label>
+                            <select name="cliente_id" id="cliente_id" onchange="seleccionarCliente(this)"
+                                    class="w-full bg-white border border-slate-200 rounded-xl text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                                <option value="">— Venta a cliente no registrado —</option>
+                                @foreach ($clientes ?? [] as $c)
+                                    <option value="{{ $c->id }}" data-nombre="{{ $c->razon_social ?: $c->nombre }}" data-telefono="{{ $c->telefono }}"
+                                            data-rfc="{{ $c->rfc }}" data-dias="{{ $c->dias_credito }}" @selected(old('cliente_id') == $c->id)>
+                                        {{ $c->nombre }}{{ $c->rfc ? ' · ' . $c->rfc : '' }}{{ $c->dias_credito ? ' · ' . $c->dias_credito . ' días crédito' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="mt-1"><x-ui.atajo tipo="cliente" target="#cliente_id" texto="+ Registrar cliente nuevo aquí mismo" /></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Condición de pago *</label>
+                            <select name="condicion_pago" id="condicion_pago" onchange="document.getElementById('bloque_credito').classList.toggle('hidden', this.value !== 'credito')"
+                                    class="w-full bg-white border border-slate-200 rounded-xl text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500 font-semibold">
+                                <option value="contado" @selected(old('condicion_pago', 'contado') === 'contado')>Contado (se registra pagada)</option>
+                                <option value="credito" @selected(old('condicion_pago') === 'credito')>Crédito (queda por cobrar)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Forma de pago</label>
+                            <select name="forma_pago" class="w-full bg-white border border-slate-200 rounded-xl text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                                @foreach (\App\Models\Ganaderia\AbonoVenta::FORMAS_PAGO as $fp)
+                                    <option value="{{ $fp }}" @selected(old('forma_pago') === $fp)>{{ $fp }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div id="bloque_credito" class="{{ old('condicion_pago') === 'credito' ? '' : 'hidden' }}">
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Días de crédito</label>
+                            <input type="number" name="dias_credito" id="dias_credito" min="1" max="365" value="{{ old('dias_credito', 15) }}"
+                                   class="w-full bg-white border border-slate-200 rounded-xl text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Folio CFDI</label>
+                            <input type="text" name="folio_cfdi" value="{{ old('folio_cfdi') }}" placeholder="UUID o folio de la factura"
+                                   class="w-full bg-white border border-slate-200 rounded-xl text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                    <script>
+                        function seleccionarCliente(sel) {
+                            const op = sel.options[sel.selectedIndex];
+                            const set = (n, v) => { const el = document.querySelector('[name=' + n + ']'); if (el && v !== undefined) el.value = v || ''; };
+                            set('cliente_nombre', op.dataset.nombre); set('cliente_telefono', op.dataset.telefono); set('cliente_identificacion', op.dataset.rfc);
+                            if (op.dataset.dias && Number(op.dataset.dias) > 0) { document.getElementById('dias_credito').value = op.dataset.dias; }
+                        }
+                    </script>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cliente / Comprador *</label>

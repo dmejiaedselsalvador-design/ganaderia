@@ -6,6 +6,8 @@ use App\Models\Engorda\ConsumoAlimento;
 use App\Models\Engorda\CorralLote;
 use App\Models\Engorda\RacionAlimento;
 use App\Models\Ganado\Ganado;
+use App\Services\Ganaderia\ConsumoRecomendadoService;
+use App\Support\Volver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,10 +18,20 @@ class NutricionController extends Controller
     /**
      * Panel de control de nutrición, catálogo de dietas y registro de consumos diarios.
      */
-    public function index(): View
+    public function index(Request $request, ConsumoRecomendadoService $consumo): View
     {
-        $raciones = RacionAlimento::withCount('consumos')->orderBy('id', 'asc')->get();
-        $corrales = CorralLote::with('ganadosActivos')->where('estado', 'Activo')->get();
+        $raciones = RacionAlimento::withCount(['consumos', 'ingredientes'])->orderBy('id', 'asc')->get();
+        $corrales = CorralLote::with(['ganadosActivos', 'dietaVigente.racion'])->where('estado', 'Activo')->orderBy('codigo')->get();
+
+        // Sugerencia de servido por corral (dieta asignada + kg/día por peso vivo) para precargar el registro
+        $plan = $consumo->plan($corrales, 1);
+        $sugerencias = collect($plan['lineas'])->mapWithKeys(fn ($l) => [$l['corral']->id => [
+            'racion' => $l['racion']?->id,
+            'kg'     => $l['kg_dia'] > 0 ? round($l['kg_dia']) : null,
+            'cab'    => $l['cabezas'],
+        ]]);
+        $servir = $request->integer('servir') ?: null;
+        $volver = Volver::url($request);
 
         $consumosRecientes = ConsumoAlimento::with(['corralLote', 'racion', 'usuario'])
             ->latest('fecha')
@@ -47,7 +59,10 @@ class NutricionController extends Controller
             'totalKilosConsumidos',
             'inversionTotalAlimentoMXN',
             'costoPromedioKgAlimento',
-            'conversionAlimenticiaGlobal'
+            'conversionAlimenticiaGlobal',
+            'sugerencias',
+            'servir',
+            'volver'
         ));
     }
 
@@ -68,10 +83,15 @@ class NutricionController extends Controller
         ]);
 
         $validated['activo'] = true;
-        RacionAlimento::create($validated);
+        // Rango de consumo (% del peso vivo, base materia seca) sugerido según la fase
+        [$min, $max, $sug] = RacionAlimento::RANGOS_PV[$validated['fase']];
+        $racion = RacionAlimento::create($validated + [
+            'base_consumo' => 'MS', 'pct_pv_min' => $min, 'pct_pv_max' => $max, 'pct_pv_sugerido' => $sug,
+        ]);
 
-        return redirect()->route('nutricion.index')
-            ->with('success', "Dieta {$validated['nombre']} registrada correctamente.");
+        // Siguiente paso natural: capturar la receta (BOM). Se conserva el regreso a donde venía.
+        return redirect()->route('raciones.formula', array_filter(['racion' => $racion->id, 'volver' => Volver::url($request)]))
+            ->with('success', "Dieta {$validated['nombre']} registrada. Ahora captura su receta (ingredientes).");
     }
 
     /**
@@ -98,7 +118,7 @@ class NutricionController extends Controller
         $cabezas = max(1, $corral->ganadosActivos->count());
         $promedioPorCabeza = round($consumidos / $cabezas, 2);
 
-        ConsumoAlimento::create([
+        $consumo = ConsumoAlimento::create([
             'corral_lote_id'             => $corral->id,
             'racion_id'                  => $racion->id,
             'fecha'                      => $validated['fecha'],
@@ -112,7 +132,18 @@ class NutricionController extends Controller
             'user_id'                    => Auth::id(),
         ]);
 
-        return redirect()->route('nutricion.index')
-            ->with('success', "Consumo registrado para {$corral->nombre}: {$consumidos} kg (" . formatoPesos($costoTotalMXN) . ").");
+        // Descuenta de bodega los ingredientes de la receta (BOM) de la dieta
+        $negativos = app(\App\Services\Ganaderia\ExplosionMaterialesService::class)->descontarServido($racion, (float) $validated['kilos_servidos'], [
+            'fecha'          => $validated['fecha'],
+            'referencia'     => "Consumo #{$consumo->id} · {$corral->codigo} · {$racion->codigo}",
+            'origen_type'    => 'ConsumoAlimento',
+            'origen_id'      => $consumo->id,
+            'corral_lote_id' => $corral->id,
+        ]);
+        $aviso = $negativos ? ' ⚠ Quedaron con existencia negativa: ' . implode(', ', $negativos) . '. Registra su entrada en Inventario.' : '';
+
+        // Regresa a la pantalla de origen (plan del corral) o al panel de nutrición sin reabrir el formulario
+        return redirect()->to(Volver::url($request) ?? route('nutricion.index'))
+            ->with('success', "Consumo registrado para {$corral->nombre}: {$consumidos} kg (" . formatoPesos($costoTotalMXN) . ")." . $aviso);
     }
 }

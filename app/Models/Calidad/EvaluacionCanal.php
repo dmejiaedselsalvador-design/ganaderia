@@ -2,6 +2,7 @@
 
 namespace App\Models\Calidad;
 
+use App\Models\Concerns\Auditable;
 use App\Models\Ganado\Ganado;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class EvaluacionCanal extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'evaluaciones_canal';
 

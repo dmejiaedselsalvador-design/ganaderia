@@ -20,6 +20,8 @@ class StorePesajeRequest extends FormRequest
             'bascula'       => 'nullable|string|max:100',
             'lote_corral'   => 'nullable|string|max:100',
             'observaciones' => 'nullable|string|max:500',
+            'condicion_corporal' => 'nullable|numeric|min:1|max:9',
+            'en_ayuno'      => 'nullable|boolean',
         ];
     }
 

@@ -14,7 +14,12 @@ class StoreVentaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cliente_nombre'             => 'required|string|max:255',
+            'cliente_id'                 => 'nullable|exists:clientes,id',
+            'cliente_nombre'             => 'required_without:cliente_id|nullable|string|max:255',
+            'condicion_pago'             => 'nullable|in:contado,credito',
+            'forma_pago'                 => 'nullable|string|max:30',
+            'dias_credito'               => 'nullable|integer|min:1|max:365',
+            'folio_cfdi'                 => 'nullable|string|max:60',
             'cliente_telefono'           => 'nullable|string|max:50',
             'cliente_identificacion'     => 'nullable|string|max:100',
             'destino'                    => 'nullable|string|max:255',
@@ -32,7 +37,7 @@ class StoreVentaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'cliente_nombre.required'             => 'El nombre del cliente o comprador es obligatorio.',
+            'cliente_nombre.required_without'     => 'Selecciona un cliente registrado o escribe el nombre del comprador.',
             'fecha_venta.required'                => 'La fecha de venta es obligatoria.',
             'modalidad_pago.required'             => 'La modalidad de cobro es obligatoria.',
             'animales.required'                   => 'Debes incluir al menos un animal en la venta.',

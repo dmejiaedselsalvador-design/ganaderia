@@ -141,7 +141,14 @@ class DashboardService
                 ->orderByDesc('gdp')->limit(5)->get()
             : collect();
 
+        // Valuación a precio de mercado y utilidad (módulo de rentabilidad)
+        $rentabilidad = app(\App\Services\Ganaderia\RentabilidadService::class)->resumen();
+        $hayPrecios = Schema::hasTable('precios_mercado') && \App\Models\Ganaderia\PrecioMercado::exists();
+
         return [
+            'rentabilidad'             => $rentabilidad,
+            'hayPrecios'               => $hayPrecios,
+            'alertasGestion'           => $this->alertasGestion(),
             'meses'                    => $meses,
             'periodos'                 => self::PERIODOS,
             // Inventario
@@ -195,6 +202,29 @@ class DashboardService
             'proximosVenta'            => $proximosVenta,
             'topGdp'                   => $topGdp,
         ];
+    }
+
+    /** Pendientes operativos para el dashboard (inventario, sanidad, cobranza). */
+    private function alertasGestion(): array
+    {
+        $a = [];
+        $bajo = \App\Models\Ganaderia\Insumo::bajoMinimo()->count();
+        $negativo = \App\Models\Ganaderia\Insumo::where('activo', true)->where('existencia', '<', 0)->count();
+        $caducar = \App\Models\Ganaderia\Insumo::lotesPorCaducar(30)->count();
+        $atrasadas = \App\Models\Ganaderia\ProgramacionSanitaria::pendientes()->whereDate('fecha_programada', '<', today())->count();
+        $semana = \App\Models\Ganaderia\ProgramacionSanitaria::pendientes()->whereBetween('fecha_programada', [today(), today()->addDays(7)])->count();
+        $casos = \App\Models\Ganaderia\EventoEnfermedad::abiertos()->count();
+        $vencidas = VentaGanado::where('estado', VentaGanado::ESTADO_COMPLETADA)->where('saldo_pendiente', '>', 0)->whereDate('fecha_vencimiento', '<', today());
+
+        if ($negativo) $a[] = ['rose', 'fa-boxes-stacked', "{$negativo} insumos con existencia negativa (falta registrar entradas)", 'inventario.index', 'ganaderia.inventario'];
+        if ($bajo) $a[] = ['amber', 'fa-arrow-trend-down', "{$bajo} insumos bajo el stock mínimo", 'inventario.index', 'ganaderia.inventario'];
+        if ($caducar) $a[] = ['amber', 'fa-hourglass-end', "{$caducar} lotes de insumos por caducar en 30 días", 'inventario.index', 'ganaderia.inventario'];
+        if ($atrasadas) $a[] = ['rose', 'fa-calendar-xmark', "{$atrasadas} aplicaciones sanitarias atrasadas", 'sanidad.calendario', 'ganaderia.sanidad'];
+        if ($semana) $a[] = ['blue', 'fa-calendar-check', "{$semana} aplicaciones sanitarias esta semana", 'sanidad.calendario', 'ganaderia.sanidad'];
+        if ($casos) $a[] = ['amber', 'fa-virus', "{$casos} casos de enfermedad abiertos", 'sanidad.enfermedades', 'ganaderia.sanidad'];
+        if ($n = (clone $vencidas)->count()) $a[] = ['rose', 'fa-hand-holding-dollar', "{$n} ventas con pago vencido por " . formatoPesos((clone $vencidas)->sum('saldo_pendiente')), 'cobranza.index', 'ganaderia.clientes'];
+
+        return $a;
     }
 
     /** Agrupa una consulta por mes (YYYY-MM) devolviendo [mes, valor]. */

@@ -17,6 +17,13 @@ class EngordaYCalidadSeeder extends Seeder
 {
     public function run(): void
     {
+        // Datos de prueba: bloqueados en producción
+        if (app()->isProduction()) {
+            $this->command?->error(static::class . ' está bloqueado en producción.');
+
+            return;
+        }
+
         $admin = User::first();
         $adminId = $admin?->id ?? 1;
 

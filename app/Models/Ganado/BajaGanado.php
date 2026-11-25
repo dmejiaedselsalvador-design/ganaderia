@@ -2,6 +2,8 @@
 
 namespace App\Models\Ganado;
 
+use App\Models\Concerns\Auditable;
+use App\Models\Concerns\TieneDocumentos;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,9 +23,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class BajaGanado extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable, TieneDocumentos;
 
     protected $table = 'bajas_ganado';
+
+    /** Tipos de baja => estatus que toma el animal. */
+    public const TIPOS = [
+        'Muerte'     => 'Muerto',
+        'Sacrificio' => 'Muerto',
+        'Robo'       => 'Baja',
+        'Extravio'   => 'Baja',
+        'Descarte'   => 'Baja',
+    ];
 
     public const CAUSAS_COMUNES = [
         'Neumonía / Complejo Respiratorio Bovino',
@@ -38,6 +49,9 @@ class BajaGanado extends Model
 
     protected $fillable = [
         'ganado_id',
+        'tipo_baja',
+        'valor_perdido_mxn',
+        'valor_recuperado_mxn',
         'fecha_muerte',
         'causa_muerte',
         'necropsia',

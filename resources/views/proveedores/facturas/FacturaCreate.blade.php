@@ -31,11 +31,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <!-- Proveedor (Alineado con proveedorID) -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Proveedor *</label>
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Proveedor *</label>
+                                <x-ui.atajo tipo="proveedor" target="#proveedor_id" texto="+ Nuevo proveedor" />
+                            </div>
                             <select name="proveedor_id" id="proveedor_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                 <option value="">Seleccione un proveedor</option>
                                 @foreach($proveedores as $proveedor)
-                                    <option value="{{ $proveedor->id }}">{{ $proveedor->nombreContacto }}</option>
+                                    <option value="{{ $proveedor->id }}" @selected(old('proveedor_id', request('proveedor_id')) == $proveedor->id)>{{ $proveedor->nombreProveedor }}{{ $proveedor->nombreContacto ? ' · ' . $proveedor->nombreContacto : '' }}</option>
                                 @endforeach
                             </select>
                         </div>

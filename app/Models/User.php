@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use App\Support\Plantas;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,7 +12,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, Auditable;
 
     public const ESTADO_ACTIVO = 'active';
     public const ESTADO_INACTIVO = 'inactive';
@@ -26,6 +27,9 @@ class User extends Authenticatable
         'email',
         'telefono',
         'password',
+        'must_change_password',
+        'password_changed_at',
+        'bloqueo_solicitud_clave',
         'status',
         'tema',
         'last_division',
@@ -42,7 +46,21 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'last_login_at'     => 'datetime',
+        'password_changed_at' => 'datetime',
+        'must_change_password' => 'boolean',
+        'bloqueo_solicitud_clave' => 'boolean',
     ];
+
+    /** Cambios que no se registran en la bitácora (inicio de sesión, preferencias). */
+    public function camposNoAuditables(): array
+    {
+        return ['last_login_ip', 'last_login_user_agent', 'last_login_at', 'tema', 'last_division', 'remember_token'];
+    }
+
+    public function descripcionAuditoria(): string
+    {
+        return "{$this->name} <{$this->email}>";
+    }
 
     public function esSuperAdmin(): bool
     {
@@ -64,6 +82,41 @@ class User extends Authenticatable
     {
         // null = atributo aún no cargado (la columna tiene 'active' por defecto)
         return $this->status === null || $this->status === self::ESTADO_ACTIVO;
+    }
+
+    /** Tiene una clave temporal que debe cambiar antes de usar el sistema. */
+    public function debeCambiarClave(): bool
+    {
+        return (bool) $this->must_change_password;
+    }
+
+    /**
+     * Asigna una clave temporal: el usuario deberá cambiarla al ingresar.
+     * También cierra sus sesiones recordadas ("Mantener sesión") en otros equipos.
+     */
+    public function asignarClaveTemporal(string $clave): void
+    {
+        $this->forceFill([
+            'password'             => \Illuminate\Support\Facades\Hash::make($clave),
+            'must_change_password' => true,
+            'remember_token'       => \Illuminate\Support\Str::random(60),
+        ])->save();
+    }
+
+    /** Guarda la clave definitiva elegida por el propio usuario. */
+    public function establecerClavePropia(string $clave): void
+    {
+        $this->forceFill([
+            'password'             => \Illuminate\Support\Facades\Hash::make($clave),
+            'must_change_password' => false,
+            'password_changed_at'  => now(),
+        ])->save();
+    }
+
+    /** Puede pedir cambio de clave desde "¿Olvidó su contraseña?". */
+    public function puedeSolicitarClave(): bool
+    {
+        return $this->estaActivo() && ! $this->bloqueo_solicitud_clave;
     }
 
     /** Nivel jerárquico más alto entre sus roles. */

@@ -2,6 +2,7 @@
 
 namespace App\Models\Ganado;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  */
 class ProveedorGanado extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'proveedorGanado';
 

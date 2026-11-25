@@ -51,7 +51,9 @@ class VentaGanadoController extends Controller
             $seleccionadosIds = array_filter(explode(',', $seleccionadosIds));
         }
 
-        return view('ventas.create', compact('animalesDisponibles', 'seleccionadosIds'));
+        $clientes = \App\Models\Ganaderia\Cliente::where('activo', true)->orderBy('nombre')->get();
+
+        return view('ventas.create', compact('animalesDisponibles', 'seleccionadosIds', 'clientes'));
     }
 
     /**
@@ -61,6 +63,11 @@ class VentaGanadoController extends Controller
     {
         try {
             $datosVenta = $request->only([
+                'cliente_id',
+                'condicion_pago',
+                'forma_pago',
+                'dias_credito',
+                'folio_cfdi',
                 'cliente_nombre',
                 'cliente_telefono',
                 'cliente_identificacion',
@@ -92,7 +99,7 @@ class VentaGanadoController extends Controller
      */
     public function show(int $id): View
     {
-        $venta = VentaGanado::with(['detalles.ganado', 'usuario'])->findOrFail($id);
+        $venta = VentaGanado::with(['detalles.ganado', 'usuario', 'abonos', 'cliente'])->findOrFail($id);
 
         return view('ventas.show', compact('venta'));
     }

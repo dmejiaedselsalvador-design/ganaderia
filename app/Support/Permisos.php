@@ -24,6 +24,12 @@ class Permisos
             'ganaderia.calidad'     => 'Calidad de carne y canal',
             'ganaderia.ventas'      => 'Ventas de ganado',
             'ganaderia.simulador'   => 'Simulador financiero de engorda',
+            'ganaderia.gastos'      => 'Gastos operativos',
+            'ganaderia.clientes'    => 'Clientes y cobranza',
+            'ganaderia.inventario'  => 'Inventario de alimento y medicamentos',
+            'ganaderia.reportes'    => 'Rentabilidad y reportes exportables',
+            'ganaderia.configuracion' => 'Precios de mercado, ubicaciones y metas por lote',
+            'registros.corregir'    => 'Corregir y anular registros capturados (pesajes, servidos, tratamientos, bajas, ventas, compra)',
         ],
         'Construcción' => [
             'construccion.finanzas'     => 'Ver montos y análisis financiero',
@@ -38,7 +44,10 @@ class Permisos
             'usuarios.editar'   => 'Editar usuarios y asignar roles',
             'usuarios.baja'     => 'Dar de baja / reactivar usuarios',
             'usuarios.eliminar' => 'Eliminar usuarios definitivamente',
+            'usuarios.solicitudes_clave' => 'Atender solicitudes de cambio de clave',
             'roles.gestionar'   => 'Crear y editar roles y permisos',
+            'auditoria.ver'     => 'Ver la bitácora de auditoría',
+            'ayuda.responder'   => 'Responder las preguntas enviadas desde el botón de Ayuda',
         ],
     ];
 
@@ -67,6 +76,8 @@ class Permisos
             [
                 'ganaderia.finanzas', 'ganaderia.ganado', 'ganaderia.proveedores', 'ganaderia.corrales',
                 'ganaderia.nutricion', 'ganaderia.sanidad', 'ganaderia.calidad', 'ganaderia.ventas', 'ganaderia.simulador',
+                'ganaderia.gastos', 'ganaderia.clientes', 'ganaderia.inventario', 'ganaderia.reportes', 'ganaderia.configuracion',
+                'auditoria.ver', 'ayuda.responder', 'registros.corregir',
                 'construccion.finanzas', 'construccion.proyectos', 'construccion.presupuestos',
                 'construccion.materiales', 'construccion.personal',
                 'usuarios.ver', 'usuarios.crear', 'usuarios.editar', 'usuarios.baja',
@@ -78,7 +89,7 @@ class Permisos
             50,
             [
                 'ganaderia.ganado', 'ganaderia.corrales', 'ganaderia.nutricion', 'ganaderia.sanidad',
-                'ganaderia.calidad', 'ganaderia.ventas', 'ganaderia.proveedores',
+                'ganaderia.calidad', 'ganaderia.ventas', 'ganaderia.proveedores', 'ganaderia.inventario', 'ganaderia.reportes',
                 'construccion.proyectos', 'construccion.materiales', 'construccion.personal',
                 'usuarios.ver',
             ],
@@ -97,7 +108,7 @@ class Permisos
             'Comercialización: ventas de ganado, calidad de canal y presupuestos.',
             20,
             [
-                'ganaderia.ventas', 'ganaderia.ganado', 'ganaderia.calidad',
+                'ganaderia.ventas', 'ganaderia.ganado', 'ganaderia.calidad', 'ganaderia.clientes',
                 'construccion.presupuestos',
             ],
         ],
@@ -106,7 +117,7 @@ class Permisos
             'Compras: proveedores, guías de compra, anticipos y materiales.',
             20,
             [
-                'ganaderia.proveedores', 'ganaderia.ganado',
+                'ganaderia.proveedores', 'ganaderia.ganado', 'ganaderia.inventario', 'ganaderia.gastos',
                 'construccion.materiales',
             ],
         ],

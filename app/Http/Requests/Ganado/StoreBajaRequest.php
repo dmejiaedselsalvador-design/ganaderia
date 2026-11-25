@@ -19,6 +19,8 @@ class StoreBajaRequest extends FormRequest
             'causa_muerte'  => 'required|string|max:150',
             'necropsia'     => 'nullable|string|max:1000',
             'observaciones' => 'nullable|string|max:1000',
+            'tipo_baja'     => 'nullable|in:Muerte,Sacrificio,Robo,Extravio,Descarte',
+            'valor_recuperado_mxn' => 'nullable|numeric|min:0',
         ];
     }
 

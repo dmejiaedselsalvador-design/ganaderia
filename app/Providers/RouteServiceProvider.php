@@ -50,6 +50,11 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware($ganaderia)
                 ->group(base_path('routes/ganaderia.php'));
 
+            // Gestión profesional: costos, cobranza, inventario, sanidad avanzada, reportes...
+            // (se registra antes que los módulos para que /sanidad/calendario no choque con otras rutas)
+            Route::middleware($ganaderia)
+                ->group(base_path('routes/ganaderia_pro.php'));
+
             // Hato Ganadero, Pesajes, Bajas y Expedientes
             Route::middleware([...$ganaderia, 'can:ganaderia.ganado'])
                 ->group(base_path('routes/ganado.php'));

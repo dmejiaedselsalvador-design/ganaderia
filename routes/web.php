@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AyudaController;
+use App\Http\Controllers\Auth\CambioClaveController;
 use App\Http\Controllers\PlantaController;
 use App\Http\Controllers\PreferenciasController;
 use App\Http\Controllers\ProfileController;
@@ -23,6 +25,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('/preferencias/tema', [PreferenciasController::class, 'tema'])->name('tema.cambiar');
 
 Route::middleware(['auth'])->group(function () {
+    // Cambio obligatorio de clave temporal (primer ingreso)
+    Route::get('/cambiar-clave', [CambioClaveController::class, 'show'])->name('password.cambiar');
+    Route::put('/cambiar-clave', [CambioClaveController::class, 'update'])->name('password.cambiar.guardar');
+
     // Entrada principal: decide a qué planta enviar al usuario
     Route::get('/', [PlantaController::class, 'inicio'])->name('inicio');
 
@@ -33,7 +39,15 @@ Route::middleware(['auth'])->group(function () {
     // Perfil de Usuario
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Barra lateral contraída / expandida (se recuerda en la sesión)
+    Route::post('/preferencias/sidebar', [PreferenciasController::class, 'sidebar'])->name('preferencias.sidebar');
+
+    // Botón de Ayuda (?): preguntas con captura de pantalla
+    Route::post('/ayuda/preguntas', [AyudaController::class, 'store'])->middleware('throttle:10,1')->name('ayuda.store');
+    Route::post('/ayuda/vistas', [AyudaController::class, 'marcarVistas'])->name('ayuda.vistas');
+    Route::get('/ayuda/preguntas/{pregunta}/captura', [AyudaController::class, 'captura'])->name('ayuda.captura');
+
+    // (Eliminación de la propia cuenta deshabilitada: solo administración puede eliminar usuarios)
 });
 
 require __DIR__ . '/auth.php';

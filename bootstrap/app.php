@@ -26,9 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(prepend: [\App\Http\Middleware\ExtendRememberedSession::class]);
         // Expulsa a usuarios dados de baja en cualquier petición
         $middleware->web(append: [\App\Http\Middleware\EnsureUserIsActive::class]);
+        // Obliga a cambiar la clave temporal en el primer ingreso
+        $middleware->web(append: [\App\Http\Middleware\ForcePasswordChange::class]);
 
         // La cookie del tema la escribe el navegador (pantalla de login), no va cifrada
-        $middleware->encryptCookies(except: ['tema']);
+        $middleware->encryptCookies(except: ['tema', 'sb_colapsado']);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo('/');

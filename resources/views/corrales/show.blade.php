@@ -54,6 +54,12 @@
                         class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 shadow-xs">
                     <i class="fa-solid fa-utensils"></i> Servir Alimento
                 </button>
+                @can('ganaderia.nutricion')
+                    <a href="{{ route('nutricion.plan.corral', $corral) }}"
+                       class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 shadow-xs">
+                        <i class="fa-solid fa-diagram-project"></i> Dieta y consumo
+                    </a>
+                @endcan
             </div>
         </div>
 
@@ -113,7 +119,7 @@
                             <th class="p-3">Raza / Categoría</th>
                             <th class="p-3">Peso Ingreso</th>
                             <th class="p-3">Último Peso</th>
-                            <th class="p-3">$\Delta$ Ganancia</th>
+                            <th class="p-3">Δ Ganancia</th>
                             <th class="p-3">GDP (kg/d)</th>
                             <th class="p-3">Costo Compra</th>
                             <th class="p-3">Meta Venta</th>
@@ -159,7 +165,7 @@
                                     @endif
                                 </td>
                                 <td class="p-3 text-center">
-                                    <form action="{{ route('corrales.remover.ganado', ['corralId' => $corral->id, 'ganadoId' => $ganado->GanadoID]) }}" method="POST" onsubmit="return confirm('¿Desasignar este animal del corral?')">
+                                    <form action="{{ route('corrales.remover.ganado', ['corralId' => $corral->id, 'ganadoId' => $ganado->GanadoID]) }}" method="POST" data-confirm="¿Sacar al animal {{ $ganado->areteID }} de este corral?" data-titulo="Sacar del corral" data-boton="Sí, sacar">
                                         @csrf
                                         <button type="submit" class="text-rose-600 hover:text-rose-800 text-xs font-semibold px-2 py-1 rounded hover:bg-rose-50 transition" title="Sacar del corral">
                                             <i class="fa-solid fa-arrow-right-from-bracket"></i> Sacar

@@ -238,7 +238,7 @@
                                         {{-- Botón Pagar individual (sin ir a la guía) --}}
                                         <form method="POST"
                                               action="{{ route('adelantos.pagar', $adelanto->id) }}"
-                                              onsubmit="return confirm('¿Confirmar el pago de {{ addslashes(formatoPesos($adelanto->dinero)) }} por concepto «{{ addslashes($adelanto->concepto) }}»?')">
+                                              data-confirm="¿Confirmar el pago de {{ formatoPesos($adelanto->dinero) }} por concepto «{{ $adelanto->concepto }}»?" data-boton="Confirmar pago">
                                             @csrf
                                             <button type="submit"
                                                     title="Liquidar este adelanto"

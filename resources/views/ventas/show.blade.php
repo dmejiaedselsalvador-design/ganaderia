@@ -169,6 +169,53 @@
                     </div>
                 </div>
 
+                        </div>
+
+            <!-- COBRANZA Y DOCUMENTOS (no se imprime) -->
+            <div class="mt-6 grid gap-6 lg:grid-cols-2 print:hidden">
+                <x-ui.card titulo="Cobranza" :subtitulo="($venta->condicion_pago === 'credito' ? 'Venta a crédito' : 'Venta de contado') . ($venta->fecha_vencimiento && $venta->condicion_pago === 'credito' ? ' · vence ' . $venta->fecha_vencimiento->format('d/m/Y') : '')">
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div class="rounded-xl bg-slate-50 p-3"><p class="text-[11px] uppercase text-slate-400">Total</p><p class="font-mono text-sm font-bold text-slate-800">{{ formatoPesos($venta->total_venta) }}</p></div>
+                        <div class="rounded-xl bg-emerald-50 p-3"><p class="text-[11px] uppercase text-emerald-600">Pagado</p><p class="font-mono text-sm font-bold text-emerald-700">{{ formatoPesos($venta->totalPagado()) }}</p></div>
+                        <div class="rounded-xl {{ $venta->vencida() ? 'bg-rose-50' : 'bg-amber-50' }} p-3"><p class="text-[11px] uppercase {{ $venta->vencida() ? 'text-rose-600' : 'text-amber-600' }}">Saldo{{ $venta->vencida() ? ' vencido' : '' }}</p><p class="font-mono text-sm font-bold {{ $venta->vencida() ? 'text-rose-700' : 'text-amber-700' }}">{{ formatoPesos($venta->saldo_pendiente) }}</p></div>
+                    </div>
+                    @if ($venta->cliente)
+                        <p class="mt-3 text-xs text-slate-500">Cliente: <a href="{{ route('clientes.show', $venta->cliente) }}" class="font-semibold text-emerald-700 hover:underline">{{ $venta->cliente->nombre }}</a></p>
+                    @endif
+                    <div class="mt-4 space-y-1.5">
+                        @forelse ($venta->abonos as $ab)
+                            <div class="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-xs {{ $ab->estado !== 'vigente' ? 'opacity-50 line-through' : '' }}">
+                                <span>{{ $ab->fecha->format('d/m/Y') }} · {{ $ab->forma_pago }}{{ $ab->referencia ? ' · ' . $ab->referencia : '' }}</span>
+                                <span class="flex items-center gap-2 font-mono font-semibold text-slate-700">{{ formatoPesos($ab->monto) }}
+                                    @if ($ab->estado === 'vigente')
+                                        @can('ganaderia.clientes')
+                                            <form method="POST" action="{{ route('abonos.anular', $ab) }}" data-prompt="Motivo de la anulación del abono" data-prompt-campo="motivo" data-prompt-minimo="3" data-peligro>
+                                                @csrf <input type="hidden" name="motivo">
+                                                <button class="text-rose-500 hover:text-rose-700" title="Anular abono"><i class="fa-solid fa-ban"></i></button>
+                                            </form>
+                                        @endcan
+                                    @endif
+                                </span>
+                            </div>
+                        @empty
+                            <p class="text-xs text-slate-400">Sin pagos registrados.</p>
+                        @endforelse
+                    </div>
+                    @if ((float) $venta->saldo_pendiente > 0 && $venta->estado === 'completada')
+                        @can('ganaderia.clientes')
+                            <form method="POST" action="{{ route('ventas.abonar', $venta) }}" class="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2">
+                                @csrf
+                                <x-ui.field label="Monto" name="monto" type="number" step="0.01" :value="$venta->saldo_pendiente" required />
+                                <x-ui.field label="Fecha" name="fecha" type="date" :value="date('Y-m-d')" required />
+                                <x-ui.field label="Forma de pago" name="forma_pago" type="select" :options="array_combine(\App\Models\Ganaderia\AbonoVenta::FORMAS_PAGO, \App\Models\Ganaderia\AbonoVenta::FORMAS_PAGO)" required :placeholder="false" />
+                                <x-ui.field label="Referencia" name="referencia" placeholder="Núm. transferencia / cheque" />
+                                <div class="sm:col-span-2"><x-ui.btn icono="fa-hand-holding-dollar">Registrar abono</x-ui.btn></div>
+                            </form>
+                        @endcan
+                    @endif
+                </x-ui.card>
+
+                <x-ui.documentos :modelo="$venta" tipo="venta" />
             </div>
 
         </div>

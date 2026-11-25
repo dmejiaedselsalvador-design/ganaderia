@@ -2,6 +2,7 @@
 
 namespace App\Models\Engorda;
 
+use App\Models\Concerns\Auditable;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ConsumoAlimento extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'consumos_alimento';
 

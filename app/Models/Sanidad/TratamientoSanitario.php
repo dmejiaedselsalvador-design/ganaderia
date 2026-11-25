@@ -2,6 +2,7 @@
 
 namespace App\Models\Sanidad;
 
+use App\Models\Concerns\Auditable;
 use App\Models\Ganado\Ganado;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,12 +11,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TratamientoSanitario extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'tratamientos_sanitarios';
 
     protected $fillable = [
         'ganado_id',
+        'evento_enfermedad_id',
+        'programacion_id',
+        'insumo_id',
+        'cantidad_insumo',
+        'lote_medicamento',
+        'caducidad_medicamento',
         'tipo_evento',
         'medicamento_producto',
         'dosis_aplicada',
@@ -68,5 +75,15 @@ class TratamientoSanitario extends Model
         }
 
         return max(0, (int) now()->startOfDay()->diffInDays($this->fecha_fin_retiro->endOfDay(), false));
+    }
+
+    public function insumo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Ganaderia\Insumo::class)->withTrashed();
+    }
+
+    public function eventoEnfermedad(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Ganaderia\EventoEnfermedad::class, 'evento_enfermedad_id');
     }
 }

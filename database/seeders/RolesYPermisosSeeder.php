@@ -24,13 +24,17 @@ class RolesYPermisosSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // 1. Permisos
+        // 1. Permisos (se recuerdan los que se crean por primera vez en esta ejecución)
+        $nuevos = [];
         foreach (Permisos::GRUPOS as $grupo => $permisos) {
             foreach ($permisos as $nombre => $etiqueta) {
-                Permission::updateOrCreate(
+                $permiso = Permission::updateOrCreate(
                     ['name' => $nombre, 'guard_name' => 'web'],
                     ['display_name' => $etiqueta, 'description' => $grupo]
                 );
+                if ($permiso->wasRecentlyCreated) {
+                    $nuevos[] = $nombre;
+                }
             }
         }
 
@@ -53,6 +57,9 @@ class RolesYPermisosSeeder extends Seeder
             // para no pisar los cambios hechos desde la pantalla de Roles.
             if ($permisos !== '*' && $rol->permissions()->count() === 0) {
                 $rol->syncPermissions($permisos);
+            } elseif ($permisos !== '*' && $nuevos) {
+                // Permisos de módulos nuevos: se agregan a los roles base que los incluyen por defecto
+                $rol->givePermissionTo(array_values(array_intersect($permisos, $nuevos)));
             }
         }
 

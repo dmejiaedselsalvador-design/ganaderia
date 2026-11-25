@@ -143,7 +143,7 @@
                     <div class="flex flex-wrap items-center gap-4 sm:gap-6">
                         <div class="px-5 py-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-center">
                             <span class="text-[10px] uppercase font-bold text-emerald-600 block tracking-wider">Arete ID</span>
-                            <span class="text-2xl font-black text-emerald-950 font-mono">{{ $ganadoSeleccionado->areteID }}</span>
+                            <span class="text-2xl font-black tracking-wide text-emerald-950 font-mono">{{ $ganadoSeleccionado->areteID }}</span>
                         </div>
 
                         <div class="space-y-1">
@@ -165,11 +165,21 @@
                     </div>
 
                     <!-- Botones de Acción Táctil (Habilitados sólo si puede operar) -->
-                    <div class="flex items-center gap-2.5 w-full lg:w-auto">
+                    <div class="flex flex-wrap items-center lg:justify-end gap-2.5 w-full lg:w-auto lg:max-w-[46rem]">
+                        <a href="{{ route('ganado.ficha', $ganadoSeleccionado->GanadoID) }}"
+                           class="flex-1 lg:flex-none bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition flex items-center justify-center gap-2 shadow-xs">
+                            <i class="fa-solid fa-folder-open"></i> Ficha completa
+                        </a>
+                        @can('registros.corregir')
+                            <a href="{{ route('correcciones.index', ['arete' => $ganadoSeleccionado->areteID]) }}" title="Corregir datos mal capturados de este animal"
+                               class="flex-1 lg:flex-none whitespace-nowrap border border-slate-300 text-slate-600 hover:bg-slate-100 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-pen-to-square"></i> Corregir
+                            </a>
+                        @endcan
                         @if($ganadoSeleccionado->puedeOperar())
                             <button @click="modalPesajeOpen = true"
                                     class="flex-1 lg:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 shadow-xs">
-                                <i class="fa-solid fa-weight-scale"></i> + Nuevo Pesaje
+                                <i class="fa-solid fa-weight-scale"></i> + Nuevo pesaje
                             </button>
 
                             <a href="{{ route('ventas.create', ['seleccionados' => $ganadoSeleccionado->GanadoID]) }}"
@@ -178,8 +188,8 @@
                             </a>
 
                             <button @click="modalBajaOpen = true"
-                                    class="bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5 border border-slate-200">
-                                <i class="fa-solid fa-skull"></i> Registrar Baja
+                                    class="flex-1 lg:flex-none whitespace-nowrap bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 shadow-xs">
+                                <i class="fa-solid fa-skull"></i> Registrar baja
                             </button>
                         @else
                             <span class="text-xs text-slate-400 font-semibold px-4 py-2 bg-slate-100 rounded-xl">
@@ -206,7 +216,7 @@
 
                 <!-- Ganancia Total de Peso -->
                 <div class="bg-white p-4 rounded-2xl shadow-xs border border-slate-200">
-                    <span class="text-[11px] font-semibold text-slate-400 block uppercase">Ganancia Total ($\Delta$ Peso)</span>
+                    <span class="text-[11px] font-semibold text-slate-400 block uppercase">Ganancia Total (Δ Peso)</span>
                     <div class="text-2xl font-black {{ $ganadoSeleccionado->ganancia_total >= 0 ? 'text-emerald-600' : 'text-rose-600' }} mt-1">
                         {{ $ganadoSeleccionado->ganancia_total >= 0 ? '+' : '' }}{{ number_format($ganadoSeleccionado->ganancia_total, 2) }} <span class="text-xs font-normal text-slate-500">kg</span>
                     </div>
@@ -250,7 +260,7 @@
                                 <th class="p-3">Fecha Pesaje</th>
                                 <th class="p-3">Peso en Báscula</th>
                                 <th class="p-3">Peso Anterior</th>
-                                <th class="p-3">$\Delta$ Ganancia (kg)</th>
+                                <th class="p-3">Δ Ganancia (kg)</th>
                                 <th class="p-3">Días</th>
                                 <th class="p-3">GDP (kg/día)</th>
                                 <th class="p-3">Báscula / Corral</th>
@@ -459,6 +469,17 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Condición corporal (1-9)</label>
+                                <input type="number" step="0.5" min="1" max="9" name="condicion_corporal" placeholder="Ej. 6"
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                            </div>
+                            <label class="flex items-end gap-2 pb-2 text-xs font-semibold text-slate-600">
+                                <input type="checkbox" name="en_ayuno" value="1" class="h-4 w-4 rounded border-slate-300 text-emerald-600"> Pesado en ayuno
+                            </label>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
                                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Báscula</label>
                                 <input type="text" name="bascula" placeholder="Ej. Báscula Corral 1"
                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
@@ -509,20 +530,41 @@
                         @csrf
                         <input type="hidden" name="ganado_id" value="{{ $ganadoSeleccionado->GanadoID }}">
 
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tipo de baja *</label>
+                                <select name="tipo_baja" required class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2.5 focus:ring-2 focus:ring-rose-500">
+                                    <option value="Muerte">Muerte</option>
+                                    <option value="Sacrificio">Sacrificio de emergencia</option>
+                                    <option value="Robo">Robo / Abigeato</option>
+                                    <option value="Extravio">Extravío</option>
+                                    <option value="Descarte">Descarte</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Valor recuperado ($)</label>
+                                <input type="number" step="0.01" min="0" name="valor_recuperado_mxn" value="0" title="Venta de canal de desecho, pago de seguro, etc."
+                                       class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3 py-2.5 font-mono focus:ring-2 focus:ring-rose-500">
+                            </div>
+                        </div>
+
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de Fallecimiento *</label>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha del evento *</label>
                             <input type="date" name="fecha_muerte" value="{{ date('Y-m-d') }}" required
                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-rose-500 focus:bg-white transition">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Causa de Muerte *</label>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Causa / Motivo *</label>
                             <select name="causa_muerte" required
                                     class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm px-3 py-2.5 focus:ring-2 focus:ring-rose-500 focus:bg-white transition">
                                 <option value="">Selecciona la causa médica u operativa...</option>
                                 @foreach($causasMuerte as $causa)
                                     <option value="{{ $causa }}">{{ $causa }}</option>
                                 @endforeach
+                                <option value="Robo / Abigeato">Robo / Abigeato</option>
+                                <option value="Extravío en potrero o traslado">Extravío en potrero o traslado</option>
+                                <option value="Descarte por bajo desempeño o lesión crónica">Descarte por bajo desempeño o lesión crónica</option>
                             </select>
                         </div>
 

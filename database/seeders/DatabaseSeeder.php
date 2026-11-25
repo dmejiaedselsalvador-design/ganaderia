@@ -2,23 +2,23 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Datos base para PRODUCCIÓN (sin datos de prueba):
+     *  - Roles y permisos del sistema
+     *  - Cuenta inicial de Súper Administrador con clave temporal
      *
-     * @return void
+     * Los datos de demostración están en DemoSeeder y solo se cargan a mano
+     * en entornos locales:  php artisan db:seed --class=DemoSeeder
      */
-    public function run()
+    public function run(): void
     {
-
         $this->call([
+            RolesYPermisosSeeder::class,
             AdminUserSeeder::class,
-            ProveedorGanadoSeeder::class,
-            EngordaYCalidadSeeder::class,
         ]);
     }
 }

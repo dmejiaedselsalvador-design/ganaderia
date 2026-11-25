@@ -168,8 +168,8 @@ class PlantasYUsuariosTest extends TestCase
         $this->get(route('usuarios.create'))->assertOk()->assertDontSee('value="super-admin"', false);
 
         $this->post(route('usuarios.store'), [
-            'name' => 'Pedro Obra', 'email' => 'pedro@test.com', 'password' => 'secreto123',
-            'password_confirmation' => 'secreto123', 'status' => 'active', 'rol' => 'supervisor',
+            'name' => 'Pedro Obra', 'email' => 'pedro@test.com', 'password' => 'Secreto2026x',
+            'password_confirmation' => 'Secreto2026x', 'status' => 'active', 'rol' => 'supervisor',
             'plantas' => ['construccion'],
         ])->assertRedirect(route('usuarios.index'));
 
@@ -196,7 +196,7 @@ class PlantasYUsuariosTest extends TestCase
     {
         $dueno = $this->usuario('dueno');
         $this->actingAs($dueno)->post(route('usuarios.store'), [
-            'name' => 'X', 'email' => 'x@test.com', 'password' => 'secreto123', 'password_confirmation' => 'secreto123',
+            'name' => 'X', 'email' => 'x@test.com', 'password' => 'Secreto2026x', 'password_confirmation' => 'Secreto2026x',
             'status' => 'active', 'rol' => 'super-admin',
         ])->assertSessionHasErrors('rol');
     }
@@ -207,7 +207,7 @@ class PlantasYUsuariosTest extends TestCase
         $this->actingAs($gerente);
 
         $this->post(route('usuarios.store'), [
-            'name' => 'X', 'email' => 'x@test.com', 'password' => 'secreto123', 'password_confirmation' => 'secreto123',
+            'name' => 'X', 'email' => 'x@test.com', 'password' => 'Secreto2026x', 'password_confirmation' => 'Secreto2026x',
             'status' => 'active', 'rol' => 'dueno',
         ])->assertSessionHasErrors('rol');
 
@@ -263,5 +263,97 @@ class PlantasYUsuariosTest extends TestCase
         $this->assertTrue($viejo->fresh()->hasRole('super-admin'));
         $this->assertNull(\Spatie\Permission\Models\Role::where('name', 'admin')->first());
         $this->assertTrue($viejo->fresh()->can('planta.ganaderia'));
+    }
+
+    /* ---------------- Clave temporal ---------------- */
+
+    public function test_usuario_nuevo_recibe_clave_temporal_y_debe_cambiarla(): void
+    {
+        $this->actingAs($this->usuario('dueno', ['ganaderia']));
+
+        $resp = $this->post(route('usuarios.store'), [
+            'name' => 'Ana Nueva', 'email' => 'ana@test.com', 'status' => 'active', 'rol' => 'operario',
+            'plantas' => ['ganaderia'],
+        ])->assertRedirect(route('usuarios.index'));
+
+        $ct = session('clave_temporal');
+        $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/', $ct['clave']);
+        $ana = User::whereEmail('ana@test.com')->first();
+        $this->assertTrue($ana->debeCambiarClave());
+        $this->assertNotSame($ct['clave'], $ana->password, 'La clave debe guardarse hasheada');
+
+        // Primer ingreso con la clave temporal
+        $this->post('/logout');
+        $this->post('/login', ['email' => 'ana@test.com', 'password' => $ct['clave']]);
+        $this->assertAuthenticated();
+
+        // Cualquier pantalla la manda a cambiar la clave
+        $this->get('/')->assertRedirect(route('password.cambiar'));
+        $this->get(route('welcome'))->assertRedirect(route('password.cambiar'));
+        $this->get(route('password.cambiar'))->assertOk()->assertSee('Crea tu clave personal');
+
+        // Validaciones: clave temporal incorrecta, clave débil, igual a la temporal
+        $this->put(route('password.cambiar.guardar'), ['current_password' => 'mala', 'password' => 'NuevaClave2026', 'password_confirmation' => 'NuevaClave2026'])
+            ->assertSessionHasErrors('current_password');
+        $this->put(route('password.cambiar.guardar'), ['current_password' => $ct['clave'], 'password' => 'debil', 'password_confirmation' => 'debil'])
+            ->assertSessionHasErrors('password');
+        $this->put(route('password.cambiar.guardar'), ['current_password' => $ct['clave'], 'password' => $ct['clave'], 'password_confirmation' => $ct['clave']])
+            ->assertSessionHasErrors('password');
+
+        // Cambio correcto
+        $this->put(route('password.cambiar.guardar'), ['current_password' => $ct['clave'], 'password' => 'NuevaClave2026', 'password_confirmation' => 'NuevaClave2026'])
+            ->assertRedirect(route('inicio'));
+        $ana->refresh();
+        $this->assertFalse($ana->debeCambiarClave());
+        $this->assertNotNull($ana->password_changed_at);
+        $this->get('/')->assertRedirect(route('welcome'));
+
+        // La clave temporal ya no sirve
+        $this->post('/logout');
+        $this->post('/login', ['email' => 'ana@test.com', 'password' => $ct['clave']]);
+        $this->assertGuest();
+    }
+
+    public function test_admin_genera_nueva_clave_temporal(): void
+    {
+        $op = $this->usuario('operario');
+        $this->actingAs($this->usuario('dueno'));
+
+        $this->post(route('usuarios.clave-temporal', $op))->assertSessionHas('clave_temporal');
+        $this->assertTrue($op->fresh()->debeCambiarClave());
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check(session('clave_temporal')['clave'], $op->fresh()->password));
+    }
+
+    public function test_dueno_no_puede_cambiar_clave_del_super_admin(): void
+    {
+        $super = $this->usuario('super-admin');
+        $this->actingAs($this->usuario('dueno'));
+
+        $this->post(route('usuarios.clave-temporal', $super))->assertSessionHas('aviso');
+        $this->assertFalse($super->fresh()->debeCambiarClave());
+    }
+
+    public function test_cambio_de_clave_desde_perfil(): void
+    {
+        $u = $this->usuario('operario');
+        $this->actingAs($u)->put(route('password.update'), [
+            'current_password' => 'password', 'password' => 'OtraClave2026', 'password_confirmation' => 'OtraClave2026',
+        ])->assertSessionHasNoErrors();
+        $this->assertNotNull($u->fresh()->password_changed_at);
+    }
+
+    /* ---------------- Seeders de producción ---------------- */
+
+    public function test_seeder_de_produccion_no_carga_datos_de_prueba(): void
+    {
+        config(['auth.admin_inicial.email' => 'jefe@empresa.com', 'auth.admin_inicial.name' => 'Jefe']);
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+
+        $jefe = User::whereEmail('jefe@empresa.com')->first();
+        $this->assertTrue($jefe->hasRole('super-admin'));
+        $this->assertTrue($jefe->debeCambiarClave());
+        $this->assertSame(0, \Illuminate\Support\Facades\DB::table('proveedorGanado')->count());
+        $this->assertSame(0, \App\Models\Ganado\Ganado::count());
+        $this->assertNull(User::whereEmail('luis@test.com')->first());
     }
 }

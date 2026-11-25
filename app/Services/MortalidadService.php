@@ -19,7 +19,9 @@ class MortalidadService
         string $causaMuerte,
         ?string $necropsia = null,
         ?string $observaciones = null,
-        ?int $userId = null
+        ?int $userId = null,
+        string $tipoBaja = 'Muerte',
+        float $valorRecuperado = 0
     ): BajaGanado {
         $ganado = Ganado::findOrFail($ganadoId);
 
@@ -31,9 +33,19 @@ class MortalidadService
             throw new Exception("El animal #{$ganado->areteID} no puede darse de baja por muerte porque ya fue vendido.");
         }
 
-        return DB::transaction(function () use ($ganado, $fechaMuerte, $causaMuerte, $necropsia, $observaciones, $userId) {
+        if (! $ganado->puedeOperar()) {
+            throw new Exception("El animal #{$ganado->areteID} ya no está activo (estatus {$ganado->status}).");
+        }
+
+        // Pérdida económica = costo acumulado del animal (compra + alimento + medicinas + gastos) - lo recuperado
+        $costoAcumulado = app(\App\Services\Ganaderia\RentabilidadService::class)->deAnimal($ganado)['costo_total'] ?? 0;
+
+        return DB::transaction(function () use ($ganado, $fechaMuerte, $causaMuerte, $necropsia, $observaciones, $userId, $tipoBaja, $valorRecuperado, $costoAcumulado) {
             $baja = BajaGanado::create([
                 'ganado_id'     => $ganado->GanadoID,
+                'tipo_baja'     => $tipoBaja,
+                'valor_perdido_mxn'    => max(0, round($costoAcumulado - $valorRecuperado, 2)),
+                'valor_recuperado_mxn' => $valorRecuperado,
                 'fecha_muerte'  => $fechaMuerte,
                 'causa_muerte'  => $causaMuerte,
                 'necropsia'     => $necropsia,
@@ -42,7 +54,7 @@ class MortalidadService
                 'user_id'       => $userId,
             ]);
 
-            $ganado->status = Ganado::STATUS_MUERTO;
+            $ganado->status = BajaGanado::TIPOS[$tipoBaja] ?? Ganado::STATUS_MUERTO;
             $ganado->save();
 
             return $baja;
@@ -55,7 +67,7 @@ class MortalidadService
     public function obtenerEstadisticas(): array
     {
         $totalHistorico = Ganado::count();
-        $totalMuertes = BajaGanado::count();
+        $totalMuertes = BajaGanado::where('tipo_baja', 'Muerte')->count();
         $tasaMortalidad = $totalHistorico > 0 ? round(($totalMuertes / $totalHistorico) * 100, 2) : 0.0;
 
         $muertesPorCausa = BajaGanado::select('causa_muerte', DB::raw('count(*) as total'))

@@ -39,7 +39,16 @@ class VentaService
             }
         }
 
-        return DB::transaction(function () use ($datosVenta, $animalesVenta, $animales, $userId) {
+        // Cliente registrado (opcional): completa los datos y valida su límite de crédito
+        $cliente = ! empty($datosVenta['cliente_id']) ? \App\Models\Ganaderia\Cliente::find($datosVenta['cliente_id']) : null;
+        if ($cliente) {
+            $datosVenta['cliente_nombre'] = ($datosVenta['cliente_nombre'] ?? null) ?: ($cliente->razon_social ?: $cliente->nombre);
+            $datosVenta['cliente_telefono'] = ($datosVenta['cliente_telefono'] ?? null) ?: $cliente->telefono;
+            $datosVenta['cliente_identificacion'] = ($datosVenta['cliente_identificacion'] ?? null) ?: $cliente->rfc;
+        }
+        $condicion = ($datosVenta['condicion_pago'] ?? VentaGanado::CONTADO) === VentaGanado::CREDITO ? VentaGanado::CREDITO : VentaGanado::CONTADO;
+
+        return DB::transaction(function () use ($datosVenta, $animalesVenta, $animales, $userId, $cliente, $condicion) {
             $modalidad = $datosVenta['modalidad_pago'] ?? VentaGanado::MODALIDAD_POR_KILO;
             $subtotalVenta = 0.0;
             $pesoTotalKg = 0.0;
@@ -80,14 +89,31 @@ class VentaService
             $descuento = (float) ($datosVenta['descuento'] ?? 0);
             $totalVenta = max(0.0, round($subtotalVenta - $descuento, 2));
 
+            if ($condicion === VentaGanado::CREDITO && $cliente && (float) $cliente->limite_credito > 0
+                && $cliente->saldoPendiente() + $totalVenta > (float) $cliente->limite_credito) {
+                throw new Exception("La venta excede el límite de crédito de {$cliente->nombre} (límite $ " . number_format((float) $cliente->limite_credito, 2)
+                    . ', saldo actual $ ' . number_format($cliente->saldoPendiente(), 2) . ').');
+            }
+
+            $fechaVenta = $datosVenta['fecha_venta'] ?? now()->toDateString();
+            $diasCredito = (int) ($datosVenta['dias_credito'] ?? $cliente?->dias_credito ?? 0);
+
             // 1. Crear cabecera de la venta
             $venta = VentaGanado::create([
                 'folio_venta'            => VentaGanado::generarNuevoFolio(),
+                'cliente_id'             => $cliente?->id,
+                'condicion_pago'         => $condicion,
+                'forma_pago'             => $datosVenta['forma_pago'] ?? null,
+                'fecha_vencimiento'      => $condicion === VentaGanado::CREDITO
+                    ? \Carbon\Carbon::parse($fechaVenta)->addDays(max(1, $diasCredito))->toDateString()
+                    : $fechaVenta,
+                'saldo_pendiente'        => $totalVenta,
+                'folio_cfdi'             => $datosVenta['folio_cfdi'] ?? null,
                 'cliente_nombre'         => $datosVenta['cliente_nombre'],
                 'cliente_telefono'       => $datosVenta['cliente_telefono'] ?? null,
                 'cliente_identificacion' => $datosVenta['cliente_identificacion'] ?? null,
                 'destino'                => $datosVenta['destino'] ?? null,
-                'fecha_venta'            => $datosVenta['fecha_venta'] ?? now()->toDateString(),
+                'fecha_venta'            => $fechaVenta,
                 'modalidad_pago'         => $modalidad,
                 'total_cabezas'          => count($detallesPrecalculados),
                 'peso_total_kg'          => round($pesoTotalKg, 2),
@@ -118,6 +144,19 @@ class VentaService
                 $ganado->ultimoPeso = $linea['peso_venta'];
                 $ganado->status = Ganado::STATUS_VENDIDO;
                 $ganado->save();
+            }
+
+            // Venta de contado: se registra el pago completo
+            if ($condicion === VentaGanado::CONTADO && $totalVenta > 0) {
+                \App\Models\Ganaderia\AbonoVenta::create([
+                    'venta_id'   => $venta->id,
+                    'fecha'      => $fechaVenta,
+                    'monto'      => $totalVenta,
+                    'forma_pago' => $datosVenta['forma_pago'] ?? 'Efectivo',
+                    'referencia' => 'Pago de contado',
+                    'user_id'    => $userId,
+                ]);
+                $venta->recalcularSaldo();
             }
 
             return $venta;

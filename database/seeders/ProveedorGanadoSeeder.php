@@ -12,6 +12,13 @@ class ProveedorGanadoSeeder extends Seeder
      */
     public function run(): void
     {
+        // Datos de prueba: bloqueados en producción
+        if (app()->isProduction()) {
+            $this->command?->error(static::class . ' está bloqueado en producción.');
+
+            return;
+        }
+
         DB::table('proveedorGanado')->insert([
             [
                 'nombreProveedor' => 'Ganadería San José',

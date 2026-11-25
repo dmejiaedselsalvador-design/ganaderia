@@ -59,14 +59,28 @@
                             @endforeach
                         </div>
                     </div>
-                    <div>
-                        <label class="{{ $label }}" for="password">{{ $editando ? 'Nueva contraseña' : 'Contraseña *' }}</label>
-                        <input id="password" type="password" name="password" {{ $editando ? '' : 'required' }} autocomplete="new-password" class="{{ $input }}" placeholder="{{ $editando ? 'Dejar vacío para no cambiarla' : 'Mínimo 8 caracteres' }}">
+                    <div class="sm:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                        <p class="flex items-center gap-2 text-sm font-semibold text-amber-800"><i class="fa-solid fa-key"></i> Clave temporal</p>
+                        <p class="mt-1 text-xs text-amber-800/80">
+                            @if ($soyYo)
+                                Para cambiar tu propia clave usa «Mi perfil».
+                            @elseif ($editando)
+                                Déjalo vacío para no cambiarla. Si escribes una, será <strong>temporal</strong>: el usuario deberá cambiarla al ingresar. También puedes usar el botón <i class="fa-solid fa-key"></i> de la lista para generar una automática.
+                            @else
+                                Déjalo vacío y el sistema <strong>generará una clave temporal segura</strong> que verás una sola vez. En su primer ingreso el usuario estará obligado a cambiarla por una personal.
+                            @endif
+                        </p>
                     </div>
-                    <div>
-                        <label class="{{ $label }}" for="password_confirmation">Confirmar contraseña</label>
-                        <input id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" class="{{ $input }}">
-                    </div>
+                    @unless ($soyYo)
+                        <div>
+                            <label class="{{ $label }}" for="password">Clave temporal (opcional)</label>
+                            <input id="password" type="text" name="password" autocomplete="off" class="{{ $input }} font-mono" placeholder="Vacío = generar automáticamente">
+                        </div>
+                        <div>
+                            <label class="{{ $label }}" for="password_confirmation">Confirmar clave temporal</label>
+                            <input id="password_confirmation" type="text" name="password_confirmation" autocomplete="off" class="{{ $input }} font-mono">
+                        </div>
+                    @endunless
                 </div>
             </section>
 

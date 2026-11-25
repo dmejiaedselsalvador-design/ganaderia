@@ -33,4 +33,14 @@ class PreferenciasController extends Controller
 
         return back();
     }
+
+    /** Guarda en la sesión (y en cookie) si la barra lateral queda contraída. */
+    public function sidebar(Request $request): JsonResponse
+    {
+        $colapsado = $request->boolean('colapsado');
+        $request->session()->put('sb_colapsado', $colapsado);
+        Cookie::queue(cookie('sb_colapsado', $colapsado ? '1' : '0', 60 * 24 * 365, null, null, null, false));
+
+        return response()->json(['colapsado' => $colapsado]);
+    }
 }

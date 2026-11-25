@@ -2,6 +2,8 @@
 
 namespace App\Models\Ganado;
 
+use App\Models\Concerns\Auditable;
+use App\Models\Concerns\TieneDocumentos;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class FacturaGanado extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable, TieneDocumentos;
 
     protected $table = 'facturaGanado';
 
@@ -41,6 +43,13 @@ class FacturaGanado extends Model
         'montoTotal',
         'estado',
         'notas',
+        'costo_flete',
+        'costo_comision',
+        'costo_tramites',
+        'otros_costos',
+        'peso_origen_kg',
+        'guia_reemo',
+        'upp_origen',
     ];
 
     protected $casts = [
@@ -124,5 +133,16 @@ class FacturaGanado extends Model
     public function getSaldoPendienteAttribute(): float
     {
         return max(0.0, $this->monto_total_calculado - $this->total_adelantos_aplicados);
+    }
+
+    /** Total de costos adicionales de la compra (flete + comisión + trámites + otros). */
+    public function costosAdicionales(): float
+    {
+        return round((float) $this->costo_flete + (float) $this->costo_comision + (float) $this->costo_tramites + (float) $this->otros_costos, 2);
+    }
+
+    public function descripcionAuditoria(): string
+    {
+        return "Guía {$this->numeroFactura}";
     }
 }
