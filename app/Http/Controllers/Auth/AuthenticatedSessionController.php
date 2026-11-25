@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
+use App\Support\Plantas;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,12 +30,14 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        if($user->status !== 'active'){
-            Auth::logout();
+        if (! $user->estaActivo()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             throw ValidationException::withMessages([
                 'email' => 'Tu cuenta esta inactiva. Por favor, contacta al administrador para más información.',
             ]);
-           // return redirect()->back()->withErrors(['email' => 'Tu cuenta esta inactiva.']);
         }
 
         $user->update([
@@ -46,7 +48,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        // El portal decide la planta: 1 planta => directo a su dashboard,
+        // 2+ plantas => planta activa en sesión o pantalla de selección.
+        return redirect()->intended(route('inicio'));
     }
 
     /**
@@ -54,12 +58,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        Plantas::olvidar();
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login')->with('status', 'Sesión cerrada correctamente.');
     }
 }

@@ -17,7 +17,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/admin/lista-usuarios';
+    public const HOME = '/';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.
@@ -34,55 +34,73 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
-            // 1. Dashboard, Perfil y Base
-            Route::middleware('web')
-                ->group(base_path('routes/web.php'));
+            // Autenticación, portal de plantas, perfil, tema y administración (comunes a todas las plantas)
+            Route::middleware('web')->group(base_path('routes/web.php'));
+            Route::middleware('web')->group(base_path('routes/admin.php'));
 
-            // 2. Administración y Roles
-            Route::middleware('web')
-                ->group(base_path('routes/admin.php'));
+            /*
+            |------------------------------------------------------------------
+            | PLANTA: GANADERÍA  (middleware division:ganaderia)
+            |------------------------------------------------------------------
+            | Cada módulo exige además su permiso (can:ganaderia.<modulo>).
+            */
+            $ganaderia = ['web', 'auth', 'division:ganaderia'];
 
-            // 3. Hato Ganadero, Pesajes, Bajas y Expedientes
-            Route::middleware('web')
+            // Dashboard ganadero
+            Route::middleware($ganaderia)
+                ->group(base_path('routes/ganaderia.php'));
+
+            // Hato Ganadero, Pesajes, Bajas y Expedientes
+            Route::middleware([...$ganaderia, 'can:ganaderia.ganado'])
                 ->group(base_path('routes/ganado.php'));
 
-            // 4. Proveedores, Guías, Liquidaciones y Anticipos
-            Route::middleware('web')
+            // Proveedores, Guías, Liquidaciones y Anticipos
+            Route::middleware([...$ganaderia, 'can:ganaderia.proveedores'])
                 ->group(base_path('routes/proveedores.php'));
 
-            // 5. Corrales y Lotes de Engorda (Feedlot)
-            Route::middleware('web')
+            // Corrales y Lotes de Engorda (Feedlot)
+            Route::middleware([...$ganaderia, 'can:ganaderia.corrales'])
                 ->prefix('corrales')
                 ->name('corrales.')
                 ->group(base_path('routes/corrales.php'));
 
-            // 6. Nutrición, Raciones y Consumos
-            Route::middleware('web')
+            // Nutrición, Raciones y Consumos
+            Route::middleware([...$ganaderia, 'can:ganaderia.nutricion'])
                 ->prefix('nutricion')
                 ->name('nutricion.')
                 ->group(base_path('routes/nutricion.php'));
 
-            // 7. Calidad de Carne y Canales (Dra. Salud Rubio / Engormix)
-            Route::middleware('web')
+            // Calidad de Carne y Canales
+            Route::middleware([...$ganaderia, 'can:ganaderia.calidad'])
                 ->prefix('calidad-carne')
                 ->name('calidad.carne.')
                 ->group(base_path('routes/calidad_carne.php'));
 
-            // 8. Sanidad, Bioseguridad y Control de Retiro
-            Route::middleware('web')
+            // Sanidad, Bioseguridad y Control de Retiro
+            Route::middleware([...$ganaderia, 'can:ganaderia.sanidad'])
                 ->prefix('sanidad')
                 ->name('sanidad.')
                 ->group(base_path('routes/sanidad.php'));
 
-            // 9. Simulador Financiero y Rentabilidad (MXN)
-            Route::middleware('web')
+            // Simulador Financiero y Rentabilidad (MXN)
+            Route::middleware([...$ganaderia, 'can:ganaderia.simulador'])
                 ->group(base_path('routes/simulador.php'));
 
-            // 10. Ventas y Liquidaciones Comerciales
-            Route::middleware('web')
+            // Ventas y Liquidaciones Comerciales
+            Route::middleware([...$ganaderia, 'can:ganaderia.ventas'])
                 ->prefix('ventas')
                 ->name('ventas.')
                 ->group(base_path('routes/ventas.php'));
+
+            /*
+            |------------------------------------------------------------------
+            | PLANTA: CONSTRUCCIÓN  (middleware division:construccion)
+            |------------------------------------------------------------------
+            */
+            Route::middleware(['web', 'auth', 'division:construccion'])
+                ->prefix('construccion')
+                ->name('construccion.')
+                ->group(base_path('routes/construccion.php'));
         });
     }
 

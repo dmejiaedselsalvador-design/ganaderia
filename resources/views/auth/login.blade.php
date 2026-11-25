@@ -9,14 +9,14 @@
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
                     Acceso al Sistema
                 </span>
-                <span class="text-xs text-stone-400 font-medium">Panel de Control</span>
+                <span class="text-xs text-stone-400 font-medium">Ganadería · Construcción</span>
             </div>
 
             <h2 class="font-serif-brand text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">
                 Iniciar Sesión
             </h2>
             <p class="mt-1 text-xs sm:text-sm text-stone-500">
-                Ingrese sus credenciales de usuario para acceder a la gestión ganadera.
+                Ingresa tus credenciales. Después elegirás la planta en la que vas a trabajar.
             </p>
         </div>
 
@@ -98,7 +98,7 @@
                     <input id="remember_me" type="checkbox" name="remember"
                            class="h-4 w-4 rounded border-stone-300 text-emerald-800 focus:ring-emerald-700/30 transition cursor-pointer" />
                     <span class="ml-2.5 text-xs sm:text-sm text-stone-600 font-medium">
-                        Mantener sesión iniciada
+                        Mantener sesión iniciada <span class="text-stone-400 font-normal">(30 días)</span>
                     </span>
                 </label>
 
@@ -110,7 +110,7 @@
             <!-- Botón de Envío -->
             <div class="pt-2">
                 <button type="submit"
-                        class="w-full flex items-center justify-center gap-2 rounded-xl bg-[#05201a] hover:bg-emerald-950 text-amber-200 hover:text-white px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-emerald-800/20 active:scale-[0.99]">
+                        class="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-200 hover:text-white px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-emerald-800/20 active:scale-[0.99]">
                     <span>Ingresar al Sistema</span>
                     <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
                 </button>
@@ -120,7 +120,7 @@
         <!-- Pie de Seguridad Discreto -->
         <div class="pt-4 border-t border-stone-100 flex items-center justify-center gap-2 text-xs text-stone-400">
             <i class="fa-solid fa-shield-halved text-emerald-600 text-xs"></i>
-            <span>Conexión protegida · Ganadería Taurino</span>
+            <span>Conexión protegida · {{ config('plantas.grupo') }}</span>
         </div>
 
     </div>

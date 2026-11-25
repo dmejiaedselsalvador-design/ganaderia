@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -25,6 +25,11 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        // Súper Admin y Dueño tienen todos los permisos. Las protecciones especiales
+        // (p. ej. que el Dueño no pueda eliminar al Súper Admin) se validan en
+        // App\Http\Controllers\Admin\UserController.
+        Gate::before(function ($user, string $ability) {
+            return method_exists($user, 'tieneAccesoTotal') && $user->tieneAccesoTotal() ? true : null;
+        });
     }
 }

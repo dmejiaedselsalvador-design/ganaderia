@@ -108,4 +108,9 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    | Duración de la cookie "Mantener sesión iniciada" (minutos). 43200 = 30 días.
+    */
+    'remember_minutes' => (int) env('AUTH_REMEMBER_MINUTES', 43200),
+
 ];

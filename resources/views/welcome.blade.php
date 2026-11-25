@@ -1,308 +1,367 @@
+@php
+    $verFinanzas = auth()->user()->can('ganaderia.finanzas');
+    $card = 'rounded-2xl border border-slate-100 bg-white shadow-sm';
+    $delta = function ($v) {
+        if ($v === null) return ['—', 'text-slate-400', 'fa-minus'];
+        return $v >= 0 ? ['+' . $v . '%', 'text-emerald-600', 'fa-arrow-trend-up'] : [$v . '%', 'text-rose-600', 'fa-arrow-trend-down'];
+    };
+@endphp
 <x-app-layout>
-    <div id="vista-dashboard" class="py-6 space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="vista-dashboard" class="mx-auto max-w-7xl space-y-6">
 
-        <!-- ENCABEZADO DEL DASHBOARD -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
+        <!-- ENCABEZADO -->
+        <div class="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-                <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Panel de Control Ganadero</h1>
-                <p class="text-sm text-slate-500 mt-1">Monitoreo en tiempo real de inventario, peso y métricas del hato.</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Planta Ganadería</p>
+                <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">Dashboard de Análisis</h1>
+                <p class="mt-1 text-sm text-slate-500">Inventario, productividad, sanidad y finanzas del hato · actualizado {{ now()->format('d/m/Y H:i') }}</p>
             </div>
-            <div class="flex items-center gap-3">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Sistema Activo
-                </span>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-500">Período:</span>
+                <div class="flex rounded-xl border border-slate-200 bg-white p-1 text-xs font-semibold shadow-sm">
+                    @foreach ($periodos as $p)
+                        <a href="{{ route('welcome', ['meses' => $p]) }}"
+                           class="rounded-lg px-3 py-1.5 transition {{ $meses === $p ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900' }}">{{ $p }} meses</a>
+                    @endforeach
+                </div>
             </div>
         </div>
 
-        @if(($listosVenta ?? 0) > 0)
-            <!-- ALERTA DE GANADO LISTO PARA VENDER -->
-            <div class="p-4 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl text-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">
-                        🎯
-                    </div>
-                    <div>
-                        <strong class="font-bold text-sm block">¡Hay {{ $listosVenta }} cabezas de ganado que alcanzaron su peso objetivo!</strong>
-                        <span class="text-xs text-amber-100">Cumplen con el peso meta de venta para su categoría y están listos para comercialización.</span>
-                    </div>
-                </div>
-                <a href="{{ route('compras.ganado.index', ['filtro' => 'listos_venta']) }}"
-                   class="bg-white hover:bg-slate-50 text-amber-900 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm shrink-0 flex items-center gap-1.5">
-                    Ver Animales Listos <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
+        <!-- ALERTAS -->
+        @if ($listosVenta > 0 || $animalesEnRetiroCount > 0)
+            <div class="grid gap-4 {{ $listosVenta > 0 && $animalesEnRetiroCount > 0 ? 'md:grid-cols-2' : '' }}">
+                @if ($listosVenta > 0)
+                    <a href="{{ route('compras.ganado.index', ['filtro' => 'listos_venta']) }}"
+                       class="group flex items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 p-4 text-white shadow-sm transition hover:shadow-md">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-lg"><i class="fa-solid fa-bullseye"></i></div>
+                        <div class="flex-1">
+                            <strong class="block text-sm">{{ $listosVenta }} {{ $listosVenta === 1 ? 'cabeza alcanzó' : 'cabezas alcanzaron' }} su peso objetivo</strong>
+                            <span class="text-xs text-amber-100">Listas para comercialización según su categoría.</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-sm transition group-hover:translate-x-1"></i>
+                    </a>
+                @endif
+                @if ($animalesEnRetiroCount > 0)
+                    <a href="{{ route('sanidad.index', ['filtro' => 'en_retiro']) }}"
+                       class="group flex items-center gap-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 p-4 text-white shadow-sm transition hover:shadow-md">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 text-lg"><i class="fa-solid fa-ban"></i></div>
+                        <div class="flex-1">
+                            <strong class="block text-sm">{{ $animalesEnRetiroCount }} {{ $animalesEnRetiroCount === 1 ? 'animal' : 'animales' }} en periodo de retiro</strong>
+                            <span class="text-xs text-rose-100">No enviar a rastro hasta cumplir el tiempo de retiro del fármaco.</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-sm transition group-hover:translate-x-1"></i>
+                    </a>
+                @endif
             </div>
         @endif
 
-        @if(($animalesEnRetiroCount ?? 0) > 0)
-            <!-- ALERTA DE PERIODO DE RETIRO SANITARIO -->
-            <div class="p-4 bg-gradient-to-r from-rose-600 to-rose-700 rounded-2xl text-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">
-                        <i class="fa-solid fa-ban"></i>
+        <!-- KPIs FINANCIEROS -->
+        @if ($verFinanzas)
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                @php [$dTxt, $dCls, $dIco] = $delta($plusvaliaPct); @endphp
+                <div class="{{ $card }} p-5">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor del hato en pie</p>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-cow"></i></span>
                     </div>
-                    <div>
-                        <strong class="font-bold text-sm block">¡Alerta Sanitaria: {{ $animalesEnRetiroCount }} cabezas bajo periodo de retiro de fármacos!</strong>
-                        <span class="text-xs text-rose-100">Tienen tratamientos médicos activos y NO deben enviarse a rastro hasta cumplir el tiempo reglamentario.</span>
-                    </div>
+                    <p class="mt-2 text-2xl font-black text-slate-900" title="{{ formatoPesos($valorHato) }}">{{ formatoPesosCorto($valorHato) }}</p>
+                    <p class="mt-1 flex items-center gap-1.5 text-xs">
+                        <span class="font-semibold {{ $dCls }}"><i class="fa-solid {{ $dIco }}"></i> {{ $dTxt }}</span>
+                        <span class="text-slate-400">vs costo de compra {{ formatoPesosCorto($costoCompraHato) }}</span>
+                    </p>
                 </div>
-                <a href="{{ route('sanidad.index', ['filtro' => 'en_retiro']) }}"
-                   class="bg-white hover:bg-slate-50 text-rose-900 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm shrink-0 flex items-center gap-1.5">
-                    Consultar Retiros <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
+
+                @php [$dTxt, $dCls, $dIco] = $delta($ingresosVariacionPct); @endphp
+                <div class="{{ $card }} p-5">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ventas · {{ $meses }} meses</p>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+                    </div>
+                    <p class="mt-2 text-2xl font-black text-slate-900" title="{{ formatoPesos($ingresosPeriodo) }}">{{ formatoPesosCorto($ingresosPeriodo) }}</p>
+                    <p class="mt-1 flex items-center gap-1.5 text-xs">
+                        <span class="font-semibold {{ $dCls }}"><i class="fa-solid {{ $dIco }}"></i> {{ $dTxt }}</span>
+                        <span class="text-slate-400">vs período anterior</span>
+                    </p>
+                </div>
+
+                <div class="{{ $card }} p-5">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Costo operativo · {{ $meses }} meses</p>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><i class="fa-solid fa-wheat-awn"></i></span>
+                    </div>
+                    <p class="mt-2 text-2xl font-black text-slate-900" title="{{ formatoPesos($alimentoPeriodo + $sanidadPeriodo) }}">{{ formatoPesosCorto($alimentoPeriodo + $sanidadPeriodo) }}</p>
+                    <p class="mt-1 text-xs text-slate-400">
+                        Alimento {{ formatoPesosCorto($alimentoPeriodo) }} · Sanidad {{ formatoPesosCorto($sanidadPeriodo) }}
+                    </p>
+                </div>
+
+                <div class="{{ $card }} p-5">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Costo por kg producido</p>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600"><i class="fa-solid fa-scale-balanced"></i></span>
+                    </div>
+                    <p class="mt-2 text-2xl font-black text-slate-900">{{ $costoPorKg !== null ? '$ ' . number_format($costoPorKg, 2) : '—' }}</p>
+                    <p class="mt-1 text-xs text-slate-400">{{ number_format($kgProducidos, 0) }} kg ganados en el período</p>
+                </div>
             </div>
         @endif
 
-        <!-- 1. FILA DE TARJETAS (KPIs) PRINCIPALES -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Total Ganado -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total de Ganado</p>
-                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ $ganados }} <span class="text-sm font-semibold text-slate-500">Cabezas</span></h3>
+        <!-- KPIs ZOOTÉCNICOS -->
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+            @foreach ([
+                ['Cabezas activas', number_format($ganados), 'cab.', 'fa-cow', 'text-blue-600', number_format($kgEnPie, 0) . ' kg en pie'],
+                ['Peso promedio', number_format($pesoGanados, 1), 'kg', 'fa-weight-scale', 'text-slate-700', $ganadoExportar . ' sobre 200 kg'],
+                ['GDP promedio', number_format($gdpPromedio, 2), 'kg/día', 'fa-chart-line', $gdpPromedio >= 1.2 ? 'text-emerald-600' : 'text-amber-600', 'Ganancia diaria de peso'],
+                ['Ocupación corrales', $ocupacionPct, '%', 'fa-warehouse', $ocupacionPct > 95 ? 'text-rose-600' : 'text-indigo-600', $ocupados . ' / ' . $capacidadTotal . ' espacios'],
+                ['Mortalidad', $mortalidadPct, '%', 'fa-skull', $mortalidadPct > 2 ? 'text-rose-600' : 'text-emerald-600', $totalMuertos . ' bajas · ' . $totalVendidos . ' vendidos'],
+                ['Rend. canal', $rendimientoPromedioCanal ?? '—', $rendimientoPromedioCanal ? '%' : '', 'fa-drumstick-bite', 'text-rose-600', $canalesEvaluadasCount . ' canales evaluadas'],
+            ] as [$label, $valor, $unidad, $icono, $color, $nota])
+                <div class="{{ $card }} p-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $label }}</span>
+                        <i class="fa-solid {{ $icono }} text-xs text-slate-300"></i>
+                    </div>
+                    <div class="mt-1 text-xl font-black {{ $color }}">{{ $valor }} <span class="text-xs font-medium text-slate-400">{{ $unidad }}</span></div>
+                    <p class="mt-0.5 truncate text-[11px] text-slate-400">{{ $nota }}</p>
                 </div>
-                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            @endforeach
+        </div>
+
+        <!-- GRÁFICAS PRINCIPALES -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="{{ $card }} p-6 lg:col-span-2">
+                <div class="mb-4 flex items-start justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Evolución productiva</h3>
+                        <p class="text-xs text-slate-400">Peso promedio en báscula y GDP mensual</p>
+                    </div>
                 </div>
+                <div class="relative h-72"><canvas id="chartProduccion"></canvas></div>
             </div>
 
-            <!-- Inversión en Ganado en Pie (MXN) -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Inversión Ganado en Pie</p>
-                    <h3 class="text-xl sm:text-2xl font-black text-emerald-700 font-mono mt-1">{{ formatoPesos($inversionGanadoPieMXN ?? 0) }}</h3>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <i class="fa-solid fa-cow text-xl"></i>
-                </div>
-            </div>
-
-            <!-- Inversión en Alimento Servido (MXN) -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Alimento Servido</p>
-                    <h3 class="text-xl sm:text-2xl font-black text-amber-700 font-mono mt-1">{{ formatoPesos($inversionAlimentoMXN ?? 0) }}</h3>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <i class="fa-solid fa-wheat-awn text-xl"></i>
-                </div>
-            </div>
-
-            <!-- Ingresos Ventas MXN -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition-all flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ingresos por Ventas</p>
-                    <h3 class="text-xl sm:text-2xl font-black text-emerald-800 font-mono mt-1">{{ formatoPesos($ingresosVentasMXN ?? 0) }}</h3>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
-                    <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
+            <div class="{{ $card }} p-6">
+                <h3 class="text-base font-bold text-slate-800">Composición del hato</h3>
+                <p class="mb-4 text-xs text-slate-400">Cabezas activas por categoría</p>
+                <div class="relative h-56"><canvas id="chartCategoria"></canvas></div>
+                <div class="mt-4 flex justify-center gap-4 text-xs">
+                    @foreach ($porSexo as $s)
+                        <span class="flex items-center gap-1.5 text-slate-600">
+                            <i class="fa-solid {{ $s->sexo === 'Hembra' ? 'fa-venus text-pink-500' : 'fa-mars text-blue-500' }}"></i>
+                            {{ $s->sexo ?? 'N/D' }}: <strong class="text-slate-800">{{ $s->total }}</strong>
+                        </span>
+                    @endforeach
                 </div>
             </div>
         </div>
 
-        <!-- 2. KPIs ZOOTÉCNICOS & ENGORDA -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
-                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Peso Promedio Actual</span>
-                <div class="text-xl font-black text-slate-800 font-mono mt-0.5">
-                    {{ number_format($pesoGanados, 1) }} <span class="text-xs font-normal text-slate-400">kg</span>
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            @if ($verFinanzas)
+                <div class="{{ $card }} p-6 lg:col-span-2">
+                    <h3 class="text-base font-bold text-slate-800">Flujo financiero mensual</h3>
+                    <p class="mb-4 text-xs text-slate-400">Ventas vs compras de ganado vs costo de alimentación (MXN)</p>
+                    <div class="relative h-72"><canvas id="chartFinanzas"></canvas></div>
                 </div>
-            </div>
+            @endif
 
-            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
-                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Corrales Activos</span>
-                <div class="text-xl font-black text-indigo-700 mt-0.5">
-                    {{ $totalCorralesActivos ?? 0 }} <span class="text-xs font-normal text-slate-400">lotes</span>
+            <div class="{{ $card }} p-6 {{ $verFinanzas ? '' : 'lg:col-span-3' }}">
+                <div class="mb-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Ocupación de corrales</h3>
+                        <p class="text-xs text-slate-400">Cabezas activas vs capacidad</p>
+                    </div>
+                    @can('ganaderia.corrales')
+                        <a href="{{ route('corrales.index') }}" class="text-xs font-semibold text-emerald-700 hover:underline">Ver todos</a>
+                    @endcan
                 </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
-                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Rend. Canal Promedio</span>
-                <div class="text-xl font-black text-rose-700 font-mono mt-0.5">
-                    {{ $rendimientoPromedioCanal ?? 60.0 }}%
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl shadow-2xs border border-slate-100">
-                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Cabezas Exportación</span>
-                <div class="text-xl font-black text-emerald-700 mt-0.5">
-                    {{ $ganadoExportar }} <span class="text-xs font-normal text-slate-400">(>200 kg)</span>
+                <div class="space-y-4">
+                    @forelse ($corrales as $c)
+                        @php $pct = $c->capacidad_maxima > 0 ? min(100, round($c->ganados_activos_count / $c->capacidad_maxima * 100)) : 0; @endphp
+                        <div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-semibold text-slate-700">{{ $c->codigo }} <span class="font-normal text-slate-400">· {{ $c->fase_engorda }}</span></span>
+                                <span class="font-mono text-slate-500">{{ $c->ganados_activos_count }}/{{ $c->capacidad_maxima }}</span>
+                            </div>
+                            <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+                                <div class="h-full rounded-full {{ $pct >= 95 ? 'bg-rose-500' : ($pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500') }}" style="width: {{ $pct }}%"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="py-8 text-center text-sm text-slate-400">No hay corrales activos.</p>
+                    @endforelse
                 </div>
             </div>
         </div>
 
-        <!-- ACCESOS RÁPIDOS A MÓDULOS ZOOTÉCNICOS -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <a href="{{ route('corrales.index') }}"
-               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
-                <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-warehouse"></i>
-                </span>
-                <span>Feedlot / Corrales</span>
-            </a>
+        <!-- TABLAS DE ANÁLISIS -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="{{ $card }} overflow-hidden lg:col-span-2">
+                <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Próximos a peso de venta</h3>
+                        <p class="text-xs text-slate-400">Animales con mayor avance hacia su peso objetivo</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                <th class="px-6 py-2.5">Arete</th>
+                                <th class="px-3 py-2.5">Categoría</th>
+                                <th class="px-3 py-2.5">Corral</th>
+                                <th class="px-3 py-2.5 text-right">Peso / Meta</th>
+                                <th class="w-40 px-6 py-2.5">Avance</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse ($proximosVenta as $g)
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-6 py-2.5 font-mono text-xs font-semibold text-slate-800">
+                                        @can('ganaderia.ganado')
+                                            <a href="{{ route('compras.ganado.perfil', ['arete' => $g->areteID]) }}" class="hover:text-emerald-700">{{ $g->areteID }}</a>
+                                        @else
+                                            {{ $g->areteID }}
+                                        @endcan
+                                    </td>
+                                    <td class="px-3 py-2.5 text-xs text-slate-600">{{ $g->categoria }}</td>
+                                    <td class="px-3 py-2.5 text-xs text-slate-500">{{ $g->corralLote->codigo ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 text-right font-mono text-xs text-slate-700">{{ number_format($g->ultimoPeso, 0) }} / {{ number_format($g->objetivo, 0) }} kg</td>
+                                    <td class="px-6 py-2.5">
+                                        <div class="flex items-center gap-2">
+                                            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                                                <div class="h-full rounded-full {{ $g->avance_pct >= 100 ? 'bg-amber-500' : 'bg-emerald-500' }}" style="width: {{ $g->avance_pct }}%"></div>
+                                            </div>
+                                            <span class="w-10 text-right font-mono text-[11px] font-semibold {{ $g->avance_pct >= 100 ? 'text-amber-600' : 'text-slate-500' }}">{{ round($g->avance_pct) }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="px-6 py-8 text-center text-sm text-slate-400">Sin animales activos.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            <a href="{{ route('nutricion.index') }}"
-               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
-                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-wheat-awn"></i>
-                </span>
-                <span>Nutrición & Dietas</span>
-            </a>
+            <div class="space-y-6">
+                <div class="{{ $card }} p-6">
+                    <h3 class="text-base font-bold text-slate-800">Mejor GDP del período</h3>
+                    <p class="mb-3 text-xs text-slate-400">Pesajes con mayor ganancia diaria</p>
+                    <ol class="space-y-2.5">
+                        @forelse ($topGdp as $i => $p)
+                            <li class="flex items-center gap-3 text-sm">
+                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold {{ $i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' }}">{{ $i + 1 }}</span>
+                                <span class="flex-1 truncate font-mono text-xs text-slate-700">{{ $p->ganado->areteID ?? '—' }} <span class="font-sans text-slate-400">· {{ $p->ganado->categoria ?? '' }}</span></span>
+                                <span class="font-mono text-xs font-bold text-emerald-600">{{ number_format($p->gdp, 2) }} kg/d</span>
+                            </li>
+                        @empty
+                            <li class="py-4 text-center text-sm text-slate-400">Sin pesajes en el período.</li>
+                        @endforelse
+                    </ol>
+                </div>
 
-            <a href="{{ route('calidad.carne.index') }}"
-               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
-                <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-drumstick-bite"></i>
-                </span>
-                <span>Calidad Carne & Canal</span>
-            </a>
-
-            <a href="{{ route('simulador.index') }}"
-               class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-2.5 text-xs font-semibold text-slate-700 shadow-2xs">
-                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-calculator"></i>
-                </span>
-                <span>Simulador Engorda MXN</span>
-            </a>
+                <div class="{{ $card }} p-6">
+                    <h3 class="text-base font-bold text-slate-800">Bajas por causa</h3>
+                    <p class="mb-3 text-xs text-slate-400">Histórico de mortalidad</p>
+                    @forelse ($bajasPorCausa as $b)
+                        @php $pct = $totalMuertos ? round($b->total / $totalMuertos * 100) : 0; @endphp
+                        <div class="mb-2.5">
+                            <div class="flex justify-between text-xs"><span class="text-slate-600">{{ $b->causa_muerte }}</span><span class="font-semibold text-slate-700">{{ $b->total }}</span></div>
+                            <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-rose-500" style="width: {{ $pct }}%"></div></div>
+                        </div>
+                    @empty
+                        <p class="flex items-center gap-2 py-3 text-sm text-emerald-600"><i class="fa-solid fa-circle-check"></i> Sin bajas registradas.</p>
+                    @endforelse
+                </div>
+            </div>
         </div>
 
-        <!-- 2. FILA DE ANÁLISIS VISUAL (GRÁFICAS) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Gráfica de Líneas: Tendencia de Peso (Ocupa 2 columnas) -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base font-bold text-slate-800">Tendencia de Ganancia de Peso</h3>
-                    <span class="text-xs text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">Últimos meses</span>
-                </div>
-                <div class="relative w-full h-72">
-                    <canvas id="lineChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfica de Dona: Distribución por Sexo -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base font-bold text-slate-800">Distribución por Sexo</h3>
-                </div>
-                <div class="relative w-full h-72 flex items-center justify-center">
-                    <canvas id="doughnutChartCategoria"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfica de Barras: Distribución por Categoría (Ocupa las 3 columnas o se ajusta) -->
-            <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base font-bold text-slate-800">Inventario Detallado por Categoría</h3>
-                    <span class="text-xs text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">Activos en el hato</span>
-                </div>
-                <div class="relative w-full h-72">
-                    <canvas id="doughnutChart"></canvas>
-                </div>
-            </div>
-
+        <!-- ACCESOS RÁPIDOS -->
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            @foreach ([
+                ['ganaderia.ganado', 'compras.ganado.index', 'fa-cow', 'Inventario', 'bg-blue-50 text-blue-700'],
+                ['ganaderia.corrales', 'corrales.index', 'fa-warehouse', 'Corrales', 'bg-amber-50 text-amber-700'],
+                ['ganaderia.nutricion', 'nutricion.index', 'fa-wheat-awn', 'Nutrición', 'bg-emerald-50 text-emerald-700'],
+                ['ganaderia.sanidad', 'sanidad.index', 'fa-notes-medical', 'Sanidad', 'bg-rose-50 text-rose-700'],
+                ['ganaderia.ventas', 'ventas.index', 'fa-cart-shopping', 'Ventas', 'bg-teal-50 text-teal-700'],
+                ['ganaderia.simulador', 'simulador.index', 'fa-calculator', 'Simulador', 'bg-indigo-50 text-indigo-700'],
+            ] as [$permiso, $ruta, $icono, $texto, $color])
+                @can($permiso)
+                    <a href="{{ route($ruta) }}" class="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white p-3 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50">
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg {{ $color }}"><i class="fa-solid {{ $icono }}"></i></span>
+                        {{ $texto }}
+                    </a>
+                @endcan
+            @endforeach
         </div>
     </div>
 
-    <!-- SCRIPTS DE LAS GRÁFICAS -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // --- 1. GRÁFICA DE LÍNEAS: Tendencia de Peso ---
-            const tendenciaLabels = @json($labelsTendencia ?? []);
-            const tendenciaData = @json($dataTendencia ?? []);
-
-            new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: {
-                    labels: tendenciaLabels.length > 0 ? tendenciaLabels : ['Sin datos'],
-                    datasets: [{
-                        label: 'Peso Promedio (kg)',
-                        data: tendenciaData,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
-                        borderWidth: 2.5,
-                        fill: true,
-                        tension: 0.35,
-                        pointBackgroundColor: '#2563eb',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: '#f1f5f9' }, beginAtZero: true }
-                    }
-                }
+        document.addEventListener('DOMContentLoaded', function () {
+            const t = window.temaChart();
+            const meses = @json($labelsMeses);
+            const pesos = v => '$ ' + Number(v).toLocaleString('es-MX', { maximumFractionDigits: 0 });
+            const escalas = (extra = {}) => ({
+                x: { grid: { display: false }, ticks: { color: t.texto } },
+                y: { grid: { color: t.grid }, ticks: { color: t.texto }, beginAtZero: true, ...extra },
             });
 
-            // --- 2. GRÁFICA DE BARRAS: Inventario por Categoría ---
-            const distribucionData = @json($distribucionSexo ?? []);
-            const labelsBar = distribucionData.map(item => item.categoria ? (item.categoria.charAt(0).toUpperCase() + item.categoria.slice(1)) : 'No especificado');
-            const dataBar = distribucionData.map(item => item.total);
-
-            new Chart(document.getElementById('doughnutChart'), {
-                type: 'bar',
+            // 1. Evolución productiva: peso promedio (línea) + GDP (barras)
+            new Chart(document.getElementById('chartProduccion'), {
                 data: {
-                    labels: labelsBar,
-                    datasets: [{
-                        label: 'Cantidad de Animales',
-                        data: dataBar,
-                        backgroundColor: ['#3b82f6', '#ec4899', '#10b981', '#f43f5e', '#8b5cf6', '#f59e0b'],
-                        borderRadius: 6,
-                        borderWidth: 0
-                    }]
+                    labels: meses,
+                    datasets: [
+                        { type: 'line', label: 'Peso promedio (kg)', data: @json($pesoMensual), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.12)',
+                          fill: true, tension: .35, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#10b981', yAxisID: 'y', spanGaps: true },
+                        { type: 'bar', label: 'GDP (kg/día)', data: @json($gdpMensual), backgroundColor: 'rgba(245,158,11,.75)', borderRadius: 6, maxBarThickness: 28, yAxisID: 'y1' },
+                    ],
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: { display: false }
-                    },
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'bottom', labels: { color: t.texto, boxWidth: 12, usePointStyle: true } } },
                     scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { precision: 0 } }
-                    }
-                }
+                        ...escalas(),
+                        y1: { position: 'right', beginAtZero: true, grid: { display: false }, ticks: { color: t.texto } },
+                    },
+                },
             });
 
-            // --- 3. GRÁFICA DE DONA: Distribución por Sexo ---
-            const distribucionCategoriaData = @json($distribucionCategoria ?? []);
-            const categoriaLabels = distribucionCategoriaData.map(item => item.sexo ? (item.sexo.charAt(0).toUpperCase() + item.sexo.slice(1)) : 'No especificado');
-            const categoriaData = distribucionCategoriaData.map(item => item.total);
-
-            new Chart(document.getElementById('doughnutChartCategoria'), {
+            // 2. Composición por categoría
+            const cat = @json($porCategoria);
+            new Chart(document.getElementById('chartCategoria'), {
                 type: 'doughnut',
                 data: {
-                    labels: categoriaLabels,
-                    datasets: [{
-                        data: categoriaData,
-                        backgroundColor: ['#3b82f6', '#ec4899', '#10b981', '#f43f5e'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
+                    labels: cat.map(c => c.categoria || 'N/D'),
+                    datasets: [{ data: cat.map(c => c.total), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6'], borderColor: t.superficie, borderWidth: 3 }],
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                font: { size: 11, family: 'sans-serif' }
-                            }
-                        }
-                    }
-                }
+                    responsive: true, maintainAspectRatio: false, cutout: '68%',
+                    plugins: { legend: { position: 'right', labels: { color: t.texto, boxWidth: 10, usePointStyle: true, font: { size: 11 } } } },
+                },
             });
+
+            // 3. Flujo financiero
+            const el = document.getElementById('chartFinanzas');
+            if (el) {
+                new Chart(el, {
+                    type: 'bar',
+                    data: {
+                        labels: meses,
+                        datasets: [
+                            { label: 'Ventas', data: @json($ventasMensual), backgroundColor: '#10b981', borderRadius: 5, maxBarThickness: 22 },
+                            { label: 'Compras de ganado', data: @json($comprasMensual), backgroundColor: '#3b82f6', borderRadius: 5, maxBarThickness: 22 },
+                            { label: 'Alimentación', data: @json($alimentoMensual), backgroundColor: '#f59e0b', borderRadius: 5, maxBarThickness: 22 },
+                        ],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: t.texto, boxWidth: 12, usePointStyle: true } },
+                            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + pesos(c.raw) } },
+                        },
+                        scales: escalas({ ticks: { color: t.texto, callback: v => v >= 1000 ? '$' + (v / 1000) + 'k' : '$' + v } }),
+                    },
+                });
+            }
         });
     </script>
 </x-app-layout>

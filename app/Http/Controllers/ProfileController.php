@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,16 +11,6 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Muestra la lista de usuarios activos para administradores.
-     */
-    public function index(): View
-    {
-        $users = User::where('status', 'active')->latest()->get();
-
-        return view('profile.usuarios.usuariosLista', compact('users'));
-    }
-
     /**
      * Muestra el formulario de edición de perfil.
      */
