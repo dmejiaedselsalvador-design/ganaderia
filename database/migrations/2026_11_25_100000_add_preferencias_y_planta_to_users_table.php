@@ -13,7 +13,7 @@ return new class extends Migration
                 $table->string('telefono', 30)->nullable()->after('email');
             }
             if (! Schema::hasColumn('users', 'tema')) {
-                $table->string('tema', 10)->default('claro')->after('status');
+                $table->string('tema', 10)->default('oscuro')->after('status');
             }
             if (! Schema::hasColumn('users', 'last_division')) {
                 $table->string('last_division', 40)->nullable()->after('tema');

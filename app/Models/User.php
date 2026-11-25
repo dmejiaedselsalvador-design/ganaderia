@@ -72,12 +72,12 @@ class User extends Authenticatable
         return (int) ($this->roles->max('nivel') ?? 0);
     }
 
-    /** Tema visual normalizado (claro | oscuro | metal). */
+    /** Tema visual normalizado (claro | oscuro | metal). Por defecto: oscuro. */
     public function temaPreferido(): string
     {
         $tema = $this->tema === 'dark' ? 'oscuro' : $this->tema;
 
-        return in_array($tema, self::TEMAS, true) ? $tema : 'claro';
+        return in_array($tema, self::TEMAS, true) ? $tema : 'oscuro';
     }
 
     /** Plantas a las que tiene acceso este usuario. */

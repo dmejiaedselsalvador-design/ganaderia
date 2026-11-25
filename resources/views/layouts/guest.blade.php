@@ -1,6 +1,6 @@
 @php
     $tema = request()->cookie('tema');
-    $tema = in_array($tema, ['claro', 'oscuro', 'metal'], true) ? $tema : 'claro';
+    $tema = in_array($tema, ['claro', 'oscuro', 'metal'], true) ? $tema : 'oscuro';
     $temaClass = $tema === 'oscuro' ? 'tema-oscuro tema-dark' : 'tema-' . $tema;
     $plantas = \App\Support\Plantas::todas();
 @endphp

@@ -1,7 +1,7 @@
 @props(['titulo' => 'Selecciona tu planta'])
 @php
     $usuario = auth()->user();
-    $tema = $usuario?->temaPreferido() ?? 'claro';
+    $tema = $usuario?->temaPreferido() ?? 'oscuro';
     $temaClass = $tema === 'oscuro' ? 'tema-oscuro tema-dark' : 'tema-' . $tema;
 @endphp
 <!DOCTYPE html>

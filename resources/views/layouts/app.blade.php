@@ -2,7 +2,7 @@
     use App\Support\Plantas;
 
     $usuario     = Auth::user();
-    $tema        = $usuario?->temaPreferido() ?? 'claro';
+    $tema        = $usuario?->temaPreferido() ?? 'oscuro';
     $temaClass   = $tema === 'oscuro' ? 'tema-oscuro tema-dark' : 'tema-' . $tema;
     $plantaClave = Plantas::activa()
         ?? (request()->routeIs('construccion.*') ? 'construccion' : 'ganaderia');
