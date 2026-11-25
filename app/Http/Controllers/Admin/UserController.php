@@ -180,11 +180,11 @@ class UserController extends Controller
         $activar = ! $user->estaActivo();
         $user->status = $activar ? User::ESTADO_ACTIVO : User::ESTADO_INACTIVO;
 
-        if (! $activar) {
-            $user->setRememberToken(null); // cierra "Mantener sesión" en todos sus equipos
-        }
-
         $user->save();
+
+        if (! $activar) {
+            \App\Support\Sesiones::cerrarDeUsuario($user); // lo saca de todos sus equipos
+        }
 
         return back()->with('exito', $activar
             ? "{$user->name} fue reactivado."

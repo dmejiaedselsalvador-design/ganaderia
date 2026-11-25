@@ -40,14 +40,9 @@
                     <input type="checkbox" x-model="ver" class="h-4 w-4 rounded border-slate-300 text-emerald-600"> Mostrar claves
                 </label>
 
-                <ul class="space-y-1 rounded-xl border border-slate-100 bg-slate-50 p-4 text-xs text-slate-600">
-                    <li><i class="fa-solid fa-check text-emerald-600"></i> Mínimo 8 caracteres</li>
-                    <li><i class="fa-solid fa-check text-emerald-600"></i> Al menos una mayúscula y una minúscula</li>
-                    <li><i class="fa-solid fa-check text-emerald-600"></i> Al menos un número</li>
-                    <li><i class="fa-solid fa-check text-emerald-600"></i> Diferente a la clave temporal</li>
-                </ul>
+                <x-ui.reglas-clave actual="current_password" boton="btn-guardar-clave" />
 
-                <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
+                <button id="btn-guardar-clave" class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 transition px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
                     <i class="fa-solid fa-lock"></i> Guardar mi clave y continuar
                 </button>
             </form>

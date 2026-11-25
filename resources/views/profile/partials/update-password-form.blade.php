@@ -31,8 +31,10 @@
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <x-ui.reglas-clave boton="btn-guardar-mi-clave" />
+
         <div class="flex items-center gap-4">
-            <x-primary-button>Guardar clave</x-primary-button>
+            <x-primary-button id="btn-guardar-mi-clave">Guardar clave</x-primary-button>
 
             @if (session('status') === 'password-updated')
                 <p

@@ -39,6 +39,9 @@ Route::middleware(['auth'])->group(function () {
     // Perfil de Usuario
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Cerrar mis sesiones en otros equipos (Mi perfil)
+    Route::delete('/profile/sesiones', [\App\Http\Controllers\Admin\SesionController::class, 'cerrarMisOtras'])->name('profile.sesiones');
+
     // Barra lateral contraída / expandida (se recuerda en la sesión)
     Route::post('/preferencias/sidebar', [PreferenciasController::class, 'sidebar'])->name('preferencias.sidebar');
 

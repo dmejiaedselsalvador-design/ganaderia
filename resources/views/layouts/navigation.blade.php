@@ -154,6 +154,12 @@
                             @endif
                         </a>
                     @endcan
+                    @hasanyrole('super-admin|dueno')
+                        <a href="{{ route('sesiones.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+                            <i class="fa-solid fa-signal w-4 text-center text-slate-400"></i>
+                            <span class="flex-1">Sesiones activas</span>
+                        </a>
+                    @endhasanyrole
                     @role('super-admin')
                         <a href="{{ route('datos-prueba.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
                             <i class="fa-solid fa-flask-vial w-4 text-center text-slate-400"></i>

@@ -4,6 +4,7 @@ use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\Admin\AuditoriaController;
 use App\Http\Controllers\Admin\DatosPruebaController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SesionController;
 use App\Http\Controllers\Admin\SolicitudClaveController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +44,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
         Route::put('/preguntas/{pregunta}', [AyudaController::class, 'responder'])->name('ayuda.responder');
         Route::patch('/preguntas/{pregunta}/cerrar', [AyudaController::class, 'cerrar'])->name('ayuda.cerrar');
     });
+
+    // Sesiones activas: ver quién está conectado y expulsar (Súper Administrador y Dueño; se valida en el controlador)
+    Route::get('/sesiones', [SesionController::class, 'index'])->name('sesiones.index');
+    Route::delete('/sesiones/todas', [SesionController::class, 'expulsarTodos'])->name('sesiones.todas');
+    Route::delete('/sesiones/usuario/{user}', [SesionController::class, 'expulsarUsuario'])->name('sesiones.usuario');
+    Route::delete('/sesiones/{sesion}', [SesionController::class, 'expulsar'])->name('sesiones.expulsar');
 
     // Datos de prueba: cargar / eliminar la simulación (solo Súper Administrador, se valida en el controlador)
     Route::get('/datos-prueba', [DatosPruebaController::class, 'index'])->name('datos-prueba.index');

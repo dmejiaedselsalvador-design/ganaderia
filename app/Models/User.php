@@ -101,6 +101,9 @@ class User extends Authenticatable
             'must_change_password' => true,
             'remember_token'       => \Illuminate\Support\Str::random(60),
         ])->save();
+
+        // La clave anterior deja de servir también en los equipos donde tenía sesión abierta
+        \App\Support\Sesiones::cerrarDeUsuario($this);
     }
 
     /** Guarda la clave definitiva elegida por el propio usuario. */
