@@ -17,6 +17,12 @@
 
     <title>{{ $planta['nombre'] ?? '' }} · {{ config('plantas.grupo') }}</title>
 
+    <!-- Ícono de la pestaña -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon-' . $plantaClave . '.svg') }}">
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon-' . $plantaClave . '-180.png') }}">
+    <meta name="theme-color" content="#0b1220">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|playfair-display:500,600,700&display=swap" rel="stylesheet" />
