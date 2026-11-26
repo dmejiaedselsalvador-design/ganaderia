@@ -22,7 +22,7 @@ use Illuminate\Support\Collection;
  *    al animal le toca la parte de los días que estuvo en ese corral (según su historial de corrales).
  *  - Medicinas: los tratamientos aplicados al animal.
  *  - Gastos asignados a un corral: se dividen entre los animales que estaban en ese corral ese día.
- *  - Gastos generales (sin corral): se reparten por "cabeza-día" de cada mes entre todo el hato.
+ *  - Gastos generales (sin corral): se reparten por "cabeza-día" de cada mes entre todo el ganado.
  *  - Ingreso: precio de venta (descuento prorrateado). Si sigue activo, valor de mercado proyectado
  *    (peso actual x último precio de mercado de su categoría). Si se dio de baja, lo recuperado.
  */
@@ -211,7 +211,8 @@ class RentabilidadService
     /** Fecha de entrada y salida (venta, baja u hoy) del animal en el hato. */
     private function periodoEnHato(Ganado $g, Carbon $hoy): array
     {
-        $entrada = Carbon::parse($g->fecha_ingreso_corral ?? $g->fechaCompra ?? $g->created_at)->startOfDay();
+        // Días en el hato desde la compra (fecha_ingreso_corral cambia con cada movimiento de corral)
+        $entrada = Carbon::parse($g->fechaCompra ?? $g->fecha_ingreso_corral ?? $g->created_at)->startOfDay();
         $salida = $hoy->copy();
 
         if ($g->status === Ganado::STATUS_VENDIDO && $g->detalleVenta?->venta?->fecha_venta) {

@@ -127,7 +127,7 @@ class GestionGanaderaTest extends TestCase
         $this->assertEquals(9250, $r['utilidad']);
         $this->assertEquals(7.5, $r['costo_kg']);       // (500+200+50) / 100 kg
 
-        $this->get(route('welcome'))->assertSee('Valor de mercado del hato');
+        $this->get(route('welcome'))->assertSee('Valor de mercado del ganado');
     }
 
     public function test_venta_a_credito_abonos_y_limite(): void

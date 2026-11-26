@@ -34,7 +34,7 @@ class CorralLoteController extends Controller
             ? round(($totalCabezasEngorda / $capacidadTotalInstalada) * 100, 1)
             : 0;
 
-        $inversionTotalEngordaMXN = Ganado::activo()->whereNotNull('corral_lote_id')->sum('precioGanadoTotal');
+        $inversionTotalEngordaMXN = Ganado::activo()->whereNotNull('corral_lote_id')->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(pesoActual, 0) * COALESCE(precioCompra, 0)'));
 
         return view('corrales.index', compact(
             'corrales',

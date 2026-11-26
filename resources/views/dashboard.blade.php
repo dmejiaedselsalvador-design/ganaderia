@@ -40,7 +40,7 @@
                     </h1>
                     <p class="mt-4 max-w-xl text-sm leading-relaxed text-emerald-100/70 sm:text-base">
                         @auth Bienvenido, {{ auth()->user()->name }}. @endauth
-                        Monitoreo en tiempo real de inventario, peso y métricas de su hato.
+                        Monitoreo en tiempo real de inventario, peso y métricas de su ganado.
                     </p>
                 </div>
 
@@ -60,7 +60,7 @@
                         <div class="absolute inset-0 flex items-center justify-center font-['Playfair_Display'] text-xl font-semibold text-amber-300">{{ $pctExport }}%</div>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-[0.25em] text-emerald-200/50">Hato listo</p>
+                        <p class="text-[10px] uppercase tracking-[0.25em] text-emerald-200/50">Ganado listo</p>
                         <p class="mt-1 font-['Playfair_Display'] text-lg font-semibold">Para exportación</p>
                         <p class="text-xs text-emerald-100/50">{{ $ganadoExportar }} de {{ $ganados }} cabezas</p>
                     </div>
@@ -109,7 +109,7 @@
                 <div class="mb-5 flex items-center justify-between">
                     <div>
                         <h3 class="font-['Playfair_Display'] text-xl font-semibold text-[#05201a]">Tendencia de ganancia de peso</h3>
-                        <p class="mt-0.5 text-xs text-stone-400">Evolución del peso promedio del hato</p>
+                        <p class="mt-0.5 text-xs text-stone-400">Evolución del peso promedio del ganado</p>
                     </div>
                     <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-700">Últimos meses</span>
                 </div>
@@ -120,7 +120,7 @@
             <div class="fade-up d5 flex flex-col rounded-2xl border border-stone-200/80 bg-white p-6 shadow-sm">
                 <div class="mb-5">
                     <h3 class="font-['Playfair_Display'] text-xl font-semibold text-[#05201a]">Distribución por sexo</h3>
-                    <p class="mt-0.5 text-xs text-stone-400">Composición actual del hato</p>
+                    <p class="mt-0.5 text-xs text-stone-400">Ganado actual por categoría</p>
                 </div>
                 <div class="relative flex h-72 w-full items-center justify-center"><canvas id="doughnutChartCategoria"></canvas></div>
             </div>
@@ -130,7 +130,7 @@
                 <div class="mb-5 flex items-center justify-between">
                     <div>
                         <h3 class="font-['Playfair_Display'] text-xl font-semibold text-[#05201a]">Inventario detallado por categoría</h3>
-                        <p class="mt-0.5 text-xs text-stone-400">Animales activos en el hato</p>
+                        <p class="mt-0.5 text-xs text-stone-400">Animales activos en corrales</p>
                     </div>
                     <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Activos</span>
                 </div>

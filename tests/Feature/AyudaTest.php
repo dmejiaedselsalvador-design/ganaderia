@@ -41,7 +41,7 @@ class AyudaTest extends TestCase
     {
         $this->actingAs($this->operario)->post(route('plantas.cambiar'), ['planta' => 'ganaderia']);
         $this->get(route('nutricion.index'))->assertOk()
-            ->assertSee('Ayuda de esta pantalla')->assertSee('Dietas y servidos')->assertSee('¿No te quedó claro?');
+            ->assertSee('Ayuda de esta pantalla')->assertSee('Raciones y comida servida')->assertSee('¿No te quedó claro?');
     }
 
     public function test_usuario_envia_pregunta_con_captura_y_ve_la_respuesta(): void

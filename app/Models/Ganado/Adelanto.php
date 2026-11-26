@@ -85,7 +85,20 @@ class Adelanto extends Model
      */
     public function scopePendiente(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_ENTREGADO);
+        // «Parcial» = una parte ya se descontó y aún queda saldo para la próxima compra
+        return $query->whereIn('status', [self::STATUS_ENTREGADO, self::STATUS_PARCIAL]);
+    }
+
+    /** Lo que ya se descontó de este anticipo en liquidaciones. */
+    public function montoAplicado(): float
+    {
+        return round((float) AdelantoFactura::where('adelanto_id', $this->id)->sum('montoAplicado'), 2);
+    }
+
+    /** Lo que queda de este anticipo para descontar en siguientes compras. */
+    public function saldoDisponible(): float
+    {
+        return max(0.0, round((float) $this->dinero - $this->montoAplicado(), 2));
     }
 
     /**

@@ -3,8 +3,8 @@
         <x-ui.header titulo="Rentabilidad y reportes" subtitulo="Utilidad real por animal y por lote, y reportes para descargar en Excel o PDF." icono="fa-chart-column" />
 
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <x-ui.kpi label="Valor de mercado del hato" :valor="formatoPesos($resumen['valor_mercado_activos'])" :nota="$resumen['activos_sin_precio'] ? $resumen['activos_sin_precio'] . ' animales sin precio de su categoría' : 'Peso actual x precio vigente'" icono="fa-scale-balanced" />
-            <x-ui.kpi label="Costo acumulado del hato" :valor="formatoPesos($resumen['costo_activos'])" nota="Compra + alimento + medicinas + gastos" icono="fa-sack-dollar" color="bg-rose-50 text-rose-600" />
+            <x-ui.kpi label="Valor de mercado del ganado" :valor="formatoPesos($resumen['valor_mercado_activos'])" :nota="$resumen['activos_sin_precio'] ? $resumen['activos_sin_precio'] . ' animales sin precio de su categoría' : 'Peso actual x precio vigente'" icono="fa-scale-balanced" />
+            <x-ui.kpi label="Costo acumulado del ganado" :valor="formatoPesos($resumen['costo_activos'])" nota="Compra + alimento + medicinas + gastos" icono="fa-sack-dollar" color="bg-rose-50 text-rose-600" />
             <x-ui.kpi label="Utilidad proyectada" :valor="formatoPesos($resumen['utilidad_proyectada'])" :valorClass="$resumen['utilidad_proyectada'] >= 0 ? 'text-emerald-600' : 'text-rose-600'" nota="Si se vendiera hoy a precio de mercado" icono="fa-chart-line" />
             <x-ui.kpi label="Utilidad realizada" :valor="formatoPesos($resumen['utilidad_realizada'])" :valorClass="$resumen['utilidad_realizada'] >= 0 ? 'text-emerald-600' : 'text-rose-600'" :nota="$resumen['vendidos'] . ' animales vendidos' . ($resumen['margen_realizado_pct'] !== null ? ' · margen ' . $resumen['margen_realizado_pct'] . '%' : '')" icono="fa-hand-holding-dollar" color="bg-teal-50 text-teal-600" />
         </div>

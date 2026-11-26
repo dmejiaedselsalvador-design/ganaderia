@@ -124,7 +124,7 @@
                         <i class="fa-solid fa-tag"></i>
                     </div>
                     <div class="space-y-0.5 text-xs">
-                        <h3 class="font-bold text-sm text-blue-200 uppercase tracking-wide">Animal Vendido / Descontado de Hato</h3>
+                        <h3 class="font-bold text-sm text-blue-200 uppercase tracking-wide">Animal Vendido / Fuera del inventario</h3>
                         <p class="text-blue-100">
                             Comercializado en Folio <strong>{{ $ganadoSeleccionado->detalleVenta?->venta?->folio_venta ?? 'N/D' }}</strong> el día <strong>{{ $ganadoSeleccionado->detalleVenta?->venta?->fecha_venta?->format('d/m/Y') ?? 'N/D' }}</strong>.
                             Cliente: <strong class="text-white">{{ $ganadoSeleccionado->detalleVenta?->venta?->cliente_nombre ?? 'N/D' }}</strong>.
@@ -158,8 +158,24 @@
                             <p class="text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
                                 <span>Sexo: <strong class="text-slate-700">{{ $ganadoSeleccionado->sexo }}</strong></span>
                                 <span>Corral: <strong class="text-slate-700">{{ $ganadoSeleccionado->lote_potrero ?: 'General' }}</strong></span>
-                                <span>Proveedor: <strong class="text-slate-700">{{ $ganadoSeleccionado->factura?->proveedor?->nombreContacto ?? 'Sin proveedor' }}</strong></span>
+                                <span>Proveedor: <strong class="text-slate-700">{{ $ganadoSeleccionado->factura?->proveedor?->nombreProveedor ?? $ganadoSeleccionado->factura?->proveedor?->nombreContacto ?? 'Sin proveedor' }}</strong></span>
                                 <span>Costo Adquisición: <strong class="text-slate-700 font-mono">{{ formatoPesos($ganadoSeleccionado->precioGanadoTotal) }}</strong></span>
+                            </p>
+                            @php
+                                $gs = $ganadoSeleccionado;
+                                $diasEngorda = $gs->fechaCompra ? (int) abs($gs->fechaCompra->diffInDays(now())) : null;
+                            @endphp
+                            <p class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                                <span title="Fecha de la guía de compra"><i class="fa-solid fa-calendar-day text-emerald-600"></i> Fecha de compra:
+                                    <strong class="text-slate-700">{{ $gs->fechaCompra?->format('d/m/Y') ?? '—' }}</strong>@if ($diasEngorda !== null) <span class="text-slate-400">({{ $diasEngorda }} días en engorda)</span>@endif
+                                </span>
+                                <span title="Cuándo se capturó en el sistema"><i class="fa-solid fa-keyboard text-slate-400"></i> Registrado en el sistema:
+                                    <strong class="text-slate-700">{{ $gs->created_at?->format('d/m/Y H:i') ?? '—' }}</strong>
+                                </span>
+                                @if ($gs->factura)
+                                    <span><i class="fa-solid fa-file-invoice text-slate-400"></i> Guía: <strong class="text-slate-700">{{ $gs->factura->numeroFactura }}</strong></span>
+                                @endif
+                                <span><i class="fa-solid fa-weight-scale text-slate-400"></i> Peso de compra: <strong class="text-slate-700">{{ number_format((float) $gs->pesoActual, 1) }} kg</strong></span>
                             </p>
                         </div>
                     </div>

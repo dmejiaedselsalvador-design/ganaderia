@@ -227,15 +227,13 @@ class Ganado extends Model
     }
 
     /**
-     * Accesor para asegurar cálculo del precio total incluso en entornos sin columna generada.
+     * Importe de compra del animal = peso de compra × precio por kg.
+     * (La columna generada de la base usa el último peso, que cambia con cada pesaje; por eso se calcula aquí
+     *  con el peso de compra y el monto a pagar al proveedor ya no sube cuando el animal engorda.)
      */
     public function getPrecioGanadoTotalAttribute($value): float
     {
-        if ($value !== null) {
-            return (float) $value;
-        }
-
-        $peso = (float) ($this->ultimoPeso ?? $this->pesoActual ?? 0);
+        $peso = (float) ($this->pesoActual ?? $this->ultimoPeso ?? 0);
         $precio = (float) ($this->precioCompra ?? 0);
 
         return round($peso * $precio, 2);
@@ -250,7 +248,7 @@ class Ganado extends Model
             return (float) $this->peso_objetivo;
         }
 
-        return (float) (self::UMBRALES_VENTA_CATEGORIA[$this->categoria] ?? 400.00);
+        return (float) (\App\Models\Ganaderia\PesoObjetivo::mapa()[$this->categoria] ?? 400.00);
     }
 
     /**
@@ -368,7 +366,8 @@ class Ganado extends Model
     {
         return $query->where('status', self::STATUS_ACTIVO)
                      ->where(function ($q) {
-                         foreach (self::UMBRALES_VENTA_CATEGORIA as $categoria => $umbral) {
+                         foreach (\App\Models\Ganaderia\PesoObjetivo::mapa() as $categoria => $umbral) {
+                             $umbral = (float) $umbral;
                              $q->orWhere(function ($sub) use ($categoria, $umbral) {
                                  $sub->where('categoria', $categoria)
                                      ->whereRaw("COALESCE(peso_objetivo, {$umbral}) <= ultimoPeso");

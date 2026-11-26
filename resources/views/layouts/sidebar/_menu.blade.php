@@ -85,7 +85,7 @@
 
     <!-- Encabezado: marca + botón contraer -->
     <div class="relative flex h-[72px] shrink-0 items-center gap-3 px-4" :class="colapsado && 'md:justify-center md:px-0'">
-        <a href="{{ route($marca['ruta']) }}" class="flex min-w-0 flex-1 items-center gap-3" :class="colapsado && 'md:hidden'">
+        <a href="{{ route($marca['ruta']) }}" target="_self" class="flex min-w-0 flex-1 items-center gap-3" :class="colapsado && 'md:hidden'">
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border {{ $tema['marca'] ?? 'border-amber-300/30 bg-amber-300/10 text-amber-300' }}">
                 <i class="fa-solid {{ $marca['icono'] }}"></i>
             </div>
@@ -150,7 +150,7 @@
                                      class="relative ml-[22px] mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
                                     @foreach ($e['items'] as $it)
                                         @php $act = $esActivo($it); @endphp
-                                        <a href="{{ $url($it) }}" x-show="!q || @js($txt($it[4] . ' ' . $e['grupo'])).includes(q.toLowerCase())"
+                                        <a href="{{ $url($it) }}" target="_self" x-show="!q || @js($txt($it[4] . ' ' . $e['grupo'])).includes(q.toLowerCase())"
                                            class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition {{ $act ? $activoBg . ' text-white font-semibold' : 'opacity-75 hover:bg-white/5 hover:text-white hover:opacity-100' }}">
                                             <i class="fa-solid {{ $it[3] }} w-4 text-center text-xs {{ $act ? $tema['acento'] : '' }}"></i>
                                             <span class="truncate">{{ $it[4] }}</span>
@@ -173,7 +173,7 @@
                                         <div class="space-y-0.5">
                                             @foreach ($e['items'] as $it)
                                                 @php $act = $esActivo($it); @endphp
-                                                <a href="{{ $url($it) }}"
+                                                <a href="{{ $url($it) }}" target="_self"
                                                    class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition {{ $act ? $activoBg . ' text-white font-semibold' : 'text-white/75 hover:bg-white/10 hover:text-white' }}">
                                                     <i class="fa-solid {{ $it[3] }} w-4 text-center text-xs {{ $act ? $tema['acento'] : 'opacity-70' }}"></i>
                                                     <span class="truncate">{{ $it[4] }}</span>
@@ -188,7 +188,7 @@
                             {{-- Opción directa --}}
                             @php $act = $esActivo($e); @endphp
                             @php $idDirecto = 'd' . substr(md5($e[1] . $e[4]), 0, 6); @endphp
-                            <a href="{{ $url($e) }}" x-show="!q || @js($txt($e[4])).includes(q.toLowerCase())"
+                            <a href="{{ $url($e) }}" target="_self" x-show="!q || @js($txt($e[4])).includes(q.toLowerCase())"
                                @mouseenter="abrirFly('{{ $idDirecto }}', $el)" @mouseleave="cerrarFly(60)"
                                class="relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
                                       {{ $act ? $activoBg . ' text-white font-semibold' : 'hover:bg-white/5 hover:text-white' }}"

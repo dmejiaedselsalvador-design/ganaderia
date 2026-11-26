@@ -1,126 +1,150 @@
+@php
+    use App\Models\Ganado\FacturaGanado as F;
+    $pestanas = [
+        'pendientes' => ['Pendientes de liquidar', ($conteos[F::ESTADO_PENDIENTE] ?? 0) + ($conteos[F::ESTADO_PARCIAL] ?? 0), 'fa-hourglass-half'],
+        'liquidadas' => ['Liquidadas', $conteos[F::ESTADO_LIQUIDADO] ?? 0, 'fa-circle-check'],
+        'anuladas'   => ['Anuladas', $conteos[F::ESTADO_ANULADA] ?? 0, 'fa-ban'],
+        'todas'      => ['Todas', $conteos->sum(), 'fa-list'],
+    ];
+    $colorEstado = [
+        F::ESTADO_PENDIENTE => 'bg-amber-100 text-amber-800',
+        F::ESTADO_PARCIAL   => 'bg-blue-100 text-blue-800',
+        F::ESTADO_LIQUIDADO => 'bg-emerald-100 text-emerald-800',
+        F::ESTADO_ANULADA   => 'bg-slate-100 text-slate-600',
+    ];
+    $hayFiltros = $desde || $hasta || $q !== '';
+@endphp
 <x-app-layout>
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="mx-auto max-w-7xl space-y-6">
+        <x-ui.header titulo="Guías de compra" subtitulo="Guías de proveedores, ganado comprado, balances y liquidaciones" seccion="Compras" icono="fa-file-invoice">
+            <x-slot name="acciones">
+                <x-ui.btn :href="route('proveedores.facturas.crear')" icono="fa-plus">Crear nueva guía</x-ui.btn>
+            </x-slot>
+        </x-ui.header>
+        <x-ui.alertas />
 
-            <!-- Tarjeta Principal Estilizada -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-
-                <!-- Encabezado de la Sección -->
-                <div class="p-6 sm:p-8 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-slate-50/50 to-white">
-                    <div>
-                        <h3 class="text-xl font-black text-slate-900 tracking-tight">Guias de Proveedores</h3>
-                        <p class="text-sm text-slate-500 mt-0.5">Gestión de listas de Guias, balances de cuentas y liquidaciones</p>
-                    </div>
-                    <a href="{{ route('proveedores.facturas.crear') }}"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-semibold text-sm rounded-xl hover:bg-indigo-700 shadow-sm hover:shadow transition-all duration-200">
-                        <i class="fa-solid fa-plus text-xs"></i> Crear Nueva Guia
+        <!-- Filtros -->
+        <div class="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                @foreach ($pestanas as $clave => [$texto, $total, $icono])
+                    <a href="{{ route('proveedores.facturas.index', array_filter(['estado' => $clave, 'desde' => $desde?->toDateString(), 'hasta' => $hasta?->toDateString(), 'q' => $q])) }}"
+                       class="flex items-center gap-2 rounded-xl px-3.5 py-2 transition {{ $estado === $clave ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                        <i class="fa-solid {{ $icono }}"></i> {{ $texto }}
+                        <span class="rounded-full px-1.5 py-0.5 text-[10px] {{ $estado === $clave ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700' }}">{{ $total }}</span>
                     </a>
-                </div>
-
-                <!-- Tabla de Datos Mejorada -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900 text-white text-xs uppercase tracking-wider font-semibold">
-                                <th class="py-3.5 px-6">Proveedor / Contacto</th>
-                                <th class="py-3.5 px-6"># Guia</th>
-                                <th class="py-3.5 px-6">Cantidad Ganado</th>
-                                <th class="py-3.5 px-6">Monto a Pagar</th>
-                                <th class="py-3.5 px-6">Saldo / Balance</th>
-                                <th class="py-3.5 px-6">Estatus</th>
-                                <th class="py-3.5 px-6 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-sm">
-                            @forelse ($proveedores as $proveedor)
-                                <tr class="hover:bg-slate-50/80 transition-colors">
-
-                                    <!-- 1. Proveedor y botón de acción rápido -->
-                                    <td class="py-4 px-6 align-middle">
-                                        <div class="font-bold text-slate-800 text-base">
-                                            {{ $proveedor->proveedorData->nombreContacto ?? 'N/D' }}
-                                        </div>
-                                        <div class="text-xs font-medium text-slate-400 mb-2.5">
-                                            <i class="fa-solid fa-phone mr-1"></i> {{ $proveedor->proveedorData->telefono ?? 'Sin contacto' }}
-                                        </div>
-
-                                        <a href="{{ route('compras.nuevo.ganado', ['factura_id' => $proveedor->id]) }}"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-semibold text-xs uppercase tracking-wide hover:bg-emerald-600 hover:text-white transition-all duration-150 shadow-2xs">
-                                            <i class="fa-solid fa-plus text-[10px]"></i> Agregar Ganado
-                                        </a>
-                                    </td>
-
-                                    <!-- 2. # Factura -->
-                                    <td class="py-4 px-6 align-middle font-semibold text-slate-700">
-                                        {{ $proveedor->numeroFactura ?? 'S/N' }}
-                                    </td>
-
-                                    <!-- 3. Cantidad Ganado -->
-                                    <td class="py-4 px-6 align-middle font-medium text-slate-600">
-                                        <span class="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-bold">
-                                            {{ $proveedor->cantidad_ganado ?? '0' }} cabezas
-                                        </span>
-                                    </td>
-
-                                    <!-- 4. Total Facturado de Ganado -->
-                                    <td class="py-4 px-6 align-middle font-bold text-slate-800">
-                                        {{ formatoPesos($proveedor->montoTotal ?? 0, 2) }}
-                                    </td>
-
-                                    <!-- 5. Saldo / Liquidación Neta -->
-                                    <td class="py-4 px-6 align-middle">
-                                        @php
-                                            $saldo = $proveedor->saldo_liquidacion ?? 0;
-                                        @endphp
-                                        <div class="inline-flex flex-col">
-                                            <span class="inline-flex items-center px-3 py-1 text-xs font-black rounded-lg w-max
-                                                {{ $saldo < 0 ? 'bg-red-50 text-red-700 border border-red-200' : ($saldo > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-700') }}">
-                                                {{ formatoPesos($saldo, 2) }}
-                                            </span>
-                                            <span class="text-[11px] text-slate-400 mt-0.5">
-                                                @if($saldo < 0)
-                                                    Deuda Pendiente
-                                                @elseif($saldo > 0)
-                                                    Saldo a Favor
-                                                @else
-                                                    Saldo Cero
-                                                @endif
-                                    </td>
-
-                                    <!-- Estatus -->
-                                    <td class="py-4 px-6 align-middle">
-                                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-emerald-100/80 text-emerald-800 uppercase tracking-wider">
-                                            {{ ucfirst($proveedor->estado ?? 'activo') }}
-                                        </span>
-                                    </td>
-
-                                    <!-- Acciones -->
-                                    <td class="py-4 px-6 align-middle text-center">
-                                        <a href="{{ route('proveedores.facturas.liquidar', $proveedor->id) }}"
-                                            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-sm">
-                                            <i class="fa-solid fa-money-bill-wave text-xs"></i> Liquidar
-                                        </a>
-                                        <a href="{{ route('compras.costos.edit', $proveedor->id) }}" title="Flete, comisión, trámites, destare y documentos"
-                                            class="ml-1 inline-flex items-center gap-1.5 px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition">
-                                            <i class="fa-solid fa-truck-ramp-box text-xs"></i> Costos
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="py-12 text-center text-slate-400 italic">
-                                        <div class="flex flex-col items-center justify-center space-y-2">
-                                            <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
-                                            <p class="text-sm font-medium">No hay guias registradas en este momento.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
+                @endforeach
             </div>
+
+            <form method="GET" class="flex flex-wrap items-end gap-3">
+                <input type="hidden" name="estado" value="{{ $estado }}">
+                <div class="min-w-[14rem] flex-1">
+                    <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600">Buscar</label>
+                    <input type="text" name="q" value="{{ $q }}" placeholder="Número de guía o proveedor" class="mt-1 block w-full rounded-xl border-slate-200 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600">Desde</label>
+                    <input type="date" name="desde" value="{{ $desde?->toDateString() }}" class="mt-1 block rounded-xl border-slate-200 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-600">Hasta</label>
+                    <input type="date" name="hasta" value="{{ $hasta?->toDateString() }}" class="mt-1 block rounded-xl border-slate-200 py-2 text-sm">
+                </div>
+                <x-ui.btn icono="fa-filter" variante="oscuro">Filtrar</x-ui.btn>
+                @if ($hayFiltros)
+                    <a href="{{ route('proveedores.facturas.index', ['estado' => $estado]) }}" class="pb-2 text-xs font-semibold text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark"></i> Quitar filtros</a>
+                @endif
+            </form>
+        </div>
+
+        <!-- Tabla -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th class="px-5 py-3">Proveedor</th>
+                            <th class="px-5 py-3">Guía</th>
+                            <th class="px-5 py-3">Fecha</th>
+                            <th class="px-5 py-3">Ganado</th>
+                            <th class="px-5 py-3 text-right">Monto de compra</th>
+                            <th class="px-5 py-3 text-right">Saldo</th>
+                            <th class="px-5 py-3">Estatus</th>
+                            <th class="px-5 py-3 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse ($proveedores as $guia)
+                            @php $saldo = $guia->saldo_pendiente; $liquidada = $guia->estado === F::ESTADO_LIQUIDADO; @endphp
+                            <tr class="transition hover:bg-slate-50">
+                                <td class="px-5 py-4 align-middle">
+                                    <p class="min-w-[11rem] font-bold text-slate-900">{{ $guia->proveedor->nombreProveedor ?? 'N/D' }}</p>
+                                    <p class="text-xs text-slate-500">
+                                        @if ($guia->proveedor?->nombreContacto){{ $guia->proveedor->nombreContacto }} · @endif
+                                        <i class="fa-solid fa-phone text-[10px]"></i> {{ $guia->proveedor->telefono ?? 'Sin teléfono' }}
+                                    </p>
+                                </td>
+                                <td class="px-5 py-4 align-middle">
+                                    <div class="flex items-center gap-2">
+                                        <span class="whitespace-nowrap font-mono font-semibold text-slate-800">{{ $guia->numeroFactura ?: 'S/N' }}</span>
+                                        <form method="POST" action="{{ route('proveedores.facturas.numero', $guia->id) }}"
+                                              data-prompt="Número o nombre de la guía" data-prompt-valor="{{ $guia->numeroFactura }}" data-prompt-campo="numero"
+                                              data-prompt-mensaje="Escribe el número de la guía." data-boton="Guardar">
+                                            @csrf @method('PUT')
+                                            <input type="hidden" name="numero">
+                                            <button class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-emerald-700" title="Cambiar el número de la guía"><i class="fa-solid fa-pen text-xs"></i></button>
+                                        </form>
+                                    </div>
+                                    @if ($guia->guia_reemo)<p class="whitespace-nowrap text-[11px] text-slate-400">REEMO {{ $guia->guia_reemo }}</p>@endif
+                                </td>
+                                <td class="whitespace-nowrap px-5 py-4 align-middle text-slate-600">{{ $guia->fechaFactura?->format('d/m/Y') }}</td>
+                                <td class="px-5 py-4 align-middle">
+                                    <span class="whitespace-nowrap rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{{ $guia->cantidad_ganado }} cab.</span>
+                                </td>
+                                <td class="whitespace-nowrap px-5 py-4 text-right align-middle font-mono font-bold text-slate-900">{{ formatoPesos($guia->monto_total_calculado, 2) }}</td>
+                                <td class="whitespace-nowrap px-5 py-4 text-right align-middle">
+                                    @if ($liquidada)
+                                        <span class="text-xs font-semibold text-emerald-600"><i class="fa-solid fa-check"></i> Pagada</span>
+                                    @else
+                                        <span class="font-mono font-semibold {{ $saldo > 0 ? 'text-rose-600' : 'text-slate-500' }}">{{ formatoPesos($saldo, 2) }}</span>
+                                        @if ($guia->total_adelantos_aplicados > 0)<p class="text-[11px] text-slate-400">Anticipos {{ formatoPesos($guia->total_adelantos_aplicados, 2) }}</p>@endif
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 align-middle">
+                                    <span class="whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide {{ $colorEstado[$guia->estado] ?? 'bg-slate-100 text-slate-600' }}">{{ ucfirst($guia->estado) }}</span>
+                                </td>
+                                <td class="px-5 py-4 align-middle">
+                                    <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
+                                        @unless ($liquidada)
+                                            <a href="{{ route('compras.nuevo.ganado', ['factura_id' => $guia->id]) }}" title="Agregar ganado a esta guía"
+                                               class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100">
+                                                <i class="fa-solid fa-plus"></i> Ganado
+                                            </a>
+                                        @endunless
+                                        <a href="{{ route('proveedores.facturas.liquidar', $guia->id) }}"
+                                           class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold {{ $liquidada ? 'border border-slate-200 text-slate-600 hover:bg-slate-50' : 'bg-emerald-600 text-white hover:bg-emerald-700' }}">
+                                            <i class="fa-solid {{ $liquidada ? 'fa-file-invoice-dollar' : 'fa-money-bill-wave' }}"></i> {{ $liquidada ? 'Ver liquidación' : 'Liquidar' }}
+                                        </a>
+                                        <a href="{{ route('compras.costos.edit', $guia->id) }}" title="Costos: flete, comisión, trámites, destare y documentos"
+                                           class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+                                            <i class="fa-solid fa-truck-ramp-box"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="py-12 text-center text-slate-400">
+                                    <i class="fa-solid fa-folder-open mb-2 text-3xl text-slate-300"></i>
+                                    <p class="text-sm">No hay guías {{ ['pendientes' => 'pendientes de liquidar', 'liquidadas' => 'liquidadas', 'anuladas' => 'anuladas', 'todas' => ''][$estado] ?? '' }}{{ $hayFiltros ? ' con esos filtros' : '' }}.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if ($proveedores->hasPages())
+                <div class="border-t border-slate-100 px-5 py-3">{{ $proveedores->links() }}</div>
+            @endif
         </div>
     </div>
 </x-app-layout>

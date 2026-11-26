@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/store', [FacturasProveedorController::class, 'storeFactura'])->name('proveedores.facturas.ganado.store');
         });
 
+        Route::put('/factura/{id}/numero', [FacturasProveedorController::class, 'actualizarNumero'])->name('proveedores.facturas.numero');
         Route::get('/factura/{id}/liquidar', [FacturasProveedorController::class, 'liquidar'])->name('proveedores.facturas.liquidar');
         Route::post('/factura/liquidar/{id}/pago', [FacturasProveedorController::class, 'liquidarFactura'])->name('proveedores.facturas.liquidar.pago');
         Route::get('/factura/{id}/liquidar/exito', [FacturasProveedorController::class, 'liquidarExito'])->name('proveedores.facturas.liquidar.exito');

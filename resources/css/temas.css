@@ -341,3 +341,8 @@ body.tema-oscuro .swal2-html-container, body.tema-oscuro .swal2-title { color: v
 /* Panel flotante del menú contraído: mismo fondo que la barra lateral */
 .sidebar-fly, .sidebar-fly-flecha { background: var(--t-sidebar, #0b1220); }
 .sidebar-fly { backdrop-filter: blur(6px); }
+
+/* SweetAlert2: cualquier ventana (también las que llaman Swal.fire directo) toma los colores del tema */
+body.tema-oscuro .swal2-popup, body.tema-metal .swal2-popup { background: var(--t-surface) !important; color: var(--t-text) !important; }
+body.tema-oscuro .swal2-title, body.tema-oscuro .swal2-html-container,
+body.tema-metal .swal2-title, body.tema-metal .swal2-html-container { color: var(--t-text) !important; }

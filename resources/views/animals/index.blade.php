@@ -39,6 +39,9 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                        @can('ganaderia.ganado')
+                            @include('animals._peso-objetivo')
+                        @endcan
                         <a href="{{ route('ventas.create') }}"
                            class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 shadow-xs">
                             <i class="fa-solid fa-cart-shopping"></i> Vender Ganado

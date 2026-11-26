@@ -23,7 +23,7 @@ class AdelantoController extends Controller
         $query = Adelanto::with('proveedor')->latest('date')->latest('id');
 
         if ($filtro === 'pendientes') {
-            $query->where('status', Adelanto::STATUS_ENTREGADO);
+            $query->whereIn('status', [Adelanto::STATUS_ENTREGADO, Adelanto::STATUS_PARCIAL]);
         } elseif ($filtro === 'liquidados') {
             $query->where('status', Adelanto::STATUS_LIQUIDADO);
         }
@@ -46,10 +46,11 @@ class AdelantoController extends Controller
 
         // Totales monetarios consolidados en Pesos Mexicanos (MXN)
         $totalDineroEntregadoMXN = (float) Adelanto::sum('dinero');
-        $totalDineroLiquidadoMXN = (float) Adelanto::where('status', Adelanto::STATUS_LIQUIDADO)->sum('dinero');
-        $saldoPendienteMXN       = (float) Adelanto::where('status', Adelanto::STATUS_ENTREGADO)->sum('dinero');
+        // Lo aplicado se toma de las liquidaciones (un anticipo puede descontarse en partes)
+        $totalDineroLiquidadoMXN = (float) \App\Models\Ganado\AdelantoFactura::sum('montoAplicado');
+        $saldoPendienteMXN       = max(0, $totalDineroEntregadoMXN - $totalDineroLiquidadoMXN);
         $totalItems              = Adelanto::count();
-        $totalPendientesItems    = Adelanto::where('status', Adelanto::STATUS_ENTREGADO)->count();
+        $totalPendientesItems    = Adelanto::whereIn('status', [Adelanto::STATUS_ENTREGADO, Adelanto::STATUS_PARCIAL])->count();
 
         $proveedores = ProveedorGanado::activo()->orderBy('nombreProveedor')->get();
 

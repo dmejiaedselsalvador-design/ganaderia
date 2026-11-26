@@ -73,8 +73,10 @@ Compra (guía)  →  Alta de animales  →  Corral  →  Pesajes
 
 ## 3. Módulos y pantallas
 
+> Los nombres del menú están en el lenguaje del rancho: *Ganado y corrales*, *Raciones y comida servida*, *Bodega (alimento y medicina)*, *Salud del ganado*, *Cobranza (lo que nos deben)*, *Números del rancho*, *Gastos del rancho*, *Corregir capturas*.
+
 ### Dashboard
-- Indicadores del hato: cabezas, peso promedio, GDP, mortalidad y valor de mercado.
+- Indicadores del ganado: cabezas, peso promedio, GDP, mortalidad y valor de mercado.
 - Utilidad proyectada.
 - Alertas de stock bajo, pesajes vencidos, cobros vencidos y tratamientos pendientes.
 
@@ -89,7 +91,7 @@ Compra (guía)  →  Alta de animales  →  Corral  →  Pesajes
 - **Costos de la guía:** flete, comisión y trámites. Se **reparten por peso** entre los animales para obtener su costo real.
 - **Liquidación y adelantos:** control de lo que se debe a cada proveedor.
 
-### Hato y corrales
+### Ganado y corrales
 - **Ganado:** lista y *ficha del animal*. La ficha incluye fotos, documentos, historial de corrales, pesajes, tratamientos y rentabilidad individual.
 - **Corrales:** fase (Recepción, Crecimiento o Finalización), capacidad, metas (GDP, $/kg, conversión, mortalidad y presupuesto) y animales.
   - Botón **«Dieta y consumo»**: abre el plan de alimentación del corral.
@@ -126,7 +128,7 @@ Compra (guía)  →  Alta de animales  →  Corral  →  Pesajes
 
 ### Finanzas y reportes
 - **Gastos operativos:** nómina, diésel, reparaciones, etc.
-  - Si el gasto se asigna a un corral, se carga a ese lote. Si no, se **reparte por cabeza-día** entre todo el hato.
+  - Si el gasto se asigna a un corral, se carga a ese lote. Si no, se **reparte por cabeza-día** entre todo el ganado.
   - Los gastos no se borran: se **anulan**, para que quede rastro.
 - **Rentabilidad:** por animal y por lote. Suma compra, alimento (según los días que el animal estuvo en cada corral), medicinas, gastos del corral y gastos generales, y lo compara contra la venta o el valor de mercado.
 - **Reportes:** se exportan a Excel (CSV) y PDF.
@@ -145,7 +147,7 @@ Compra (guía)  →  Alta de animales  →  Corral  →  Pesajes
 | Nunca se ha pesado | Su peso de compra. |
 
 - **GDP para proyectar:** el promedio de ganancia diaria del animal. Si no tiene, se usa la meta del corral. Nunca más de 3 kg/día.
-- **Biomasa del corral:** la suma de los pesos de sus animales.
+- **Kilos de ganado del corral:** la suma de los pesos de sus animales.
 
 ### Paso 2 — Cuánto come (por % de peso vivo)
 Un bovino en engorda consume entre **2 % y 3.2 % de su peso vivo** al día en **materia seca** (MS).
@@ -245,7 +247,7 @@ En *Finanzas → Corrección de registros* (o con el botón «Corregir» del exp
 - **Ajustes automáticos:**
   - la bodega devuelve y vuelve a descontar;
   - se recalculan la ganancia diaria y el costo;
-  - al anular una venta, los animales regresan al hato y se cancelan sus abonos.
+  - al anular una venta, los animales regresan a los corrales y se cancelan sus abonos.
 
 **¿Por qué no puedo borrar un gasto o un abono?**
 Por control interno: se **anulan** y queda registro de quién lo hizo. Todo aparece en la Bitácora de auditoría.
@@ -289,7 +291,7 @@ En la barra superior de **todas las pantallas** hay un botón **?**. Al abrirlo 
 | **% PV** | Porcentaje del peso vivo que el animal come al día. |
 | **MS** | Materia seca: el alimento sin agua. |
 | **TCO** | «Tal como se ofrece»: el alimento con su humedad, como se sirve en el comedero. |
-| **Biomasa** | Suma de los pesos de los animales de un corral. |
+| **Kilos de ganado** | Suma de los pesos de los animales de un corral. |
 | **BOM / Receta** | Lista de ingredientes de una dieta con su porcentaje. |
 | **Explosión de materiales** | Convertir kg de dieta en kg de cada ingrediente. |
 | **Conversión (FCR)** | kg de alimento por kg de carne ganada. |

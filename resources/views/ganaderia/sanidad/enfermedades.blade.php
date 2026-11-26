@@ -27,7 +27,7 @@
         </x-ui.card>
 
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">
-            <x-ui.kpi label="Morbilidad 90 días" :valor="$morbilidad . '%'" nota="Animales enfermos / hato" icono="fa-virus" color="bg-rose-50 text-rose-600" />
+            <x-ui.kpi label="Se enfermaron (90 días)" :valor="$morbilidad . '%'" nota="Animales enfermos / total de ganado" icono="fa-virus" color="bg-rose-50 text-rose-600" />
             <x-ui.kpi label="Casos abiertos" :valor="$abiertos" icono="fa-stethoscope" color="bg-amber-50 text-amber-600" />
             <x-ui.kpi label="En enfermería" :valor="$enEnfermeria" icono="fa-bed-pulse" color="bg-blue-50 text-blue-600" />
             <x-ui.kpi label="Recaídas 90 días" :valor="$recaidas" icono="fa-rotate-left" color="bg-orange-50 text-orange-600" />

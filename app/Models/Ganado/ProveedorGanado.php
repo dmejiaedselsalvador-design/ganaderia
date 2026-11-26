@@ -96,7 +96,7 @@ class ProveedorGanado extends Model
     public function tieneDeudaPendiente(): bool
     {
         return $this->adelantos()
-            ->where('status', Adelanto::STATUS_ENTREGADO)
+            ->whereIn('status', [Adelanto::STATUS_ENTREGADO, Adelanto::STATUS_PARCIAL])
             ->where('dinero', '>', 0)
             ->exists();
     }

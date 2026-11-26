@@ -18,6 +18,8 @@ class StoreFacturaRequest extends FormRequest
             'fecha_factura' => 'required|date',
             'factura'       => 'required|string|max:255|unique:facturaGanado,numeroFactura',
             'observaciones' => 'nullable|string|max:255',
+            'guia_reemo'    => 'nullable|string|max:60',
+            'upp_origen'    => 'nullable|string|max:40',
         ];
     }
 

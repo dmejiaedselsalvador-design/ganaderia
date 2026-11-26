@@ -113,7 +113,7 @@ class FacturaGanado extends Model
     public function getMontoTotalCalculadoAttribute(): float
     {
         return (float) $this->animales->sum(function ($animal) {
-            return (float) ($animal->precioGanadoTotal ?? ($animal->ultimoPeso * $animal->precioCompra));
+            return (float) $animal->precioGanadoTotal;
         });
     }
 

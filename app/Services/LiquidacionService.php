@@ -36,16 +36,24 @@ class LiquidacionService
 
         $proveedor = $factura->proveedor;
 
-        // Adelantos pendientes de amortizar/liquidar
-        $adelantosProveedor = $proveedor
-            ? $proveedor->adelantos->where('status', Adelanto::STATUS_ENTREGADO)->values()
-            : collect();
+        // Guía ya liquidada: los anticipos que se le aplicaron (con su monto aplicado).
+        // Pendiente: los anticipos del proveedor que aún no se amortizan.
+        if ($factura->estado === FacturaGanado::ESTADO_LIQUIDADO) {
+            $factura->loadMissing('adelantos');
+            $adelantosProveedor = $factura->adelantos->each(fn ($a) => $a->setAttribute('monto_aplicado', (float) ($a->pivot->montoAplicado ?? $a->dinero)))->values();
+        } else {
+            $adelantosProveedor = $proveedor
+                ? $proveedor->adelantos->whereIn('status', [Adelanto::STATUS_ENTREGADO, Adelanto::STATUS_PARCIAL])
+                    ->each(fn ($a) => $a->setAttribute('monto_aplicado', $a->saldoDisponible()))
+                    ->filter(fn ($a) => $a->monto_aplicado > 0)->values()
+                : collect();
+        }
 
-        $totalAdelantos = (float) $adelantosProveedor->sum('dinero');
+        $totalAdelantos = (float) $adelantosProveedor->sum('monto_aplicado');
 
         // Total del ganado registrado en esta factura
         $totalGanado = (float) $factura->animales->sum(function ($animal) {
-            return (float) ($animal->precioGanadoTotal ?? ($animal->ultimoPeso * $animal->precioCompra));
+            return (float) $animal->precioGanadoTotal; // peso de compra × precio
         });
 
         // Saldo neto: positivo = saldo a favor del rancho (proveedor debe dinero)
@@ -81,28 +89,42 @@ class LiquidacionService
     {
         $facturaModel = is_numeric($factura) ? FacturaGanado::findOrFail($factura) : $factura;
 
+        if ($facturaModel->estado === FacturaGanado::ESTADO_LIQUIDADO) {
+            throw new \Exception("La guía {$facturaModel->numeroFactura} ya está liquidada.");
+        }
+        if (! $facturaModel->animales()->exists()) {
+            throw new \Exception("La guía {$facturaModel->numeroFactura} no tiene ganado registrado.");
+        }
+
         return DB::transaction(function () use ($facturaModel, $adelantoIds) {
             $facturaModel->estado = FacturaGanado::ESTADO_LIQUIDADO;
             $facturaModel->save();
 
-            if (!empty($adelantoIds)) {
-                $adelantos = Adelanto::whereIn('id', $adelantoIds)->get();
+            if (! empty($adelantoIds)) {
+                // Se descuentan en orden (el más antiguo primero) solo hasta cubrir el valor del ganado.
+                // Lo que sobre de un anticipo queda «parcial» y se descuenta en la siguiente compra.
+                $porCubrir = round((float) $facturaModel->load('animales')->monto_total_calculado, 2);
+                $adelantos = Adelanto::whereIn('id', $adelantoIds)->where('proveedor_id', $facturaModel->proveedorID)
+                    ->whereIn('status', [Adelanto::STATUS_ENTREGADO, Adelanto::STATUS_PARCIAL])
+                    ->orderBy('date')->orderBy('id')->get();
 
                 foreach ($adelantos as $adelanto) {
-                    $adelanto->update([
-                        'status' => Adelanto::STATUS_LIQUIDADO,
-                    ]);
+                    if ($porCubrir <= 0.004) {
+                        break;
+                    }
+                    $saldo = $adelanto->saldoDisponible();
+                    $aplicar = round(min($saldo, $porCubrir), 2);
+                    if ($aplicar <= 0) {
+                        continue;
+                    }
 
-                    // Registrar la trazabilidad en la tabla pivote
+                    // Trazabilidad: cuánto de este anticipo se descontó en esta guía
                     AdelantoFactura::updateOrCreate(
-                        [
-                            'adelanto_id' => $adelanto->id,
-                            'factura_id'  => $facturaModel->id,
-                        ],
-                        [
-                            'montoAplicado' => $adelanto->dinero,
-                        ]
+                        ['adelanto_id' => $adelanto->id, 'factura_id' => $facturaModel->id],
+                        ['montoAplicado' => $aplicar]
                     );
+                    $adelanto->update(['status' => $saldo - $aplicar <= 0.004 ? Adelanto::STATUS_LIQUIDADO : Adelanto::STATUS_PARCIAL]);
+                    $porCubrir = round($porCubrir - $aplicar, 2);
                 }
             }
 
@@ -117,14 +139,12 @@ class LiquidacionService
     {
         $proveedores = ProveedorGanado::query()
             ->where('estado', ProveedorGanado::ESTADO_ACTIVO)
-            ->withSum(['adelantos as total_adelantos' => function ($q) {
-                $q->where('status', Adelanto::STATUS_ENTREGADO);
-            }], 'dinero')
+            ->with(['adelantos' => fn ($q) => $q->whereIn('status', [Adelanto::STATUS_ENTREGADO, Adelanto::STATUS_PARCIAL])])
             ->withSum('ganadoDirecto as total_facturas', 'precioGanadoTotal')
             ->get();
 
         $proveedores->each(function ($proveedor) {
-            $proveedor->total_adelantos = (float) ($proveedor->total_adelantos ?? 0);
+            $proveedor->total_adelantos = (float) $proveedor->adelantos->sum(fn ($a) => $a->saldoDisponible());
             $proveedor->total_facturas = (float) ($proveedor->total_facturas ?? 0);
             $proveedor->saldo_liquidacion = $proveedor->total_adelantos - $proveedor->total_facturas;
             $proveedor->precioGanadoTotal = $proveedor->total_facturas;

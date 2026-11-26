@@ -18,7 +18,7 @@
 
         <div class="grid gap-4 sm:grid-cols-3">
             <x-ui.kpi label="Total del periodo" :valor="formatoPesos($total)" icono="fa-sack-dollar" color="bg-rose-50 text-rose-600" />
-            <x-ui.kpi label="Gastos generales" :valor="formatoPesos($generales)" nota="Sin corral · se reparten en todo el hato" icono="fa-layer-group" color="bg-amber-50 text-amber-600" />
+            <x-ui.kpi label="Gastos generales" :valor="formatoPesos($generales)" nota="Sin corral · se reparten entre todo el ganado" icono="fa-layer-group" color="bg-amber-50 text-amber-600" />
             <x-ui.kpi label="Asignados a corrales" :valor="formatoPesos($total - $generales)" icono="fa-warehouse" color="bg-indigo-50 text-indigo-600" />
         </div>
 

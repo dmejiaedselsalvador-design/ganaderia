@@ -11,7 +11,7 @@
 
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">
             <x-ui.kpi label="Cabezas en corrales" :valor="number_format($lineas->sum('cabezas'))" icono="fa-cow" />
-            <x-ui.kpi label="Biomasa" :valor="number_format($lineas->sum('biomasa'), 0) . ' kg'" :nota="$lineas->sum('estimados') ? $lineas->sum('estimados') . ' pesos estimados (pesaje viejo)' : 'Pesos al día'" icono="fa-weight-scale" color="bg-blue-50 text-blue-600" />
+            <x-ui.kpi label="Kilos de ganado" :valor="number_format($lineas->sum('biomasa'), 0) . ' kg'" :nota="$lineas->sum('estimados') ? $lineas->sum('estimados') . ' pesos estimados (pesaje viejo)' : 'Pesos al día'" icono="fa-weight-scale" color="bg-blue-50 text-blue-600" />
             <x-ui.kpi label="Alimento por día" :valor="number_format($lineas->sum('kg_dia'), 0) . ' kg'" nota="Tal como se ofrece" icono="fa-wheat-awn" color="bg-amber-50 text-amber-600" />
             <x-ui.kpi label="Costo por día" :valor="formatoPesos($lineas->sum('costo_dia'))" icono="fa-sack-dollar" color="bg-rose-50 text-rose-600" />
             <x-ui.kpi label="La bodega alcanza" :valor="$coberturaMin !== null ? $coberturaMin . ' días' : '—'" :nota="$faltantes->count() ? $faltantes->count() . ' ingredientes con faltante' : 'Para el ingrediente más justo'" icono="fa-warehouse" :color="$faltantes->count() ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'" />

@@ -207,7 +207,7 @@ class CorreccionService
                     $aretes[] = $g->areteID;
                 }
             }
-            $this->anotar('venta', $venta->id, 'anulado', "Venta {$venta->folio_venta} anulada; regresan al hato: " . (implode(', ', $aretes) ?: 'ninguno'),
+            $this->anotar('venta', $venta->id, 'anulado', "Venta {$venta->folio_venta} anulada; regresan a los corrales: " . (implode(', ', $aretes) ?: 'ninguno'),
                 $motivo, $antes, $venta->only(['estado', 'saldo_pendiente']));
         });
     }

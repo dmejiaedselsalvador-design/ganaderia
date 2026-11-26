@@ -14,7 +14,7 @@
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Planta Ganadería</p>
                 <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">Dashboard de Análisis</h1>
-                <p class="mt-1 text-sm text-slate-500">Inventario, productividad, sanidad y finanzas del hato · actualizado {{ now()->format('d/m/Y H:i') }}</p>
+                <p class="mt-1 text-sm text-slate-500">Ganado, pesos, salud y números del rancho · actualizado {{ now()->format('d/m/Y H:i') }}</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-slate-500">Período:</span>
@@ -75,7 +75,7 @@
                     @php $util = $rentabilidad['utilidad_proyectada']; @endphp
                     <div class="{{ $card }} p-5">
                         <div class="flex items-center justify-between">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor de mercado del hato</p>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor de mercado del ganado</p>
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-cow"></i></span>
                         </div>
                         <p class="mt-2 text-2xl font-black text-slate-900" title="{{ formatoPesos($rentabilidad['valor_mercado_activos']) }}">{{ formatoPesosCorto($rentabilidad['valor_mercado_activos']) }}</p>
@@ -88,7 +88,7 @@
                     @php [$dTxt, $dCls, $dIco] = $delta($plusvaliaPct); @endphp
                     <div class="{{ $card }} p-5">
                         <div class="flex items-center justify-between">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor del hato (a precio de compra)</p>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Valor del ganado (a precio de compra)</p>
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-cow"></i></span>
                         </div>
                         <p class="mt-2 text-2xl font-black text-slate-900">{{ formatoPesosCorto($valorHato) }}</p>
@@ -167,7 +167,7 @@
             </div>
 
             <div class="{{ $card }} p-6">
-                <h3 class="text-base font-bold text-slate-800">Composición del hato</h3>
+                <h3 class="text-base font-bold text-slate-800">Ganado por categoría</h3>
                 <p class="mb-4 text-xs text-slate-400">Cabezas activas por categoría</p>
                 <div class="relative h-56"><canvas id="chartCategoria"></canvas></div>
                 <div class="mt-4 flex justify-center gap-4 text-xs">
@@ -385,7 +385,7 @@
                             legend: { position: 'bottom', labels: { color: t.texto, boxWidth: 12, usePointStyle: true } },
                             tooltip: { callbacks: { label: c => c.dataset.label + ': ' + pesos(c.raw) } },
                         },
-                        scales: escalas({ ticks: { color: t.texto, callback: v => v >= 1000 ? '$' + (v / 1000) + 'k' : '$' + v } }),
+                        scales: escalas({ ticks: { color: t.texto, callback: v => '$' + Number(v).toLocaleString('es-MX') } }),
                     },
                 });
             }

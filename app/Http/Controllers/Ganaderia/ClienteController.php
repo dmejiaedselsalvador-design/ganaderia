@@ -67,7 +67,7 @@ class ClienteController extends Controller
         $ventas = $cliente->ventas()->with(['abonos.usuario'])->latest('fecha_venta')->get();
 
         if ($request->input('exportar') === 'pdf') {
-            return Pdf::loadView('ganaderia.clientes.estado-cuenta-pdf', compact('cliente', 'ventas'))
+            return \App\Support\DocumentoPdf::crear('ganaderia.clientes.estado-cuenta-pdf', compact('cliente', 'ventas'))
                 ->download('estado_cuenta_' . str($cliente->nombre)->slug('_') . '.pdf');
         }
 

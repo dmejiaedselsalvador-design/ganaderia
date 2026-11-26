@@ -85,7 +85,7 @@ class Permisos
         ],
         'supervisor' => [
             'Supervisor',
-            'Supervisa la operación diaria: hato, corrales, nutrición, sanidad, calidad y obras.',
+            'Supervisa la operación diaria: ganado, corrales, nutrición, sanidad, calidad y obras.',
             50,
             [
                 'ganaderia.ganado', 'ganaderia.corrales', 'ganaderia.nutricion', 'ganaderia.sanidad',

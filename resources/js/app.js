@@ -47,6 +47,7 @@ window.pedirTexto = (titulo, opciones = {}) => Alerta().fire({
     title: titulo,
     input: 'text',
     inputPlaceholder: opciones.placeholder ?? '',
+    inputValue: opciones.valor ?? '',
     showCancelButton: true,
     confirmButtonText: opciones.boton ?? 'Aceptar',
     cancelButtonText: 'Cancelar',
@@ -70,7 +71,8 @@ document.addEventListener('submit', async (e) => {
 
     let ok = true;
     if (prompt) {
-        const valor = await window.pedirTexto(prompt, { minimo: Number(origen.dataset.promptMinimo || 1), peligro: 'peligro' in origen.dataset });
+        const valor = await window.pedirTexto(prompt, { minimo: Number(origen.dataset.promptMinimo || 1), peligro: 'peligro' in origen.dataset,
+            valor: origen.dataset.promptValor ?? '', boton: origen.dataset.boton, mensaje: origen.dataset.promptMensaje });
         ok = valor !== null;
         if (ok) {
             const campo = form.querySelector(`[name="${origen.dataset.promptCampo || 'motivo'}"]`);

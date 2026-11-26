@@ -9,7 +9,7 @@
                         <i class="fa-solid fa-skull text-rose-600"></i> Bitácora de Bajas y Mortalidad
                     </h2>
                     <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-                        Trazabilidad sanitaria, causas de defunción y porcentaje de pérdidas del hato.
+                        Trazabilidad sanitaria, causas de defunción y porcentaje de pérdidas del ganado.
                     </p>
                 </div>
 

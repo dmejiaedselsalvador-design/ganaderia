@@ -224,6 +224,7 @@
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
                                         <i class="fa-solid fa-circle-half-stroke text-[10px]"></i> Parcial
                                     </span>
+                                    <span class="mt-1 block text-[10px] text-slate-500">Queda {{ formatoPesos($adelanto->saldoDisponible()) }}</span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
                                         <i class="fa-solid fa-clock text-[10px]"></i> Pendiente

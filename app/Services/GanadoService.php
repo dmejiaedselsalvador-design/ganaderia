@@ -20,6 +20,9 @@ class GanadoService
     {
         return DB::transaction(function () use ($facturaId, $fechaCompra, $animalesData) {
             $registrados = collect();
+            // Datos de la guía que se copian a cada animal (procedencia y UPP)
+            $guia = \App\Models\Ganado\FacturaGanado::with('proveedor')->find($facturaId);
+            $procedencia = $guia?->proveedor ? trim($guia->proveedor->nombreProveedor . ($guia->proveedor->lugar ? ' · ' . $guia->proveedor->lugar : '')) : null;
 
             foreach ($animalesData as $item) {
                 $peso = (float) ($item['weight'] ?? $item['peso'] ?? 0);
@@ -35,7 +38,10 @@ class GanadoService
                     'precioCompra' => $precio,
                     'fechaCompra'  => $fechaCompra ?: now()->toDateString(),
                     'peso_origen'  => isset($item['peso_origen']) && $item['peso_origen'] !== '' ? (float) $item['peso_origen'] : null,
-                    'arete_siniiga' => $item['arete_siniiga'] ?? null,
+                    // El arete con que se registra es el SINIIGA, salvo que se capture otro
+                    'arete_siniiga' => ($item['arete_siniiga'] ?? null) ?: ($item['tag_number'] ?? $item['arete'] ?? $item['areteID'] ?? null),
+                    'procedencia'  => $item['procedencia'] ?? $procedencia,
+                    'upp_origen'   => $item['upp_origen'] ?? $guia?->upp_origen,
                     'fierro'       => $item['fierro'] ?? null,
                     'status'       => Ganado::STATUS_ACTIVO,
                     'notas'        => $item['observation'] ?? $item['notas'] ?? null,

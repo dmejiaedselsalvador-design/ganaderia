@@ -15,10 +15,10 @@ class Ayuda
     public const PANTALLAS = [
         // ───────── General ─────────
         'welcome' => [
-            'titulo' => 'Dashboard de Ganadería',
+            'titulo' => 'Inicio · resumen del rancho',
             'que'    => 'Resumen del negocio en una sola vista: cuántos animales hay, cuánto pesan, cuánto valen hoy y qué requiere atención.',
             'numeros' => [
-                'Valor de mercado = kg actuales del hato × precio de mercado vigente (Configuración → Precios de mercado).',
+                'Valor de mercado = kg actuales del ganado × precio de mercado vigente (Configuración → Precios de mercado).',
                 'Utilidad proyectada = valor de mercado − costo acumulado (compra + alimento + medicinas + gastos).',
                 'GDP promedio = ganancia diaria de peso calculada con los pesajes registrados.',
             ],
@@ -36,7 +36,7 @@ class Ayuda
 
         // ───────── Compras ─────────
         'proveedores.index' => [
-            'titulo' => 'Proveedores',
+            'titulo' => 'Proveedores (ranchos)',
             'que'    => 'Catálogo de ranchos y personas a quienes se les compra ganado.',
             'consejos' => ['También puedes crear un proveedor desde la guía de compra con el botón «+ Nuevo proveedor», sin salir de la captura.'],
         ],
@@ -72,12 +72,12 @@ class Ayuda
 
         // ───────── Hato y corrales ─────────
         'compras.ganado.index' => [
-            'titulo' => 'Inventario de ganado',
+            'titulo' => 'Ganado en existencia',
             'que'    => 'Lista de todos los animales con su arete, corral, peso y estado.',
             'consejos' => ['Abre la ficha de un animal para ver su historial completo y su rentabilidad.'],
         ],
         'compras.ganado.perfil' => [
-            'titulo' => 'Perfil del animal',
+            'titulo' => 'Buscar animal por arete',
             'que'    => 'Datos, pesajes y movimientos de un animal.',
         ],
         'ganado.ficha' => [
@@ -90,7 +90,7 @@ class Ayuda
             'numeros' => ['El costo incluye la compra, su parte del flete, el alimento de los días que estuvo en cada corral, sus medicinas y su parte de los gastos.'],
         ],
         'ganado.bajas.index' => [
-            'titulo' => 'Bajas',
+            'titulo' => 'Muertes y bajas',
             'que'    => 'Animales que salieron por muerte, sacrificio, robo, extravío o descarte. Alimenta el indicador de mortalidad.',
         ],
         'corrales.index' => [
@@ -105,7 +105,7 @@ class Ayuda
 
         // ───────── Alimentación ─────────
         'nutricion.index' => [
-            'titulo' => 'Dietas y servidos',
+            'titulo' => 'Raciones y comida servida',
             'que'    => 'Catálogo de dietas (raciones) y registro diario del alimento que se sirve a cada corral.',
             'pasos'  => [
                 '«Servir alimento»: elige el corral; el sistema propone su dieta asignada y los kg sugeridos según el peso de los animales.',
@@ -155,7 +155,7 @@ class Ayuda
             'numeros' => ['La tabla de abajo muestra el peso usado para cada animal y cuántos kg le tocan.'],
         ],
         'inventario.index' => [
-            'titulo' => 'Inventario de insumos (bodega)',
+            'titulo' => 'Bodega (alimento y medicina)',
             'que'    => 'Existencias de alimento, medicamento y otros insumos con su costo.',
             'numeros' => [
                 'Costo promedio ponderado: cada entrada recalcula el costo unitario con lo que había y lo que llegó.',
@@ -170,7 +170,7 @@ class Ayuda
 
         // ───────── Sanidad ─────────
         'sanidad.index' => [
-            'titulo' => 'Sanidad',
+            'titulo' => 'Vacunas y medicinas',
             'que'    => 'Tratamientos aplicados a los animales y control de días de retiro antes del rastro.',
             'pasos'  => [
                 'Elige el animal y el medicamento del inventario. Si no existe, «+ Nuevo medicamento».',
@@ -179,11 +179,11 @@ class Ayuda
             'numeros' => ['Días de retiro: el animal no debe venderse a rastro antes de que pasen.'],
         ],
         'sanidad.calendario' => [
-            'titulo' => 'Calendario sanitario',
+            'titulo' => 'Calendario de vacunas',
             'que'    => 'Vacunas y desparasitaciones programadas por corral, con repetición automática.',
         ],
         'sanidad.enfermedades' => [
-            'titulo' => 'Casos de enfermedad',
+            'titulo' => 'Animales enfermos',
             'que'    => 'Seguimiento de animales enfermos, recuperación y recaídas. Alimenta el indicador de morbilidad.',
         ],
 
@@ -206,19 +206,19 @@ class Ayuda
             'que'    => 'Compradores con sus datos fiscales (RFC, régimen, CP), límite y días de crédito.',
         ],
         'cobranza.index' => [
-            'titulo' => 'Cobranza',
+            'titulo' => 'Cobranza (lo que nos deben)',
             'que'    => 'Saldos pendientes de clientes ordenados por antigüedad y registro de abonos.',
         ],
 
         // ───────── Finanzas ─────────
         'gastos.*' => [
-            'titulo' => 'Gastos operativos',
+            'titulo' => 'Gastos del rancho',
             'que'    => 'Nómina, diésel, reparaciones y demás gastos de la operación.',
-            'numeros' => ['Asignado a un corral se carga a ese lote; si no, se reparte por cabeza-día entre todo el hato.'],
+            'numeros' => ['Asignado a un corral se carga a ese lote; si no, se reparte por cabeza-día entre todo el ganado.'],
             'consejos' => ['Los gastos no se borran: se anulan para que quede registro.'],
         ],
         'reportes.*' => [
-            'titulo' => 'Reportes y rentabilidad',
+            'titulo' => 'Ganancias y reportes',
             'que'    => 'Costo, utilidad y metas por animal y por lote. Se exportan a Excel y PDF.',
             'numeros' => ['Utilidad = venta (o valor de mercado) − compra − alimento − medicinas − gastos asignados.'],
         ],
@@ -227,16 +227,16 @@ class Ayuda
             'que'    => 'Precios de mercado, ubicaciones y metas por lote que usan los cálculos del sistema.',
         ],
         'simulador.index' => [
-            'titulo' => 'Simulador de engorda',
+            'titulo' => 'Calculadora de engorda',
             'que'    => 'Calcula cuánto podrías ganar con una compra antes de hacerla.',
         ],
         'calidad.carne.index' => [
-            'titulo' => 'Calidad de carne',
+            'titulo' => 'Rendimiento en rastro',
             'que'    => 'Evaluaciones de canal: rendimiento, grasa, marmoleo y pH.',
         ],
 
         'correcciones.*' => [
-            'titulo' => 'Corrección de registros',
+            'titulo' => 'Corregir capturas',
             'que'    => 'Corrige o anula datos mal capturados: pesajes, servidos de alimento, tratamientos, bajas, ventas y datos de compra. Solo Súper Administrador, Dueño, Gerente o quien tenga el permiso.',
             'pasos'  => [
                 'Busca el animal por arete, o filtra los servidos por corral y fechas.',
@@ -245,7 +245,7 @@ class Ayuda
             'numeros' => [
                 'Servidos y tratamientos: lo que salió de bodega se devuelve y se vuelve a descontar con el dato correcto.',
                 'Pesajes y compra: se recalcula la ganancia diaria y el costo del animal.',
-                'Venta anulada: los animales regresan al hato y se cancelan sus abonos.',
+                'Venta anulada: los animales regresan a los corrales y se cancelan sus abonos.',
             ],
             'consejos' => ['Nada se borra sin rastro: abajo queda el historial con el valor anterior, el nuevo, quién y por qué.'],
         ],

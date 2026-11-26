@@ -24,15 +24,46 @@ class FacturasProveedorController extends Controller
     /**
      * Listado de guías y facturas de ganado pendientes de liquidación.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $proveedores = FacturaGanado::with('proveedor')
-            ->withCount('animales as cantidad_ganado')
-            ->pendiente()
-            ->latest('id')
-            ->get();
+        // Por defecto: guías pendientes de liquidar. Opciones: liquidadas, anuladas o todas.
+        $estado = $request->input('estado', 'pendientes');
+        $desde = $request->date('desde');
+        $hasta = $request->date('hasta');
+        $q = trim((string) $request->input('q'));
 
-        return view('proveedores.facturas.facturasProveedor', compact('proveedores'));
+        $base = FacturaGanado::query()
+            ->when($desde, fn ($w) => $w->whereDate('fechaFactura', '>=', $desde))
+            ->when($hasta, fn ($w) => $w->whereDate('fechaFactura', '<=', $hasta))
+            ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('numeroFactura', 'like', "%{$q}%")
+                ->orWhereHas('proveedor', fn ($p) => $p->where('nombreProveedor', 'like', "%{$q}%")->orWhere('nombreContacto', 'like', "%{$q}%"))));
+
+        $conteos = (clone $base)->selectRaw('estado, count(*) as total')->groupBy('estado')->pluck('total', 'estado');
+
+        $proveedores = (clone $base)
+            ->with(['proveedor', 'animales', 'adelantos'])
+            ->withCount('animales as cantidad_ganado')
+            ->when($estado === 'pendientes', fn ($w) => $w->whereIn('estado', [FacturaGanado::ESTADO_PENDIENTE, FacturaGanado::ESTADO_PARCIAL]))
+            ->when($estado === 'liquidadas', fn ($w) => $w->where('estado', FacturaGanado::ESTADO_LIQUIDADO))
+            ->when($estado === 'anuladas', fn ($w) => $w->where('estado', FacturaGanado::ESTADO_ANULADA))
+            ->orderByDesc('fechaFactura')->orderByDesc('id')
+            ->paginate(25)->withQueryString();
+
+        return view('proveedores.facturas.facturasProveedor', compact('proveedores', 'estado', 'desde', 'hasta', 'q', 'conteos'));
+    }
+
+    /** Cambia el número / nombre de la guía (es solo un texto: el ganado está ligado por el id interno). */
+    public function actualizarNumero(Request $request, int $id): RedirectResponse
+    {
+        $factura = FacturaGanado::findOrFail($id);
+        $data = $request->validate([
+            'numero' => ['required', 'string', 'max:100', \Illuminate\Validation\Rule::unique('facturaGanado', 'numeroFactura')->ignore($factura->id)],
+        ], ['numero.unique' => 'Ya existe otra guía con ese número.', 'numero.required' => 'Escribe el número de la guía.']);
+
+        $anterior = $factura->numeroFactura;
+        $factura->update(['numeroFactura' => trim($data['numero'])]);
+
+        return back()->with('success', "Guía «{$anterior}» ahora se llama «{$factura->numeroFactura}». Su ganado y costos siguen ligados.");
     }
 
     /**
@@ -56,6 +87,8 @@ class FacturasProveedorController extends Controller
                 'fechaFactura'  => $request->input('fecha_factura'),
                 'numeroFactura' => $request->input('factura'),
                 'notas'         => $request->input('observaciones'),
+                'guia_reemo'    => $request->input('guia_reemo') ?: null,
+                'upp_origen'    => $request->input('upp_origen') ?: null,
                 'estado'        => FacturaGanado::ESTADO_PENDIENTE,
             ]);
 
@@ -80,6 +113,7 @@ class FacturasProveedorController extends Controller
     public function liquidar(int $id): View
     {
         $resumen = $this->liquidacionService->calcularResumenFactura($id);
+        $resumen['liquidada'] = $resumen['factura']->estado === FacturaGanado::ESTADO_LIQUIDADO;
 
         return view('proveedores.facturas.liquidar', $resumen);
     }
@@ -101,7 +135,7 @@ class FacturasProveedorController extends Controller
             Log::error('Error al procesar liquidación: ' . $e->getMessage());
 
             return back()
-                ->with('error', 'Ocurrió un error al procesar la liquidación: ' . $e->getMessage())
+                ->with('aviso', 'No se pudo liquidar: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -123,9 +157,8 @@ class FacturasProveedorController extends Controller
     {
         $resumen = $this->liquidacionService->calcularResumenFactura($id);
 
-        $pdf = Pdf::loadView('reportes.liquidacionProveedores', $resumen);
-        $pdf->setPaper('letter', 'portrait');
+        $pdf = \App\Support\DocumentoPdf::crear('reportes.liquidacionProveedores', $resumen);
 
-        return $pdf->stream('liquidacion-factura-' . $resumen['factura']->id . '.pdf');
+        return $pdf->stream('liquidacion-guia-' . \Illuminate\Support\Str::slug($resumen['factura']->numeroFactura ?: $resumen['factura']->id) . '.pdf');
     }
 }

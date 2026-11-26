@@ -40,6 +40,10 @@
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
                                     Pendiente
                                 </span>
+                            @elseif($deudor->status === 'parcial')
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200" title="Una parte ya se descontó">
+                                    Parcial · queda {{ formatoPesos($deudor->saldoDisponible()) }}
+                                </span>
                             @elseif($deudor->status === 'liquidado')
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
                                  Liquidado

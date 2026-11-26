@@ -10,7 +10,7 @@
         <x-ui.alertas />
 
         <div class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-            <i class="fa-solid fa-circle-info"></i> Las cuentas se ajustan solas: al corregir un servido o un tratamiento se devuelve y se vuelve a descontar de bodega; al corregir un pesaje se recalcula la ganancia diaria; al anular una venta los animales regresan al hato y se cancelan sus abonos.
+            <i class="fa-solid fa-circle-info"></i> Las cuentas se ajustan solas: al corregir un servido o un tratamiento se devuelve y se vuelve a descontar de bodega; al corregir un pesaje se recalcula la ganancia diaria; al anular una venta los animales regresan a los corrales y se cancelan sus abonos.
         </div>
 
         <!-- ============ POR ANIMAL ============ -->
@@ -107,7 +107,7 @@
                         @php $v = $ganado->detalleVenta->venta; @endphp
                         <section class="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-amber-100 bg-amber-50 p-4">
                             <p class="text-sm text-slate-700"><strong>Vendido</strong> en {{ $v->folio_venta }} el {{ $v->fecha_venta?->format('d/m/Y') }} a {{ $v->cliente_nombre }} ({{ $v->total_cabezas }} cabezas, $ {{ $fmt($v->total_venta, 2) }})</p>
-                            <x-ui.corregir :action="route('correcciones.venta', $v)" solo="Anular venta completa" class="sm:w-auto sm:min-w-[22rem]" aviso="Se anula toda la venta: todos sus animales regresan al hato y se cancelan los abonos." />
+                            <x-ui.corregir :action="route('correcciones.venta', $v)" solo="Anular venta completa" class="sm:w-auto sm:min-w-[22rem]" aviso="Se anula toda la venta: todos sus animales regresan a los corrales y se cancelan los abonos." />
                         </section>
                     @endif
                 </div>
@@ -144,7 +144,7 @@
         </x-ui.card>
 
         <!-- ============ VENTAS ============ -->
-        <x-ui.card titulo="Ventas recientes" subtitulo="Anular una venta regresa sus animales al hato y cancela sus abonos">
+        <x-ui.card titulo="Ventas recientes" subtitulo="Anular una venta regresa sus animales a los corrales y cancela sus abonos">
             <div class="divide-y divide-slate-100">
                 @forelse ($ventas as $v)
                     <div class="flex flex-wrap items-start justify-between gap-3 py-2.5">

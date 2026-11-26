@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="mx-auto max-w-7xl space-y-6">
-        <x-ui.header titulo="Configuración ganadera" subtitulo="Precios de mercado para valuar el hato, ranchos/ubicaciones y metas o presupuesto por lote." icono="fa-sliders" />
+        <x-ui.header titulo="Configuración ganadera" subtitulo="Precios de mercado para valuar el ganado, ranchos/ubicaciones y metas o presupuesto por lote." icono="fa-sliders" />
         <x-ui.alertas />
 
         <div class="grid gap-6 lg:grid-cols-3">
@@ -8,7 +8,7 @@
             <x-ui.card titulo="Precios de mercado vigentes" subtitulo="MXN por kg en pie · el último registrado de cada categoría" class="lg:col-span-2">
                 @if ($vigentes->isEmpty())
                     <p class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Aún no hay precios. Sin ellos el sistema no puede calcular el <strong>valor real del hato</strong> ni la utilidad proyectada.
+                        <i class="fa-solid fa-triangle-exclamation"></i> Aún no hay precios. Sin ellos el sistema no puede calcular el <strong>valor real del ganado</strong> ni la utilidad proyectada.
                         Registra al menos el precio <strong>General</strong>.
                     </p>
                 @else

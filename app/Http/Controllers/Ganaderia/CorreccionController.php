@@ -126,7 +126,7 @@ class CorreccionController extends Controller
         return $this->ejecutar($request, function (string $motivo) use ($venta) {
             $this->servicio->anularVenta($venta, $motivo);
 
-            return "Venta {$venta->folio_venta} anulada; los animales regresaron al hato y se cancelaron sus abonos.";
+            return "Venta {$venta->folio_venta} anulada; los animales regresaron a los corrales y se cancelaron sus abonos.";
         });
     }
 

@@ -1,29 +1,55 @@
-<!DOCTYPE html>
-<html lang="es"><head><meta charset="utf-8"><title>Estado de cuenta</title>
-<style>
-    body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #1e293b; }
-    h1 { font-size: 16px; margin: 0; } .muted { color: #64748b; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th { background: #f1f5f9; text-align: left; padding: 5px; font-size: 9px; text-transform: uppercase; }
-    td { padding: 5px; border-bottom: 1px solid #e2e8f0; } .r { text-align: right; } .tot td { font-weight: bold; border-top: 2px solid #0f172a; }
-</style></head>
-<body>
-    <table style="margin:0"><tr>
-        <td style="border:0"><h1>{{ config('plantas.grupo') }} · Ganadería</h1><span class="muted">Estado de cuenta al {{ now()->format('d/m/Y') }}</span></td>
-        <td style="border:0" class="r"><strong>{{ $cliente->razon_social ?: $cliente->nombre }}</strong><br>RFC {{ $cliente->rfc ?: '—' }} · C.P. {{ $cliente->codigo_postal ?: '—' }}<br>{{ $cliente->telefono }}</td>
-    </tr></table>
-    <table>
+@php
+    $vigentes = $ventas->where('estado', 'completada');
+    $saldo = (float) $vigentes->sum('saldo_pendiente');
+@endphp
+@extends('pdf.layout', ['titulo' => 'Estado de cuenta', 'meta' => ['Cliente' => $cliente->nombre, 'Al' => now()->format('d/m/Y')]])
+
+@section('contenido')
+    <table class="ficha">
+        <tr>
+            <td style="width: 40%;"><span class="etiqueta">Cliente</span><span class="valor">{{ $cliente->razon_social ?: $cliente->nombre }}</span></td>
+            <td><span class="etiqueta">RFC</span><span class="valor">{{ $cliente->rfc ?: '—' }}</span><br><span class="nota">C.P. {{ $cliente->codigo_postal ?: '—' }}</span></td>
+            <td><span class="etiqueta">Teléfono</span><span class="valor">{{ $cliente->telefono ?: '—' }}</span></td>
+            <td><span class="etiqueta">Crédito</span><span class="valor">{{ $cliente->dias_credito ? $cliente->dias_credito . ' días' : 'Contado' }}</span>
+                @if ((float) $cliente->limite_credito > 0)<br><span class="nota">Límite ${{ number_format((float) $cliente->limite_credito, 2) }}</span>@endif</td>
+        </tr>
+    </table>
+
+    <h2>Movimientos</h2>
+    <table class="datos">
         <thead><tr><th>Fecha</th><th>Folio</th><th>Condición</th><th>Vence</th><th class="r">Cabezas</th><th class="r">Total</th><th class="r">Pagado</th><th class="r">Saldo</th></tr></thead>
         <tbody>
-        @foreach ($ventas->where('estado', 'completada') as $v)
-            <tr><td>{{ $v->fecha_venta->format('d/m/Y') }}</td><td>{{ $v->folio_venta }}</td><td>{{ ucfirst($v->condicion_pago) }}</td>
-                <td>{{ $v->fecha_vencimiento?->format('d/m/Y') }}</td><td class="r">{{ $v->total_cabezas }}</td>
-                <td class="r">{{ formatoPesos($v->total_venta) }}</td><td class="r">{{ formatoPesos($v->totalPagado()) }}</td><td class="r">{{ formatoPesos($v->saldo_pendiente) }}</td></tr>
-        @endforeach
-        <tr class="tot"><td colspan="5">Totales</td>
-            <td class="r">{{ formatoPesos($ventas->where('estado', 'completada')->sum('total_venta')) }}</td>
-            <td class="r">{{ formatoPesos($ventas->where('estado', 'completada')->sum(fn ($v) => $v->totalPagado())) }}</td>
-            <td class="r">{{ formatoPesos($ventas->where('estado', 'completada')->sum('saldo_pendiente')) }}</td></tr>
+            @forelse ($vigentes as $v)
+                <tr>
+                    <td>{{ $v->fecha_venta->format('d/m/Y') }}</td>
+                    <td class="mono">{{ $v->folio_venta }}</td>
+                    <td>{{ ucfirst($v->condicion_pago) }}</td>
+                    <td class="{{ $v->vencida() ? 'rojo' : '' }}">{{ $v->fecha_vencimiento?->format('d/m/Y') }}{{ $v->vencida() ? ' (vencida)' : '' }}</td>
+                    <td class="r">{{ $v->total_cabezas }}</td>
+                    <td class="r">${{ number_format((float) $v->total_venta, 2) }}</td>
+                    <td class="r">${{ number_format($v->totalPagado(), 2) }}</td>
+                    <td class="r">${{ number_format((float) $v->saldo_pendiente, 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="8" class="gris">Sin ventas registradas.</td></tr>
+            @endforelse
+            <tr class="total">
+                <td colspan="5">Totales</td>
+                <td class="r">${{ number_format((float) $vigentes->sum('total_venta'), 2) }}</td>
+                <td class="r">${{ number_format((float) $vigentes->sum(fn ($v) => $v->totalPagado()), 2) }}</td>
+                <td class="r">${{ number_format($saldo, 2) }}</td>
+            </tr>
         </tbody>
     </table>
-</body></html>
+
+    <table class="resumen"><tr>
+        <td style="width: 55%;"></td>
+        <td style="width: 45%;">
+            <div class="destacado {{ $saldo > 0 ? 'rojo-caja' : '' }}">
+                <div class="rotulo">{{ $saldo > 0 ? 'Saldo pendiente' : 'Cuenta al corriente' }}</div>
+                <div class="monto">${{ number_format($saldo, 2) }}</div>
+                <div class="nota">Importes en pesos mexicanos</div>
+            </div>
+        </td>
+    </tr></table>
+@endsection

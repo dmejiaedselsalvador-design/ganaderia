@@ -57,6 +57,20 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
 
+                        <!-- Guía REEMO (movilización) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Folio guía REEMO</label>
+                            <input type="text" name="guia_reemo" id="guia_reemo" value="{{ old('guia_reemo') }}" placeholder="Opcional · folio de movilización"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+
+                        <!-- UPP de origen -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">UPP de origen</label>
+                            <input type="text" name="upp_origen" id="upp_origen" value="{{ old('upp_origen') }}" placeholder="Opcional · ej. 26-030-0451"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+
                         <!-- Concepto / Notas (Alineado con notas) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Concepto / Notas</label>

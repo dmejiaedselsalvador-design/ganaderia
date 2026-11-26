@@ -163,8 +163,10 @@
 
                 <!-- Botones de Acción Global -->
                 <div class="flex justify-end space-x-3">
-                    <a href="#" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition">
-                        Cancelar
+                    <a href="{{ route('proveedores.facturas.index') }}"
+                       onclick="if (typeof animales !== 'undefined' && animales.length) { event.preventDefault(); const url = this.href; window.confirmar('Tienes ' + animales.length + ' animal(es) capturado(s) sin guardar. Si sales se pierden. ¿Salir de todos modos?', { peligro: true, boton: 'Sí, salir' }).then(ok => ok && (location.href = url)); }"
+                       class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
                     </a>
                     <button type="submit" id="btn-submit-lote" disabled
                         class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow transition">

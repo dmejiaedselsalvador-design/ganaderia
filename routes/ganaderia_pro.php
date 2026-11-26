@@ -4,6 +4,7 @@ use App\Http\Controllers\Ganaderia\AtajoController;
 use App\Http\Controllers\Ganaderia\CampoController;
 use App\Http\Controllers\Ganaderia\ClienteController;
 use App\Http\Controllers\Ganaderia\CorreccionController;
+use App\Http\Controllers\Ganaderia\PesoObjetivoController;
 use App\Http\Controllers\Ganaderia\CompraCostosController;
 use App\Http\Controllers\Ganaderia\ConfiguracionController;
 use App\Http\Controllers\Ganaderia\DocumentoController;
@@ -34,6 +35,7 @@ Route::middleware('can:ganaderia.ganado')->group(function () {
     Route::delete('/ganado/fotos/{foto}', [FichaGanadoController::class, 'eliminarFoto'])->name('ganado.fotos.destroy');
     Route::post('/ganado/pesajes/importar', [PesajeController::class, 'importar'])->name('ganado.pesajes.importar');
     Route::get('/campo', [CampoController::class, 'index'])->name('campo.index');
+    Route::put('/ganado/pesos-objetivo', [PesoObjetivoController::class, 'update'])->name('ganado.pesos-objetivo');
 });
 
 // Costos completos de la guía de compra (flete, comisión, trámites, destare)

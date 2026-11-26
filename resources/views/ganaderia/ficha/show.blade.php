@@ -33,17 +33,22 @@
             <x-ui.card titulo="Identificación y origen" class="lg:col-span-2">
                 <form method="POST" action="{{ route('ganado.ficha.update', $g->GanadoID) }}" class="grid gap-3 sm:grid-cols-3">
                     @csrf @method('PUT')
-                    <x-ui.field label="Arete SINIIGA" name="arete_siniiga" :value="$g->arete_siniiga" class="font-mono" />
+                    <x-ui.field label="Arete SINIIGA" name="arete_siniiga" :value="$g->arete_siniiga ?: $g->areteID" class="font-mono"
+                                :ayuda="$g->arete_siniiga ? null : 'Tomado del arete con que se registró'" />
                     <x-ui.field label="Fierro / marca" name="fierro" :value="$g->fierro" />
                     <x-ui.field label="Raza" name="raza" :value="$g->raza" />
                     <x-ui.field label="Color y señas" name="color_senas" :value="$g->color_senas" colspan="sm:col-span-2" />
                     <x-ui.field label="Dentición" name="denticion" type="select" :options="$den" :value="$g->denticion" />
-                    <x-ui.field label="Procedencia (rancho/municipio)" name="procedencia" :value="$g->procedencia ?? $g->factura?->proveedor?->lugar" />
-                    <x-ui.field label="UPP de origen" name="upp_origen" :value="$g->upp_origen" />
+                    @php $prov = $g->factura?->proveedor; @endphp
+                    <x-ui.field label="Procedencia (rancho/municipio)" name="procedencia"
+                                :value="$g->procedencia ?: trim(($prov?->nombreProveedor ?? '') . ($prov?->lugar ? ' · ' . $prov->lugar : ''), ' ·')" />
+                    <x-ui.field label="UPP de origen" name="upp_origen" :value="$g->upp_origen ?: $g->factura?->upp_origen"
+                                :ayuda="! $g->upp_origen && $g->factura?->upp_origen ? 'Tomada de la guía de compra' : null" />
                     <x-ui.field label="Fecha de nacimiento" name="fecha_nacimiento" type="date" :value="$g->fecha_nacimiento?->format('Y-m-d')" />
-                    <x-ui.field label="Peso en origen (kg)" name="peso_origen" type="number" step="0.01" :value="$g->peso_origen"
+                    <x-ui.field label="Peso en origen (kg)" name="peso_origen" type="number" step="0.01" :value="$g->peso_origen" placeholder="Opcional"
                                 :ayuda="$merma ? 'Merma de viaje: ' . $merma['kg'] . ' kg (' . $merma['pct'] . '%)' : 'Báscula del vendedor, para calcular el destare'" />
-                    <x-ui.field label="Peso objetivo (kg)" name="peso_objetivo" type="number" step="0.01" :value="$g->peso_objetivo" />
+                    <x-ui.field label="Peso objetivo (kg)" name="peso_objetivo" type="number" step="0.01" :value="$g->peso_objetivo"
+                                :placeholder="number_format($g->peso_objetivo_calculado, 0) . ' (de su categoría)'" :ayuda="'Vacío = ' . number_format($g->peso_objetivo_calculado, 0) . ' kg, el de ' . $g->categoria" />
                     <x-ui.field label="Notas" name="notas" :value="$g->notas" />
                     <div class="sm:col-span-3"><x-ui.btn icono="fa-floppy-disk">Guardar datos</x-ui.btn></div>
                 </form>

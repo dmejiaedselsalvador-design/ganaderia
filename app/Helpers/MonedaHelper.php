@@ -13,20 +13,13 @@ if (!function_exists('formatoPesos')) {
 
 if (!function_exists('formatoPesosCorto')) {
     /**
-     * Formato compacto para tarjetas de indicadores: $ 1.25 M, $ 845.3 k, $ 950
+     * Formato para tarjetas de indicadores: cantidad completa con separador de miles y sin centavos.
+     * Ej. $ 18,000 · $ 1,290,450 · -$ 226,600 (a petición del cliente: nada de «k» ni «M»).
      */
     function formatoPesosCorto($cantidad): string {
-        $valor = (float) ($cantidad ?? 0);
-        $abs = abs($valor);
+        $valor = round((float) ($cantidad ?? 0));
         $signo = $valor < 0 ? '-' : '';
 
-        if ($abs >= 1_000_000) {
-            return $signo . '$ ' . number_format($abs / 1_000_000, 2) . ' M';
-        }
-        if ($abs >= 10_000) {
-            return $signo . '$ ' . number_format($abs / 1_000, 1) . ' k';
-        }
-
-        return $signo . '$ ' . number_format($abs, 0);
+        return $signo . '$ ' . number_format(abs($valor), 0, '.', ',');
     }
 }

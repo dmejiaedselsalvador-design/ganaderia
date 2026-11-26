@@ -8,7 +8,7 @@
 
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">
             <x-ui.kpi label="Cabezas" :valor="$l['cabezas']" icono="fa-cow" />
-            <x-ui.kpi label="Biomasa" :valor="number_format($l['biomasa'], 0) . ' kg'" icono="fa-weight-scale" color="bg-blue-50 text-blue-600" />
+            <x-ui.kpi label="Kilos de ganado" :valor="number_format($l['biomasa'], 0) . ' kg'" icono="fa-weight-scale" color="bg-blue-50 text-blue-600" />
             <x-ui.kpi label="Peso promedio" :valor="number_format($l['peso_prom'], 1) . ' kg'" :nota="$l['estimados'] ? $l['estimados'] . ' estimados · ' . $l['sin_pesaje'] . ' sin pesaje' : 'Pesos al día'" icono="fa-scale-balanced" color="bg-slate-100 text-slate-600" />
             <x-ui.kpi label="Alimento por día" :valor="number_format($l['kg_dia'], 0) . ' kg'" :nota="$l['kg_cab_tco'] ? number_format($l['kg_cab_tco'], 2) . ' kg por cabeza' : ''" icono="fa-wheat-awn" color="bg-amber-50 text-amber-600" />
             <x-ui.kpi label="Costo por día" :valor="formatoPesos($l['costo_dia'])" :nota="$l['cabezas'] ? formatoPesos($l['costo_dia'] / $l['cabezas']) . ' por cabeza' : ''" icono="fa-sack-dollar" color="bg-rose-50 text-rose-600" />

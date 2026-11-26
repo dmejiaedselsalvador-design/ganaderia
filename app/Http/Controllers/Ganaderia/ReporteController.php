@@ -34,7 +34,7 @@ class ReporteController extends Controller
                     $l['ingreso'], $l['utilidad'], $l['kg_ganados'], $l['gdp'], $l['costo_kg'], $l['conversion'], $l['mortalidad_pct']]));
         }
         if ($request->input('exportar') === 'pdf') {
-            return Pdf::loadView('ganaderia.reportes.lotes-pdf', compact('lotes'))->setPaper('letter', 'landscape')
+            return \App\Support\DocumentoPdf::crear('ganaderia.reportes.lotes-pdf', compact('lotes'), 'landscape')
                 ->download('rentabilidad_por_lote_' . now()->format('Ymd') . '.pdf');
         }
 
@@ -70,7 +70,7 @@ class ReporteController extends Controller
         $animales = Ganado::activo()->with('corralLote')->orderBy('corral_lote_id')->orderBy('areteID')->get();
 
         if ($request->input('exportar') === 'pdf') {
-            return Pdf::loadView('ganaderia.reportes.inventario-pdf', ['grupos' => $animales->groupBy(fn ($a) => $a->corralLote->codigo ?? 'Sin corral')])
+            return \App\Support\DocumentoPdf::crear('ganaderia.reportes.inventario-pdf', ['grupos' => $animales->groupBy(fn ($a) => $a->corralLote->codigo ?? 'Sin corral')])
                 ->download('inventario_ganado_' . now()->format('Ymd') . '.pdf');
         }
 
